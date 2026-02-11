@@ -1,0 +1,36 @@
+meta {
+  name: GET Bootstrap
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/v1/households/:householdId/bootstrap
+  body: none
+  auth: none
+}
+
+params:path {
+  householdId: 
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+docs {
+  # Bootstrap Household
+  
+  Returns complete household data including:
+  - Household details
+  - All categories
+  - All shops
+  - All shopping lists with their items (including category and shops per item)
+  - All inventory items (including category and shops per item)
+  
+  ## Usage
+  
+  Replace `:householdId` with the actual household UUID.
+  
+  You can get the household ID by running the seed endpoint first.
+}
