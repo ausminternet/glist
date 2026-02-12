@@ -4,7 +4,6 @@ import {
   NewShoppingListItemInput,
   ShoppingListItem,
 } from './shopping-list-item'
-
 type ShoppingListProps = {
   id: string
   householdId: string

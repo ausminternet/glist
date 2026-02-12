@@ -8,3 +8,5 @@ export function createDb(d1: D1Database) {
 
   return db
 }
+
+export type Database = ReturnType<typeof createDb>

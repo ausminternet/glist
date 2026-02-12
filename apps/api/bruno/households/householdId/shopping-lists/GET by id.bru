@@ -1,0 +1,20 @@
+meta {
+  name: GET by id
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/v1/households/:householdId/shopping-lists/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  householdId:
+  id:
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
