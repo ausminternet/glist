@@ -15,58 +15,64 @@ export class DrizzleShoppingListRepository implements ShoppingListRepository {
   async save(shoppingList: ShoppingList): Promise<void> {
     const snapshot = shoppingList.toSnapshot()
 
-    await this.db.transaction(async (tx) => {
-      // Upsert the shopping list
-      await tx
-        .insert(shoppingLists)
-        .values({
-          id: snapshot.id,
-          householdId: snapshot.householdId,
+    const upsertList = this.db
+      .insert(shoppingLists)
+      .values({
+        id: snapshot.id,
+        householdId: snapshot.householdId,
+        name: snapshot.name,
+        createdAt: snapshot.createdAt,
+        updatedAt: snapshot.updatedAt,
+      })
+      .onConflictDoUpdate({
+        target: shoppingLists.id,
+        set: {
           name: snapshot.name,
-          createdAt: snapshot.createdAt,
           updatedAt: snapshot.updatedAt,
-        })
-        .onConflictDoUpdate({
-          target: shoppingLists.id,
-          set: {
-            name: snapshot.name,
-            updatedAt: snapshot.updatedAt,
-          },
-        })
+        },
+      })
 
-      await tx
-        .delete(shoppingListItems)
-        .where(eq(shoppingListItems.shoppingListId, snapshot.id))
+    const deleteItems = this.db
+      .delete(shoppingListItems)
+      .where(eq(shoppingListItems.shoppingListId, snapshot.id))
 
-      if (snapshot.items.length > 0) {
-        await tx.insert(shoppingListItems).values(
-          snapshot.items.map((item) => ({
-            id: item.id,
-            shoppingListId: item.shoppingListId,
-            name: item.name,
-            description: item.description,
-            categoryId: item.categoryId,
-            quantity: item.quantity,
-            quantityUnit: item.quantityUnit,
-            checked: item.checked,
-            createdAt: item.createdAt,
-            updatedAt: item.updatedAt,
-          })),
-        )
+    if (snapshot.items.length === 0) {
+      await this.db.batch([upsertList, deleteItems])
+      return
+    }
 
-        // Insert shop associations
-        const shopAssociations = snapshot.items.flatMap((item) =>
-          item.shopIds.map((shopId) => ({
-            shoppingListItemId: item.id,
-            shopId,
-          })),
-        )
+    const insertItems = this.db.insert(shoppingListItems).values(
+      snapshot.items.map((item) => ({
+        id: item.id,
+        shoppingListId: item.shoppingListId,
+        name: item.name,
+        description: item.description,
+        categoryId: item.categoryId,
+        quantity: item.quantity,
+        quantityUnit: item.quantityUnit,
+        checked: item.checked,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        inventoryItemId: item.inventoryItemId,
+      })),
+    )
 
-        if (shopAssociations.length > 0) {
-          await tx.insert(shoppingListItemShops).values(shopAssociations)
-        }
-      }
-    })
+    const shopAssociations = snapshot.items.flatMap((item) =>
+      item.shopIds.map((shopId) => ({
+        shoppingListItemId: item.id,
+        shopId,
+      })),
+    )
+
+    if (shopAssociations.length > 0) {
+      const insertShops = this.db
+        .insert(shoppingListItemShops)
+        .values(shopAssociations)
+
+      await this.db.batch([upsertList, deleteItems, insertItems, insertShops])
+    } else {
+      await this.db.batch([upsertList, deleteItems, insertItems])
+    }
   }
 
   async findById(id: string): Promise<ShoppingList | null> {
@@ -94,7 +100,6 @@ export class DrizzleShoppingListRepository implements ShoppingListRepository {
             .where(inArray(shoppingListItemShops.shoppingListItemId, itemIds))
         : []
 
-    // Group shops by item id
     const shopsByItemId = new Map<string, string[]>()
     for (const row of shopRows) {
       const shops = shopsByItemId.get(row.shoppingListItemId) ?? []
