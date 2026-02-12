@@ -1,35 +1,19 @@
+import { GetInventoryItemsQuery } from '@/application/queries/get-inventory-items'
 import { createDb } from '@/db'
-import { inventoryItems } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { Hono } from 'hono'
 import { HouseholdContext } from './context'
 
 const inventoryItemsRouter = new Hono<HouseholdContext>()
 
 inventoryItemsRouter.get('/', async (c) => {
-  try {
-    const householdId = c.get('householdId')
-    const db = createDb(c.env.glist_db)
+  const householdId = c.get('householdId')
+  const db = createDb(c.env.glist_db)
+  const repository = new DrizzleInventoryItemRepository(db)
+  const query = new GetInventoryItemsQuery(repository)
 
-    const inventoryItemsResult = await db
-      .select()
-      .from(inventoryItems)
-      .where(eq(inventoryItems.householdId, householdId))
-
-    return c.json({
-      success: true,
-      data: inventoryItemsResult,
-    })
-  } catch (error) {
-    console.error('Error fetching inventory items:', error)
-    return c.json(
-      {
-        success: false,
-        error: 'Internal server error',
-      },
-      500,
-    )
-  }
+  const data = await query.execute(householdId)
+  return c.json({ success: true, data })
 })
 
 export default inventoryItemsRouter
