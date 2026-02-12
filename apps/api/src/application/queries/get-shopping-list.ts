@@ -1,5 +1,6 @@
 import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
-import { ShoppingListDto, toShoppingListDto } from '../dtos/shopping-list.dto'
+import { ShoppingListDto } from '@glist/dtos'
+import { toShoppingListDto } from '../mappers/shopping-list.mapper'
 
 export class ShoppingListNotFoundError extends Error {
   constructor(id: string) {

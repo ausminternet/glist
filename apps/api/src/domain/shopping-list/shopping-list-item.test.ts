@@ -128,6 +128,7 @@ describe('ShoppingListItem', () => {
         shopIds: ['shop-1'],
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
+        inventoryItemId: null,
       })
     })
   })

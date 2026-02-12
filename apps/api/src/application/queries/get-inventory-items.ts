@@ -1,5 +1,6 @@
-import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository';
-import { InventoryItemDto, toInventoryItemDto } from '../dtos/inventory-item.dto';
+import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import { InventoryItemDto } from '@glist/dtos'
+import { toInventoryItemDto } from '../mappers/inventory-item.mapper'
 
 export class GetInventoryItemsQuery {
   constructor(private repository: InventoryItemRepository) {}
