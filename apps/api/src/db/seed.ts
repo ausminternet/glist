@@ -1,6 +1,6 @@
+import { createDb } from './index'
 import {
   categories,
-  createDb,
   households,
   inventoryItems,
   inventoryItemShops,
@@ -8,7 +8,7 @@ import {
   shoppingListItemShops,
   shoppingLists,
   shops,
-} from './index'
+} from './schema'
 
 async function seed(d1: D1Database) {
   console.log('🌱 Seeding database...')

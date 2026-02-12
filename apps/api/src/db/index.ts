@@ -8,5 +8,3 @@ export function createDb(d1: D1Database) {
 
   return db
 }
-
-export * from './schema'
