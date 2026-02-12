@@ -1,7 +1,8 @@
 import { isBlank } from '@/utils/is-blank'
 import { Price } from '../shared/price'
 import { Quantity } from '../shared/quantity'
-import { UnitType } from '../shared/unit-type'
+
+import { UnitType } from '@glist/shared'
 import { InvalidNameError } from './errors'
 
 export type NewInventoryItemInput = {

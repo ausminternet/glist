@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { InvalidPriceError } from '../shared/price'
 import { InvalidQuantityError } from '../shared/quantity'
-import { InvalidUnitError } from '../shared/unit-type'
+
+import { InvalidUnitError } from '@glist/shared'
 import { InvalidNameError } from './errors'
 import { InventoryItem } from './inventory-item'
 

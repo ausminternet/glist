@@ -1,5 +1,5 @@
 import { GetInventoryItemsQuery } from '@/application/queries/get-inventory-items'
-import { createDb } from '@/db'
+import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { Hono } from 'hono'
 import { HouseholdContext } from './context'

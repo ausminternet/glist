@@ -1,7 +1,7 @@
 import { eq, inArray } from 'drizzle-orm'
 import { Hono } from 'hono'
 
-import { createDb } from '@/db'
+import { createDb } from '@/infrastructure/persistence'
 import {
   categories,
   households,
@@ -11,7 +11,7 @@ import {
   shoppingListItemShops,
   shoppingLists,
   shops,
-} from '@/db/schema'
+} from '@/infrastructure/persistence/schema'
 import { HouseholdContext } from './context'
 
 const bootstrapRouter = new Hono<HouseholdContext>()

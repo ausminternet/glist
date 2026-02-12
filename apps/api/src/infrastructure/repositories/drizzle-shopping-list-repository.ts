@@ -1,12 +1,12 @@
-import { Database } from '@/db'
+import { ShoppingList } from '@/domain/shopping-list/shopping-list'
+import { ShoppingListItem } from '@/domain/shopping-list/shopping-list-item'
+import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import { Database } from '@/infrastructure/persistence'
 import {
   shoppingListItems,
   shoppingListItemShops,
   shoppingLists,
-} from '@/db/schema'
-import { ShoppingList } from '@/domain/shopping-list/shopping-list'
-import { ShoppingListItem } from '@/domain/shopping-list/shopping-list-item'
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+} from '@/infrastructure/persistence/schema'
 import { eq, inArray } from 'drizzle-orm'
 
 export class DrizzleShoppingListRepository implements ShoppingListRepository {

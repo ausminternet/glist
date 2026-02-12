@@ -1,7 +1,7 @@
+import { InvalidUnitError } from '@glist/shared'
 import { describe, expect, test } from 'bun:test'
 import {
   InvalidQuantityError,
-  InvalidUnitError,
   Quantity,
   UnitWithoutValueError,
 } from './quantity'

@@ -1,6 +1,4 @@
-import { InvalidUnitError, isValidUnitType, UnitType } from './unit-type'
-
-export { InvalidUnitError }
+import { InvalidUnitError, isValidUnitType, UnitType } from '@glist/shared'
 
 export class QuantityError extends Error {
   constructor(message: string) {

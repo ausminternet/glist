@@ -7,9 +7,7 @@ import {
   text,
 } from 'drizzle-orm/sqlite-core'
 
-import { unitTypes, type UnitType } from '@/domain/shared/unit-type'
-
-export { unitTypes, type UnitType }
+import { type UnitType } from '@glist/shared'
 
 export const households = sqliteTable('households', {
   id: text('id')

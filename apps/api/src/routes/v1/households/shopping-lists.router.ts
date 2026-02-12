@@ -8,7 +8,7 @@ import {
   GetShoppingListQuery,
   ShoppingListNotFoundError as QueryShoppingListNotFoundError,
 } from '@/application/queries/get-shopping-list'
-import { createDb } from '@/db'
+import { createDb } from '@/infrastructure/persistence'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { Hono } from 'hono'
 import { HouseholdContext } from './context'

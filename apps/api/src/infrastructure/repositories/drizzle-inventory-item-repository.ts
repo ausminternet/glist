@@ -1,7 +1,10 @@
-import { Database } from '@/db'
-import { inventoryItems, inventoryItemShops } from '@/db/schema'
 import { InventoryItem } from '@/domain/inventory-item/inventory-item'
 import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import { Database } from '@/infrastructure/persistence'
+import {
+  inventoryItems,
+  inventoryItemShops,
+} from '@/infrastructure/persistence/schema'
 import { eq, inArray } from 'drizzle-orm'
 
 export class DrizzleInventoryItemRepository implements InventoryItemRepository {

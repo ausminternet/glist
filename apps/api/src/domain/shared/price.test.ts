@@ -1,6 +1,6 @@
+import { InvalidUnitError } from '@glist/shared'
 import { describe, expect, test } from 'bun:test'
 import { InvalidPriceError, Price, UnitWithoutValueError } from './price'
-import { InvalidUnitError } from './unit-type'
 
 describe('Price', () => {
   describe('create', () => {
