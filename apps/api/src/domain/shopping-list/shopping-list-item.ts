@@ -1,5 +1,6 @@
 import { isBlank } from '@/utils/is-blank'
 import { Quantity } from '../shared/quantity'
+import { UnitType } from '../shared/unit-type'
 import { InvalidNameError } from './errors'
 
 export type NewShoppingListItemInput = {
@@ -121,7 +122,7 @@ export class ShoppingListItem {
   get quantity(): number | null {
     return this.props.quantity.value
   }
-  get quantityUnit(): string | null {
+  get quantityUnit(): UnitType | null {
     return this.props.quantity.unit
   }
   get checked(): boolean {

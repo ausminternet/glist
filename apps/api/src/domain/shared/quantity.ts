@@ -1,3 +1,7 @@
+import { InvalidUnitError, isValidUnitType, UnitType } from './unit-type'
+
+export { InvalidUnitError }
+
 export class QuantityError extends Error {
   constructor(message: string) {
     super(message)
@@ -20,7 +24,7 @@ export class UnitWithoutValueError extends QuantityError {
 export class Quantity {
   private constructor(
     public readonly value: number | null,
-    public readonly unit: string | null,
+    public readonly unit: UnitType | null,
   ) {}
 
   static create(value: number | null, unit: string | null): Quantity {
@@ -32,7 +36,11 @@ export class Quantity {
       throw new UnitWithoutValueError()
     }
 
-    return new Quantity(value, unit)
+    if (unit !== null && !isValidUnitType(unit)) {
+      throw new InvalidUnitError(unit)
+    }
+
+    return new Quantity(value, unit as UnitType | null)
   }
 
   static empty(): Quantity {

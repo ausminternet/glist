@@ -125,7 +125,7 @@ describe('ShoppingList', () => {
   describe('toSnapshot', () => {
     test('creates snapshot with all data including items', () => {
       const list = ShoppingList.create(householdId, 'Weekly Shopping')
-      list.addItem({ name: 'Milk', quantity: 2, quantityUnit: 'liters' })
+      list.addItem({ name: 'Milk', quantity: 2, quantityUnit: 'l' })
 
       const snapshot = list.toSnapshot()
 

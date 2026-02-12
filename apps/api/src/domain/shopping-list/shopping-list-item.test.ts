@@ -13,7 +13,7 @@ describe('ShoppingListItem', () => {
         description: 'From the farm',
         categoryId: 'cat-123',
         quantity: 2,
-        quantityUnit: 'liters',
+        quantityUnit: 'l',
         shopIds: ['shop-1', 'shop-2'],
       })
 
@@ -23,7 +23,7 @@ describe('ShoppingListItem', () => {
       expect(item.description).toBe('From the farm')
       expect(item.categoryId).toBe('cat-123')
       expect(item.quantity).toBe(2)
-      expect(item.quantityUnit).toBe('liters')
+      expect(item.quantityUnit).toBe('l')
       expect(item.checked).toBe(false)
       expect(item.shopIds).toEqual(['shop-1', 'shop-2'])
       expect(item.createdAt).toBeInstanceOf(Date)
@@ -108,7 +108,7 @@ describe('ShoppingListItem', () => {
         description: 'From the farm',
         categoryId: 'cat-123',
         quantity: 2,
-        quantityUnit: 'liters',
+        quantityUnit: 'l',
         shopIds: ['shop-1'],
       })
       item.check()
@@ -122,7 +122,7 @@ describe('ShoppingListItem', () => {
         description: 'From the farm',
         categoryId: 'cat-123',
         quantity: 2,
-        quantityUnit: 'liters',
+        quantityUnit: 'l',
         checked: true,
         shopIds: ['shop-1'],
         createdAt: expect.any(Date),

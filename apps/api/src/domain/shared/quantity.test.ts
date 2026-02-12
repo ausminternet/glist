@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   InvalidQuantityError,
+  InvalidUnitError,
   Quantity,
   UnitWithoutValueError,
 } from './quantity'
@@ -39,9 +40,10 @@ describe('Quantity', () => {
 
     test('throws UnitWithoutValueError when unit provided without value', () => {
       expect(() => Quantity.create(null, 'kg')).toThrow(UnitWithoutValueError)
-      expect(() => Quantity.create(null, 'pieces')).toThrow(
-        UnitWithoutValueError,
-      )
+    })
+
+    test('throws InvalidUnitError for invalid unit', () => {
+      expect(() => Quantity.create(5, 'cats')).toThrow(InvalidUnitError)
     })
   })
 
