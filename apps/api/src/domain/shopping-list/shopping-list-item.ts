@@ -52,6 +52,29 @@ export class ShoppingListItem {
     })
   }
 
+  static createFromInventoryItem(
+    shoppingListId: string,
+    inventoryItem: {
+      name: string
+      description: string | null
+      categoryId: string | null
+      shopIds: readonly string[]
+    },
+  ): ShoppingListItem {
+    return new ShoppingListItem({
+      id: crypto.randomUUID(),
+      shoppingListId,
+      name: inventoryItem.name,
+      description: inventoryItem.description,
+      categoryId: inventoryItem.categoryId,
+      quantity: Quantity.create(null, null),
+      checked: false,
+      shopIds: inventoryItem.shopIds,
+      createdAt: new Date(),
+      updatedAt: null,
+    })
+  }
+
   static reconstitute(data: {
     id: string
     shoppingListId: string

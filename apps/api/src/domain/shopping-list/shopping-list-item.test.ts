@@ -130,4 +130,26 @@ describe('ShoppingListItem', () => {
       })
     })
   })
+
+  describe('createFromInventoryItem', () => {
+    test('creates shopping list item from inventory item', () => {
+      const inventoryItem = {
+        name: 'Milk',
+        description: 'Organic whole milk',
+        categoryId: 'cat-dairy',
+        shopIds: ['shop-1', 'shop-2'],
+      }
+
+      const shoppingListItem = ShoppingListItem.createFromInventoryItem(
+        shoppingListId,
+        inventoryItem,
+      )
+
+      expect(shoppingListItem.shoppingListId).toBe(shoppingListId)
+      expect(shoppingListItem.name).toBe(inventoryItem.name)
+      expect(shoppingListItem.description).toBe(inventoryItem.description)
+      expect(shoppingListItem.categoryId).toBe(inventoryItem.categoryId)
+      expect(shoppingListItem.shopIds).toEqual(inventoryItem.shopIds)
+    })
+  })
 })

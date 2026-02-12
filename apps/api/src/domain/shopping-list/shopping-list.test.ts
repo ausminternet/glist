@@ -136,4 +136,26 @@ describe('ShoppingList', () => {
       expect(snapshot.items[0].name).toBe('Milk')
     })
   })
+
+  describe('addItemFromInventory', () => {
+    test('adds item from inventory to list', () => {
+      const list = ShoppingList.create(householdId, 'Weekly Shopping')
+      const inventoryItem = {
+        name: 'Milk',
+        description: 'Organic whole milk',
+        categoryId: 'cat-dairy',
+        shopIds: ['shop-1', 'shop-2'],
+      }
+
+      const shoppingListItem = list.addItemFromInventory(inventoryItem)
+
+      expect(list.items).toHaveLength(1)
+      expect(list.items[0]).toBe(shoppingListItem)
+      expect(shoppingListItem.shoppingListId).toBe(list.id)
+      expect(shoppingListItem.name).toBe(inventoryItem.name)
+      expect(shoppingListItem.description).toBe(inventoryItem.description)
+      expect(shoppingListItem.categoryId).toBe(inventoryItem.categoryId)
+      expect(shoppingListItem.shopIds).toEqual(inventoryItem.shopIds)
+    })
+  })
 })

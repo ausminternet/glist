@@ -88,6 +88,21 @@ export class ShoppingList {
     return item
   }
 
+  addItemFromInventory(item: {
+    name: string
+    description: string | null
+    categoryId: string | null
+    shopIds: string[]
+  }): ShoppingListItem {
+    const shoppingListItem = ShoppingListItem.createFromInventoryItem(
+      this.props.id,
+      item,
+    )
+    this.props.items.push(shoppingListItem)
+    this.props.updatedAt = new Date()
+    return shoppingListItem
+  }
+
   removeItem(itemId: string): void {
     const index = this.props.items.findIndex((item) => item.id === itemId)
     if (index === -1) {
