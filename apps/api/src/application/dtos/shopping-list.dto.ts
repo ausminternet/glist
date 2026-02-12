@@ -1,5 +1,5 @@
-import { UnitType } from '@/domain/shared/unit-type';
-import { ShoppingList } from '@/domain/shopping-list/shopping-list';
+import { UnitType } from '@/domain/shared/unit-type'
+import { ShoppingList } from '@/domain/shopping-list/shopping-list'
 
 export type ShoppingListItemDto = {
   id: string

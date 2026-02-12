@@ -109,7 +109,6 @@ export class ShoppingListItem {
     })
   }
 
-  // --- Getters ---
   get id(): string {
     return this.props.id
   }
