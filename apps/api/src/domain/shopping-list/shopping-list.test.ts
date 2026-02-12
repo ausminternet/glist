@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { InvalidNameError, ItemNotFoundError } from './errors'
+import { InvalidNameError, ShoppingListItemNotFoundError } from './errors'
 import { ShoppingList } from './shopping-list'
 
 describe('ShoppingList', () => {
@@ -82,7 +82,7 @@ describe('ShoppingList', () => {
       const list = ShoppingList.create(householdId, 'Weekly Shopping')
 
       expect(() => list.removeItem('non-existent-id')).toThrow(
-        ItemNotFoundError,
+        ShoppingListItemNotFoundError,
       )
     })
 
@@ -96,7 +96,9 @@ describe('ShoppingList', () => {
     test('getItem throws ItemNotFoundError for non-existent item', () => {
       const list = ShoppingList.create(householdId, 'Weekly Shopping')
 
-      expect(() => list.getItem('non-existent-id')).toThrow(ItemNotFoundError)
+      expect(() => list.getItem('non-existent-id')).toThrow(
+        ShoppingListItemNotFoundError,
+      )
     })
 
     test('findItem returns undefined for non-existent item', () => {

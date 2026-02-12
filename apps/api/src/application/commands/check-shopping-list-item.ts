@@ -1,8 +1,8 @@
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import {
   ShoppingListItemNotFoundError,
   ShoppingListNotFoundError,
-} from './errors'
+} from '@/domain/shopping-list/errors'
+import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 
 export class CheckShoppingListItemCommand {
   constructor(private repository: ShoppingListRepository) {}

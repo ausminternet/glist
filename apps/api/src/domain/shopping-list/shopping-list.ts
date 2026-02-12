@@ -1,5 +1,5 @@
 import { isBlank } from '@/utils/is-blank'
-import { InvalidNameError, ItemNotFoundError } from './errors'
+import { InvalidNameError, ShoppingListItemNotFoundError } from './errors'
 import {
   NewShoppingListItemInput,
   ShoppingListItem,
@@ -106,7 +106,7 @@ export class ShoppingList {
   removeItem(itemId: string): void {
     const index = this.props.items.findIndex((item) => item.id === itemId)
     if (index === -1) {
-      throw new ItemNotFoundError(itemId)
+      throw new ShoppingListItemNotFoundError(itemId)
     }
     this.props.items.splice(index, 1)
     this.props.updatedAt = new Date()
@@ -115,7 +115,7 @@ export class ShoppingList {
   getItem(itemId: string): ShoppingListItem {
     const item = this.props.items.find((item) => item.id === itemId)
     if (!item) {
-      throw new ItemNotFoundError(itemId)
+      throw new ShoppingListItemNotFoundError(itemId)
     }
     return item
   }

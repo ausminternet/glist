@@ -11,8 +11,14 @@ export class InvalidNameError extends ShoppingListError {
   }
 }
 
-export class ItemNotFoundError extends ShoppingListError {
+export class ShoppingListItemNotFoundError extends ShoppingListError {
   constructor(public readonly itemId: string) {
     super(`item with id ${itemId} not found`)
+  }
+}
+
+export class ShoppingListNotFoundError extends ShoppingListError {
+  constructor(public readonly id: string) {
+    super(`Shopping list not found: ${id}`)
   }
 }

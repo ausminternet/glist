@@ -1,13 +1,10 @@
 import { CheckShoppingListItemCommand } from '@/application/commands/check-shopping-list-item'
+import { UncheckShoppingListItemCommand } from '@/application/commands/uncheck-shopping-list-item'
+import { GetShoppingListQuery } from '@/application/queries/get-shopping-list'
 import {
   ShoppingListItemNotFoundError,
   ShoppingListNotFoundError,
-} from '@/application/commands/errors'
-import { UncheckShoppingListItemCommand } from '@/application/commands/uncheck-shopping-list-item'
-import {
-  GetShoppingListQuery,
-  ShoppingListNotFoundError as QueryShoppingListNotFoundError,
-} from '@/application/queries/get-shopping-list'
+} from '@/domain/shopping-list/errors'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { Hono } from 'hono'
@@ -26,7 +23,7 @@ shoppingListsRouter.get('/:id', async (c) => {
     const data = await query.execute(id, householdId)
     return c.json({ success: true, data })
   } catch (error) {
-    if (error instanceof QueryShoppingListNotFoundError) {
+    if (error instanceof ShoppingListNotFoundError) {
       return c.json({ success: false, error: 'Shopping list not found' }, 404)
     }
     throw error

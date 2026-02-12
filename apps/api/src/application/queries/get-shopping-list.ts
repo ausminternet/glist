@@ -1,13 +1,7 @@
+import { ShoppingListNotFoundError } from '@/domain/shopping-list/errors'
 import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import { ShoppingListDto } from '@glist/dtos'
 import { toShoppingListDto } from '../mappers/shopping-list.mapper'
-
-export class ShoppingListNotFoundError extends Error {
-  constructor(id: string) {
-    super(`Shopping list not found: ${id}`)
-    this.name = 'ShoppingListNotFoundError'
-  }
-}
 
 export class GetShoppingListQuery {
   constructor(private repository: ShoppingListRepository) {}
