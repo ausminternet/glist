@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import bootstrapRouter from './bootstrap'
+import bootstrapRouter from './bootstrap.router'
 import { HouseholdContext, withHousehold } from './context'
 
 const householdRouter = new Hono<HouseholdContext>()

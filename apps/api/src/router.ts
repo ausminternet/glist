@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import adminRouter from './routes/v1/admin'
-import householdRouter from './routes/v1/household'
+import householdRouter from './routes/v1/households'
 
 const v1Router = new Hono<{ Bindings: CloudflareBindings }>()
 

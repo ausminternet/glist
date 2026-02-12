@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import seedRouter from './seed'
+import seedRouter from './seed.router'
 
 const adminRouter = new Hono<{ Bindings: CloudflareBindings }>()
 
