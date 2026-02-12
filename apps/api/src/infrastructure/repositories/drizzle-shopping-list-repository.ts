@@ -115,6 +115,7 @@ export class DrizzleShoppingListRepository implements ShoppingListRepository {
         shopIds: shopsByItemId.get(row.id) ?? [],
         createdAt: row.createdAt!,
         updatedAt: row.updatedAt,
+        inventoryItemId: row.inventoryItemId,
       }),
     )
 

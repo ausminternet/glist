@@ -15,6 +15,7 @@ export type NewShoppingListItemInput = {
 type ShoppingListItemProps = {
   id: string
   shoppingListId: string
+  inventoryItemId: string | null
   name: string
   description: string | null
   categoryId: string | null
@@ -50,12 +51,14 @@ export class ShoppingListItem {
       shopIds: input.shopIds ?? [],
       createdAt: new Date(),
       updatedAt: null,
+      inventoryItemId: null,
     })
   }
 
   static createFromInventoryItem(
     shoppingListId: string,
     inventoryItem: {
+      inventoryItemId: string
       name: string
       description: string | null
       categoryId: string | null
@@ -64,6 +67,7 @@ export class ShoppingListItem {
   ): ShoppingListItem {
     return new ShoppingListItem({
       id: crypto.randomUUID(),
+      inventoryItemId: inventoryItem.inventoryItemId,
       shoppingListId,
       name: inventoryItem.name,
       description: inventoryItem.description,
@@ -88,6 +92,7 @@ export class ShoppingListItem {
     shopIds: string[]
     createdAt: Date
     updatedAt: Date | null
+    inventoryItemId: string | null
   }): ShoppingListItem {
     return new ShoppingListItem({
       id: data.id,
@@ -100,6 +105,7 @@ export class ShoppingListItem {
       shopIds: data.shopIds,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
+      inventoryItemId: data.inventoryItemId,
     })
   }
 
@@ -136,6 +142,10 @@ export class ShoppingListItem {
   }
   get updatedAt(): Date | null {
     return this.props.updatedAt
+  }
+
+  get inventoryItemId(): string | null {
+    return this.props.inventoryItemId
   }
 
   changeName(name: string): void {
@@ -194,6 +204,7 @@ export class ShoppingListItem {
       shopIds: [...this.props.shopIds],
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
+      inventoryItemId: this.props.inventoryItemId,
     } as const
   }
 }

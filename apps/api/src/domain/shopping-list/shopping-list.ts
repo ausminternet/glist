@@ -88,6 +88,7 @@ export class ShoppingList {
   }
 
   addItemFromInventory(item: {
+    inventoryItemId: string
     name: string
     description: string | null
     categoryId: string | null

@@ -10,6 +10,7 @@ export type ShoppingListItemDto = {
   quantityUnit: UnitType | null
   checked: boolean
   shopIds: string[]
+  inventoryItemId: string | null
 }
 
 export type ShoppingListDto = {
@@ -35,6 +36,7 @@ export function toShoppingListDto(shoppingList: ShoppingList): ShoppingListDto {
       quantityUnit: item.quantityUnit,
       checked: item.checked,
       shopIds: [...item.shopIds],
+      inventoryItemId: item.inventoryItemId,
     })),
     createdAt: shoppingList.createdAt.toISOString(),
     updatedAt: shoppingList.updatedAt?.toISOString() ?? null,

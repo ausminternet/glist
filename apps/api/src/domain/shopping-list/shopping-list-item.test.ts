@@ -63,6 +63,7 @@ describe('ShoppingListItem', () => {
         shopIds: ['shop-1'],
         createdAt,
         updatedAt,
+        inventoryItemId: null,
       })
 
       expect(item.id).toBe('item-456')
@@ -134,6 +135,7 @@ describe('ShoppingListItem', () => {
   describe('createFromInventoryItem', () => {
     test('creates shopping list item from inventory item', () => {
       const inventoryItem = {
+        inventoryItemId: 'inv-123',
         name: 'Milk',
         description: 'Organic whole milk',
         categoryId: 'cat-dairy',
@@ -145,6 +147,9 @@ describe('ShoppingListItem', () => {
         inventoryItem,
       )
 
+      expect(shoppingListItem.inventoryItemId).toBe(
+        inventoryItem.inventoryItemId,
+      )
       expect(shoppingListItem.shoppingListId).toBe(shoppingListId)
       expect(shoppingListItem.name).toBe(inventoryItem.name)
       expect(shoppingListItem.description).toBe(inventoryItem.description)
