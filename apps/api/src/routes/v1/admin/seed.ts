@@ -1,5 +1,5 @@
+import { seed } from '@/db/seed'
 import { Hono } from 'hono'
-import { seed } from '../../db/seed'
 
 const seedRouter = new Hono<{ Bindings: CloudflareBindings }>()
 

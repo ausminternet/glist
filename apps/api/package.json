@@ -10,8 +10,10 @@
     "db:migrate:remote": "wrangler d1 migrations apply glist-db --remote"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
     "drizzle-orm": "^0.45.1",
-    "hono": "^4.11.9"
+    "hono": "^4.11.9",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bun": "^1.3.9",
