@@ -141,6 +141,7 @@ describe('ShoppingList', () => {
     test('adds item from inventory to list', () => {
       const list = ShoppingList.create(householdId, 'Weekly Shopping')
       const inventoryItem = {
+        inventoryItemId: 'inv-123',
         name: 'Milk',
         description: 'Organic whole milk',
         categoryId: 'cat-dairy',
