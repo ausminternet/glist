@@ -23,6 +23,7 @@ function inventoryItemRowToDto(
     createdAt: row.createdAt!.toISOString(),
     updatedAt: row.updatedAt?.toISOString() ?? null,
     shopIds,
+    photoUrl: row.photoKey,
   }
 }
 

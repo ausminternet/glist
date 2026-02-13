@@ -108,6 +108,7 @@ export const inventoryItems = sqliteTable(
     targetStockUnit: text('target_stock_unit').$type<UnitType>(),
     basePriceUnit: text('base_price_unit').$type<UnitType>(),
     basePriceCents: integer('base_price_cents'),
+    photoKey: text('photo_key'),
     createdAt: integer('created_at', { mode: 'timestamp' })
       .$defaultFn(() => new Date())
       .notNull(),
@@ -142,6 +143,7 @@ export const shoppingListItems = sqliteTable(
     quantity: real('quantity'),
     quantityUnit: text('quantity_unit').$type<UnitType>(),
     checked: integer('checked', { mode: 'boolean' }).notNull().default(false),
+    photoKey: text('photo_key'),
     createdAt: integer('created_at', { mode: 'timestamp' })
       .$defaultFn(() => new Date())
       .notNull(),

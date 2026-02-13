@@ -45,6 +45,7 @@ function toDomain(row: InventoryItemRow, shopIds: string[]): InventoryItem {
     targetStock: targetStockResult.value,
     basePrice: basePriceResult.value,
     shopIds: parseShopIds(shopIds),
+    photoKey: row.photoKey,
     createdAt: row.createdAt!,
     updatedAt: row.updatedAt,
   }
@@ -63,6 +64,7 @@ function toSchema(item: InventoryItem): typeof inventoryItems.$inferInsert {
     targetStockUnit: item.targetStockUnit,
     basePriceCents: item.basePriceCents,
     basePriceUnit: item.basePriceUnit,
+    photoKey: item.photoKey,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   }
@@ -87,6 +89,7 @@ export class DrizzleInventoryItemRepository implements InventoryItemRepository {
           targetStockUnit: itemSchema.targetStockUnit,
           basePriceCents: itemSchema.basePriceCents,
           basePriceUnit: itemSchema.basePriceUnit,
+          photoKey: itemSchema.photoKey,
           updatedAt: itemSchema.updatedAt,
         },
       })

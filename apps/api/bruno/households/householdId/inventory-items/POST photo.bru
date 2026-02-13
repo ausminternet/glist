@@ -1,0 +1,41 @@
+meta {
+  name: POST photo
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/households/:householdId/inventory-items/:id/photo
+  body: none
+  auth: inherit
+}
+
+params:path {
+  householdId: d80457d8-c534-4d7f-9c2c-51ece5f1e319
+  id:
+}
+
+headers {
+  x-api-key: {{api_key}}
+  content-type: image/jpeg
+}
+
+docs {
+  Upload a photo for an inventory item.
+
+  Supported content types:
+  - image/jpeg
+  - image/png
+  - image/webp
+
+  The photo should be sent as raw binary data in the request body.
+
+  If the item already has a photo, the old photo will be deleted before uploading the new one.
+
+  Returns the public URL of the uploaded photo.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

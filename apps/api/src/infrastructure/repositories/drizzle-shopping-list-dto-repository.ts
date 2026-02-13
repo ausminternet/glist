@@ -28,6 +28,7 @@ function shoppingListItemToDto(
     updatedAt: itemRow.updatedAt?.toISOString() ?? null,
     inventoryItemId: itemRow.inventoryItemId,
     shopIds,
+    photoUrl: itemRow.photoKey,
   }
 }
 

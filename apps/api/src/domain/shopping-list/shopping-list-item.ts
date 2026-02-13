@@ -27,6 +27,7 @@ export type ShoppingListItemProps = {
   quantity: Quantity
   checked: boolean
   shopIds: readonly ShopId[]
+  photoKey: string | null
   createdAt: Date
   updatedAt: Date | null
 }
@@ -68,6 +69,7 @@ export class ShoppingListItem {
         quantity: quantityResult.value,
         checked: false,
         shopIds: input.shopIds ?? [],
+        photoKey: null,
         createdAt: new Date(),
         updatedAt: null,
         inventoryItemId: null,
@@ -96,6 +98,7 @@ export class ShoppingListItem {
       quantity: Quantity.empty(),
       checked: false,
       shopIds: inventoryItem.shopIds,
+      photoKey: null,
       createdAt: new Date(),
       updatedAt: null,
     })
@@ -127,6 +130,9 @@ export class ShoppingListItem {
   }
   get shopIds(): readonly ShopId[] {
     return this.props.shopIds
+  }
+  get photoKey(): string | null {
+    return this.props.photoKey
   }
   get createdAt(): Date {
     return this.props.createdAt
@@ -192,6 +198,11 @@ export class ShoppingListItem {
 
   uncheck(): void {
     this.props.checked = false
+    this.props.updatedAt = new Date()
+  }
+
+  setPhotoKey(photoKey: string | null): void {
+    this.props.photoKey = photoKey
     this.props.updatedAt = new Date()
   }
 }

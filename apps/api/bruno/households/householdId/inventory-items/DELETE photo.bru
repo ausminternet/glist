@@ -1,0 +1,31 @@
+meta {
+  name: DELETE photo
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{base_url}}/households/:householdId/inventory-items/:id/photo
+  body: none
+  auth: inherit
+}
+
+params:path {
+  householdId: d80457d8-c534-4d7f-9c2c-51ece5f1e319
+  id:
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+docs {
+  Delete the photo for an inventory item.
+
+  Returns an error if the item has no photo.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

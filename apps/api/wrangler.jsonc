@@ -11,37 +11,22 @@
       "migrations_dir": "./src/infrastructure/persistence/migrations",
     },
   ],
+  "r2_buckets": [
+    {
+      "binding": "glist_photos",
+      "bucket_name": "glist-photos",
+    },
+  ],
   "vars": {
     "ENVIRONMENT": "development",
+    // Set this to your R2 bucket's public URL
+    // For production, use your custom domain or Cloudflare R2 public URL
+    // Example: "https://photos.glist.app" or "https://pub-xxx.r2.dev"
+    "PHOTO_URL_BASE": "http://localhost:8787/images",
   },
   // For production deployment, set:
   // "vars": {
-  //   "ENVIRONMENT": "production"
-  // }
-  // "kv_namespaces": [
-  //   {
-  //     "binding": "MY_KV_NAMESPACE",
-  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  //   }
-  // ],
-  // "r2_buckets": [
-  //   {
-  //     "binding": "MY_BUCKET",
-  //     "bucket_name": "my-bucket"
-  //   }
-  // ],
-  // "d1_databases": [
-  //   {
-  //     "binding": "MY_DB",
-  //     "database_name": "my-database",
-  //     "database_id": ""
-  //   }
-  // ],
-  // "ai": {
-  //   "binding": "AI"
-  // },
-  // "observability": {
-  //   "enabled": true,
-  //   "head_sampling_rate": 1
+  //   "ENVIRONMENT": "production",
+  //   "PHOTO_URL_BASE": "https://your-r2-public-url.com"
   // }
 }

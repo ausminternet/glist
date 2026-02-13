@@ -13,4 +13,5 @@ export type InventoryItemDto = {
   shopIds: string[]
   createdAt: string
   updatedAt: string | null
+  photoUrl: string | null
 }

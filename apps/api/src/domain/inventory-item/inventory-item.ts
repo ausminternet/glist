@@ -28,6 +28,7 @@ export type InventoryItemProps = {
   targetStock: Quantity
   basePrice: Price
   shopIds: readonly ShopId[]
+  photoKey: string | null
   createdAt: Date
   updatedAt: Date | null
 }
@@ -83,6 +84,7 @@ export class InventoryItem {
         targetStock: targetStockResult.value,
         basePrice: basePriceResult.value,
         shopIds: input.shopIds ?? [],
+        photoKey: null,
         createdAt: new Date(),
         updatedAt: null,
       }),
@@ -118,6 +120,9 @@ export class InventoryItem {
   }
   get shopIds(): readonly ShopId[] {
     return this.props.shopIds
+  }
+  get photoKey(): string | null {
+    return this.props.photoKey
   }
   get createdAt(): Date {
     return this.props.createdAt
@@ -180,6 +185,11 @@ export class InventoryItem {
 
   changeShops(shopIds: ShopId[]): void {
     this.props.shopIds = [...shopIds]
+    this.props.updatedAt = new Date()
+  }
+
+  setPhotoKey(photoKey: string | null): void {
+    this.props.photoKey = photoKey
     this.props.updatedAt = new Date()
   }
 }

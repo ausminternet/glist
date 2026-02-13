@@ -13,6 +13,7 @@ export type ShoppingListItemDto = {
   inventoryItemId: string | null
   createdAt: string
   updatedAt: string | null
+  photoUrl: string | null
 }
 
 export type ShoppingListDto = {

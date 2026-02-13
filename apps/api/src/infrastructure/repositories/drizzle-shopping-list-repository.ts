@@ -45,6 +45,7 @@ function shoppingListItemToDomain(
     quantity: quantityResult.value,
     checked: row.checked,
     shopIds: parseShopIds(shopIds),
+    photoKey: row.photoKey,
     createdAt: row.createdAt!,
     updatedAt: row.updatedAt,
     inventoryItemId: row.inventoryItemId
@@ -67,6 +68,7 @@ function shoppingListItemToSchema(
     quantity: item.quantity,
     quantityUnit: item.quantityUnit,
     checked: item.checked,
+    photoKey: item.photoKey,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
     inventoryItemId: item.inventoryItemId,
