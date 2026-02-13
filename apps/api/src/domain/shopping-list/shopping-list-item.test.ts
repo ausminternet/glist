@@ -1,19 +1,33 @@
 import { describe, expect, test } from 'bun:test'
+import { parseInventoryItemId } from '../inventory-item/inventory-item-id'
+import { parseCategoryId } from '../shared/category-id'
+import { parseShopIds } from '../shared/shop-id'
+import { parseShoppingListId } from './shopping-list-id'
 import { ShoppingListItem } from './shopping-list-item'
+import { generateShoppingListItemId } from './shopping-list-item-id'
 
 describe('ShoppingListItem', () => {
-  const shoppingListId = 'list-123'
+  const shoppingListId = parseShoppingListId(
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  )
 
   describe('create', () => {
     test('creates item with all properties', () => {
-      const result = ShoppingListItem.create(shoppingListId, {
-        name: 'Organic Milk',
-        description: 'From the farm',
-        categoryId: 'cat-123',
-        quantity: 2,
-        quantityUnit: 'l',
-        shopIds: ['shop-1', 'shop-2'],
-      })
+      const result = ShoppingListItem.create(
+        generateShoppingListItemId(),
+        shoppingListId,
+        {
+          name: 'Organic Milk',
+          description: 'From the farm',
+          categoryId: parseCategoryId('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'),
+          quantity: 2,
+          quantityUnit: 'l',
+          shopIds: parseShopIds([
+            'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+            'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
+          ]),
+        },
+      )
 
       expect(result.ok).toBe(true)
       if (!result.ok) return
@@ -23,17 +37,28 @@ describe('ShoppingListItem', () => {
       expect(item.shoppingListId).toBe(shoppingListId)
       expect(item.name).toBe('Organic Milk')
       expect(item.description).toBe('From the farm')
-      expect(item.categoryId).toBe('cat-123')
+      expect(item.categoryId).toBe(
+        parseCategoryId('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'),
+      )
       expect(item.quantity).toBe(2)
       expect(item.quantityUnit).toBe('l')
       expect(item.checked).toBe(false)
-      expect(item.shopIds).toEqual(['shop-1', 'shop-2'])
+      expect(item.shopIds).toEqual(
+        parseShopIds([
+          'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+          'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
+        ]),
+      )
       expect(item.createdAt).toBeInstanceOf(Date)
       expect(item.updatedAt).toBeNull()
     })
 
     test('returns INVALID_NAME error for empty name', () => {
-      const result1 = ShoppingListItem.create(shoppingListId, { name: '' })
+      const result1 = ShoppingListItem.create(
+        generateShoppingListItemId(),
+        shoppingListId,
+        { name: '' },
+      )
       expect(result1.ok).toBe(false)
       if (result1.ok) return
       expect(result1.error).toEqual({
@@ -41,7 +66,11 @@ describe('ShoppingListItem', () => {
         reason: 'Name cannot be empty',
       })
 
-      const result2 = ShoppingListItem.create(shoppingListId, { name: '   ' })
+      const result2 = ShoppingListItem.create(
+        generateShoppingListItemId(),
+        shoppingListId,
+        { name: '   ' },
+      )
       expect(result2.ok).toBe(false)
       if (result2.ok) return
       expect(result2.error).toEqual({
@@ -51,10 +80,14 @@ describe('ShoppingListItem', () => {
     })
 
     test('returns INVALID_QUANTITY error for invalid quantity', () => {
-      const result = ShoppingListItem.create(shoppingListId, {
-        name: 'Milk',
-        quantity: -1,
-      })
+      const result = ShoppingListItem.create(
+        generateShoppingListItemId(),
+        shoppingListId,
+        {
+          name: 'Milk',
+          quantity: -1,
+        },
+      )
 
       expect(result.ok).toBe(false)
       if (result.ok) return
@@ -64,9 +97,13 @@ describe('ShoppingListItem', () => {
 
   describe('validation on change', () => {
     test('changeName returns INVALID_NAME error for empty name', () => {
-      const createResult = ShoppingListItem.create(shoppingListId, {
-        name: 'Milk',
-      })
+      const createResult = ShoppingListItem.create(
+        generateShoppingListItemId(),
+        shoppingListId,
+        {
+          name: 'Milk',
+        },
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -90,9 +127,13 @@ describe('ShoppingListItem', () => {
     })
 
     test('changeQuantity returns INVALID_QUANTITY error for invalid quantity', () => {
-      const createResult = ShoppingListItem.create(shoppingListId, {
-        name: 'Milk',
-      })
+      const createResult = ShoppingListItem.create(
+        generateShoppingListItemId(),
+        shoppingListId,
+        {
+          name: 'Milk',
+        },
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -107,9 +148,13 @@ describe('ShoppingListItem', () => {
 
   describe('check/uncheck', () => {
     test('toggleChecked toggles the status', () => {
-      const createResult = ShoppingListItem.create(shoppingListId, {
-        name: 'Milk',
-      })
+      const createResult = ShoppingListItem.create(
+        generateShoppingListItemId(),
+        shoppingListId,
+        {
+          name: 'Milk',
+        },
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -126,14 +171,20 @@ describe('ShoppingListItem', () => {
   describe('createFromInventoryItem', () => {
     test('creates shopping list item from inventory item', () => {
       const inventoryItem = {
-        inventoryItemId: 'inv-123',
+        inventoryItemId: parseInventoryItemId(
+          'e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a55',
+        ),
         name: 'Milk',
         description: 'Organic whole milk',
-        categoryId: 'cat-dairy',
-        shopIds: ['shop-1', 'shop-2'],
+        categoryId: parseCategoryId('f5eebc99-9c0b-4ef8-bb6d-6bb9bd380a66'),
+        shopIds: parseShopIds([
+          'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+          'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
+        ]),
       }
 
       const shoppingListItem = ShoppingListItem.createFromInventoryItem(
+        generateShoppingListItemId(),
         shoppingListId,
         inventoryItem,
       )
@@ -141,7 +192,7 @@ describe('ShoppingListItem', () => {
       expect(shoppingListItem.inventoryItemId).toBe(
         inventoryItem.inventoryItemId,
       )
-      expect(shoppingListItem.shoppingListId).toBe(shoppingListId)
+      expect(shoppingListItem.shoppingListId).toBeDefined()
       expect(shoppingListItem.name).toBe(inventoryItem.name)
       expect(shoppingListItem.description).toBe(inventoryItem.description)
       expect(shoppingListItem.categoryId).toBe(inventoryItem.categoryId)

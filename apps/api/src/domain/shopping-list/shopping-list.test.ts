@@ -1,12 +1,21 @@
 import { describe, expect, test } from 'bun:test'
+import { parseInventoryItemId } from '../inventory-item/inventory-item-id'
+import { parseCategoryId } from '../shared/category-id'
+import { parseHouseholdId } from '../shared/household-id'
+import { parseShopIds } from '../shared/shop-id'
 import { ShoppingList } from './shopping-list'
+import { generateShoppingListId } from './shopping-list-id'
 
 describe('ShoppingList', () => {
-  const householdId = 'household-123'
+  const householdId = parseHouseholdId('00000000-0000-0000-0000-000000000123')
 
   describe('create', () => {
     test('creates list with name', () => {
-      const result = ShoppingList.create(householdId, 'Weekly Shopping')
+      const result = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        'Weekly Shopping',
+      )
 
       expect(result.ok).toBe(true)
       if (!result.ok) return
@@ -21,7 +30,11 @@ describe('ShoppingList', () => {
     })
 
     test('returns INVALID_NAME error for empty name', () => {
-      const result1 = ShoppingList.create(householdId, '')
+      const result1 = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        '',
+      )
       expect(result1.ok).toBe(false)
       if (result1.ok) return
       expect(result1.error).toEqual({
@@ -29,7 +42,11 @@ describe('ShoppingList', () => {
         reason: 'Name cannot be empty',
       })
 
-      const result2 = ShoppingList.create(householdId, '   ')
+      const result2 = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        '   ',
+      )
       expect(result2.ok).toBe(false)
       if (result2.ok) return
       expect(result2.error).toEqual({
@@ -41,7 +58,11 @@ describe('ShoppingList', () => {
 
   describe('validation on change', () => {
     test('changeName returns INVALID_NAME error for empty name', () => {
-      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        'Weekly Shopping',
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -67,7 +88,11 @@ describe('ShoppingList', () => {
 
   describe('item operations', () => {
     test('addItem adds item to list', () => {
-      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        'Weekly Shopping',
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -84,7 +109,11 @@ describe('ShoppingList', () => {
     })
 
     test('removeItem removes item from list', () => {
-      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        'Weekly Shopping',
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -101,7 +130,11 @@ describe('ShoppingList', () => {
     })
 
     test('removeItem returns SHOPPING_LIST_ITEM_NOT_FOUND error for non-existent item', () => {
-      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        'Weekly Shopping',
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -117,7 +150,11 @@ describe('ShoppingList', () => {
     })
 
     test('getItem returns item by id', () => {
-      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        'Weekly Shopping',
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -135,7 +172,11 @@ describe('ShoppingList', () => {
     })
 
     test('getItem returns SHOPPING_LIST_ITEM_NOT_FOUND error for non-existent item', () => {
-      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        'Weekly Shopping',
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -151,7 +192,11 @@ describe('ShoppingList', () => {
     })
 
     test('findItem returns undefined for non-existent item', () => {
-      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        'Weekly Shopping',
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -162,7 +207,11 @@ describe('ShoppingList', () => {
 
   describe('clearChecked', () => {
     test('removes all checked items', () => {
-      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        'Weekly Shopping',
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
@@ -193,17 +242,26 @@ describe('ShoppingList', () => {
 
   describe('addItemFromInventory', () => {
     test('adds item from inventory to list', () => {
-      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(
+        generateShoppingListId(),
+        householdId,
+        'Weekly Shopping',
+      )
       expect(createResult.ok).toBe(true)
       if (!createResult.ok) return
 
       const list = createResult.value
       const inventoryItem = {
-        inventoryItemId: 'inv-123',
+        inventoryItemId: parseInventoryItemId(
+          '00000000-0000-0000-0000-000000000001',
+        ),
         name: 'Milk',
         description: 'Organic whole milk',
-        categoryId: 'cat-dairy',
-        shopIds: ['shop-1', 'shop-2'],
+        categoryId: parseCategoryId('00000000-0000-0000-0000-000000000002'),
+        shopIds: parseShopIds([
+          '00000000-0000-0000-0000-000000000003',
+          '00000000-0000-0000-0000-000000000004',
+        ]),
       }
 
       const shoppingListItem = list.addItemFromInventory(inventoryItem)

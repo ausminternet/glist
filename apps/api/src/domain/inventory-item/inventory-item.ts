@@ -1,29 +1,33 @@
 import { isBlank } from '@/utils/is-blank'
 import { err, ok, Result, UnitType } from '@glist/shared'
+import { CategoryId } from '../shared/category-id'
+import { HouseholdId } from '../shared/household-id'
 import { Price } from '../shared/price'
 import { Quantity } from '../shared/quantity'
+import { ShopId } from '../shared/shop-id'
 import { InventoryItemError } from './errors'
+import { InventoryItemId } from './inventory-item-id'
 
 export type NewInventoryItemInput = {
   name: string
   description?: string
-  categoryId?: string
+  categoryId?: CategoryId
   targetStock?: number
   targetStockUnit?: string
   basePriceCents?: number
   basePriceUnit?: string
-  shopIds?: string[]
+  shopIds?: ShopId[]
 }
 
 export type InventoryItemProps = {
-  id: string
-  householdId: string
+  id: InventoryItemId
+  householdId: HouseholdId
   name: string
   description: string | null
-  categoryId: string | null
+  categoryId: CategoryId | null
   targetStock: Quantity
   basePrice: Price
-  shopIds: readonly string[]
+  shopIds: readonly ShopId[]
   createdAt: Date
   updatedAt: Date | null
 }
@@ -32,7 +36,8 @@ export class InventoryItem {
   constructor(private props: InventoryItemProps) {}
 
   static create(
-    householdId: string,
+    id: InventoryItemId,
+    householdId: HouseholdId,
     input: NewInventoryItemInput,
   ): Result<InventoryItem, InventoryItemError> {
     if (isBlank(input.name)) {
@@ -59,7 +64,7 @@ export class InventoryItem {
 
     return ok(
       new InventoryItem({
-        id: crypto.randomUUID(),
+        id,
         householdId,
         name: input.name,
         description: input.description ?? null,
@@ -73,10 +78,10 @@ export class InventoryItem {
     )
   }
 
-  get id(): string {
+  get id(): InventoryItemId {
     return this.props.id
   }
-  get householdId(): string {
+  get householdId(): HouseholdId {
     return this.props.householdId
   }
   get name(): string {
@@ -85,7 +90,7 @@ export class InventoryItem {
   get description(): string | null {
     return this.props.description
   }
-  get categoryId(): string | null {
+  get categoryId(): CategoryId | null {
     return this.props.categoryId
   }
   get targetStock(): number | null {
@@ -100,7 +105,7 @@ export class InventoryItem {
   get basePriceUnit(): UnitType | null {
     return this.props.basePrice.unit
   }
-  get shopIds(): readonly string[] {
+  get shopIds(): readonly ShopId[] {
     return this.props.shopIds
   }
   get createdAt(): Date {
@@ -125,7 +130,7 @@ export class InventoryItem {
     this.props.updatedAt = new Date()
   }
 
-  changeCategory(categoryId: string | null): void {
+  changeCategory(categoryId: CategoryId | null): void {
     this.props.categoryId = categoryId
     this.props.updatedAt = new Date()
   }
@@ -162,7 +167,7 @@ export class InventoryItem {
     return ok(undefined)
   }
 
-  changeShops(shopIds: string[]): void {
+  changeShops(shopIds: ShopId[]): void {
     this.props.shopIds = [...shopIds]
     this.props.updatedAt = new Date()
   }

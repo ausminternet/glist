@@ -2,9 +2,13 @@ import {
   InventoryItem,
   InventoryItemProps,
 } from '@/domain/inventory-item/inventory-item'
+import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import { parseCategoryId } from '@/domain/shared/category-id'
+import { parseHouseholdId } from '@/domain/shared/household-id'
 import { Price } from '@/domain/shared/price'
 import { Quantity } from '@/domain/shared/quantity'
+import { parseShopIds } from '@/domain/shared/shop-id'
 import { Database } from '@/infrastructure/persistence'
 import {
   inventoryItems,
@@ -33,14 +37,14 @@ function toDomain(row: InventoryItemRow, shopIds: string[]): InventoryItem {
   }
 
   const props: InventoryItemProps = {
-    id: row.id,
-    householdId: row.householdId,
+    id: parseInventoryItemId(row.id),
+    householdId: parseHouseholdId(row.householdId),
     name: row.name,
     description: row.description,
-    categoryId: row.categoryId,
+    categoryId: row.categoryId ? parseCategoryId(row.categoryId) : null,
     targetStock: targetStockResult.value,
     basePrice: basePriceResult.value,
-    shopIds,
+    shopIds: parseShopIds(shopIds),
     createdAt: row.createdAt!,
     updatedAt: row.updatedAt,
   }

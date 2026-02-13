@@ -1,16 +1,22 @@
 import { isBlank } from '@/utils/is-blank'
 
 import { err, ok, Result } from '@glist/shared'
+import { InventoryItemId } from '../inventory-item/inventory-item-id'
+import { CategoryId } from '../shared/category-id'
+import { HouseholdId } from '../shared/household-id'
+import { ShopId } from '../shared/shop-id'
 import { InvalidNameError, ShoppingListItemNotFoundError } from './errors'
+import { ShoppingListId } from './shopping-list-id'
 import {
   NewShoppingListItemInput,
   ShoppingListItem,
   ShoppingListItemError,
 } from './shopping-list-item'
+import { generateShoppingListItemId } from './shopping-list-item-id'
 
 export type ShoppingListProps = {
-  id: string
-  householdId: string
+  id: ShoppingListId
+  householdId: HouseholdId
   name: string
   items: ShoppingListItem[]
   createdAt: Date
@@ -21,7 +27,8 @@ export class ShoppingList {
   constructor(private props: ShoppingListProps) {}
 
   static create(
-    householdId: string,
+    id: ShoppingListId,
+    householdId: HouseholdId,
     name: string,
   ): Result<ShoppingList, InvalidNameError> {
     if (isBlank(name)) {
@@ -30,7 +37,7 @@ export class ShoppingList {
 
     return ok(
       new ShoppingList({
-        id: crypto.randomUUID(),
+        id,
         householdId,
         name,
         items: [],
@@ -40,10 +47,10 @@ export class ShoppingList {
     )
   }
 
-  get id(): string {
+  get id(): ShoppingListId {
     return this.props.id
   }
-  get householdId(): string {
+  get householdId(): HouseholdId {
     return this.props.householdId
   }
   get name(): string {
@@ -78,7 +85,11 @@ export class ShoppingList {
   addItem(
     input: NewShoppingListItemInput,
   ): Result<ShoppingListItem, ShoppingListItemError> {
-    const itemResult = ShoppingListItem.create(this.props.id, input)
+    const itemResult = ShoppingListItem.create(
+      generateShoppingListItemId(),
+      this.props.id,
+      input,
+    )
     if (!itemResult.ok) {
       return itemResult
     }
@@ -89,13 +100,14 @@ export class ShoppingList {
   }
 
   addItemFromInventory(item: {
-    inventoryItemId: string
+    inventoryItemId: InventoryItemId
     name: string
     description: string | null
-    categoryId: string | null
-    shopIds: string[]
+    categoryId: CategoryId | null
+    shopIds: readonly ShopId[]
   }): ShoppingListItem {
     const shoppingListItem = ShoppingListItem.createFromInventoryItem(
+      generateShoppingListItemId(),
       this.props.id,
       item,
     )

@@ -1,12 +1,18 @@
+import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
+import { parseCategoryId } from '@/domain/shared/category-id'
+import { parseHouseholdId } from '@/domain/shared/household-id'
 import { Quantity } from '@/domain/shared/quantity'
+import { parseShopIds } from '@/domain/shared/shop-id'
 import {
   ShoppingList,
   ShoppingListProps,
 } from '@/domain/shopping-list/shopping-list'
+import { parseShoppingListId } from '@/domain/shopping-list/shopping-list-id'
 import {
   ShoppingListItem,
   ShoppingListItemProps,
 } from '@/domain/shopping-list/shopping-list-item'
+import { parseShoppingListItemId } from '@/domain/shopping-list/shopping-list-item-id'
 import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import { Database } from '@/infrastructure/persistence'
 import {
@@ -31,17 +37,19 @@ function shoppingListItemToDomain(
   }
 
   const props: ShoppingListItemProps = {
-    id: row.id,
-    shoppingListId: row.shoppingListId,
+    id: parseShoppingListItemId(row.id),
+    shoppingListId: parseShoppingListId(row.shoppingListId),
     name: row.name,
     description: row.description,
-    categoryId: row.categoryId,
+    categoryId: row.categoryId ? parseCategoryId(row.categoryId) : null,
     quantity: quantityResult.value,
     checked: row.checked,
-    shopIds,
+    shopIds: parseShopIds(shopIds),
     createdAt: row.createdAt!,
     updatedAt: row.updatedAt,
-    inventoryItemId: row.inventoryItemId,
+    inventoryItemId: row.inventoryItemId
+      ? parseInventoryItemId(row.inventoryItemId)
+      : null,
   }
 
   return new ShoppingListItem(props)
@@ -70,8 +78,8 @@ function shoppingListToDomain(
   items: ShoppingListItem[],
 ): ShoppingList {
   const props: ShoppingListProps = {
-    id: row.id,
-    householdId: row.householdId,
+    id: parseShoppingListId(row.id),
+    householdId: parseHouseholdId(row.householdId),
     name: row.name,
     items,
     createdAt: row.createdAt!,

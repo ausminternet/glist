@@ -1,29 +1,34 @@
 import { isBlank } from '@/utils/is-blank'
 import { err, ok, Result, UnitType } from '@glist/shared'
+import { InventoryItemId } from '../inventory-item/inventory-item-id'
+import { CategoryId } from '../shared/category-id'
 import { Quantity, QuantityError } from '../shared/quantity'
+import { ShopId } from '../shared/shop-id'
 import { InvalidNameError } from './errors'
+import { ShoppingListId } from './shopping-list-id'
+import { ShoppingListItemId } from './shopping-list-item-id'
 
 export type ShoppingListItemError = InvalidNameError | QuantityError
 
 export type NewShoppingListItemInput = {
   name: string
   description?: string
-  categoryId?: string
+  categoryId?: CategoryId
   quantity?: number
   quantityUnit?: string
-  shopIds?: string[]
+  shopIds?: ShopId[]
 }
 
 export type ShoppingListItemProps = {
-  id: string
-  shoppingListId: string
-  inventoryItemId: string | null
+  id: ShoppingListItemId
+  shoppingListId: ShoppingListId
+  inventoryItemId: InventoryItemId | null
   name: string
   description: string | null
-  categoryId: string | null
+  categoryId: CategoryId | null
   quantity: Quantity
   checked: boolean
-  shopIds: readonly string[]
+  shopIds: readonly ShopId[]
   createdAt: Date
   updatedAt: Date | null
 }
@@ -32,7 +37,8 @@ export class ShoppingListItem {
   constructor(private props: ShoppingListItemProps) {}
 
   static create(
-    shoppingListId: string,
+    id: ShoppingListItemId,
+    shoppingListId: ShoppingListId,
     input: NewShoppingListItemInput,
   ): Result<ShoppingListItem, InvalidNameError | QuantityError> {
     if (isBlank(input.name)) {
@@ -50,7 +56,7 @@ export class ShoppingListItem {
 
     return ok(
       new ShoppingListItem({
-        id: crypto.randomUUID(),
+        id,
         shoppingListId,
         name: input.name,
         description: input.description ?? null,
@@ -66,17 +72,18 @@ export class ShoppingListItem {
   }
 
   static createFromInventoryItem(
-    shoppingListId: string,
+    id: ShoppingListItemId,
+    shoppingListId: ShoppingListId,
     inventoryItem: {
-      inventoryItemId: string
+      inventoryItemId: InventoryItemId
       name: string
       description: string | null
-      categoryId: string | null
-      shopIds: readonly string[]
+      categoryId: CategoryId | null
+      shopIds: readonly ShopId[]
     },
   ): ShoppingListItem {
     return new ShoppingListItem({
-      id: crypto.randomUUID(),
+      id,
       inventoryItemId: inventoryItem.inventoryItemId,
       shoppingListId,
       name: inventoryItem.name,
@@ -90,10 +97,10 @@ export class ShoppingListItem {
     })
   }
 
-  get id(): string {
+  get id(): ShoppingListItemId {
     return this.props.id
   }
-  get shoppingListId(): string {
+  get shoppingListId(): ShoppingListId {
     return this.props.shoppingListId
   }
   get name(): string {
@@ -102,7 +109,7 @@ export class ShoppingListItem {
   get description(): string | null {
     return this.props.description
   }
-  get categoryId(): string | null {
+  get categoryId(): CategoryId | null {
     return this.props.categoryId
   }
   get quantity(): number | null {
@@ -114,7 +121,7 @@ export class ShoppingListItem {
   get checked(): boolean {
     return this.props.checked
   }
-  get shopIds(): readonly string[] {
+  get shopIds(): readonly ShopId[] {
     return this.props.shopIds
   }
   get createdAt(): Date {
@@ -124,7 +131,7 @@ export class ShoppingListItem {
     return this.props.updatedAt
   }
 
-  get inventoryItemId(): string | null {
+  get inventoryItemId(): InventoryItemId | null {
     return this.props.inventoryItemId
   }
 
@@ -159,12 +166,12 @@ export class ShoppingListItem {
     return ok(undefined)
   }
 
-  changeCategory(categoryId: string | null): void {
+  changeCategory(categoryId: CategoryId | null): void {
     this.props.categoryId = categoryId
     this.props.updatedAt = new Date()
   }
 
-  changeShops(shopIds: string[]): void {
+  changeShops(shopIds: ShopId[]): void {
     this.props.shopIds = [...shopIds]
     this.props.updatedAt = new Date()
   }
