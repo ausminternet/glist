@@ -1,5 +1,5 @@
+import { parseCategoryId } from '@/domain/category/category-id'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
-import { parseCategoryId } from '@/domain/shared/category-id'
 import { parseHouseholdId } from '@/domain/shared/household-id'
 import { Quantity } from '@/domain/shared/quantity'
 import { parseShopIds } from '@/domain/shared/shop-id'

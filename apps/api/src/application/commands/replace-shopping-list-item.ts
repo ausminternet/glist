@@ -1,4 +1,4 @@
-import { parseCategoryId } from '@/domain/shared/category-id'
+import { parseCategoryId } from '@/domain/category/category-id'
 import { parseShopIds } from '@/domain/shared/shop-id'
 import {
   ShoppingListItemNotFoundError,

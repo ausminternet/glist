@@ -1,7 +1,7 @@
+import { parseCategoryId } from '@/domain/category/category-id'
 import { InventoryItem } from '@/domain/inventory-item/inventory-item'
 import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import { parseCategoryId } from '@/domain/shared/category-id'
 import { parseHouseholdId } from '@/domain/shared/household-id'
 import { parseShopIds } from '@/domain/shared/shop-id'
 import { ShoppingList } from '@/domain/shopping-list/shopping-list'
@@ -51,6 +51,8 @@ function createMockShoppingListRepository(
   return {
     findById: mock(() => Promise.resolve(list)),
     save: mock(() => Promise.resolve()),
+    delete: mock(() => Promise.resolve()),
+    countByHouseholdId: mock(() => Promise.resolve(1)),
   }
 }
 

@@ -21,6 +21,8 @@ function createMockRepository(
   return {
     findById: mock(() => Promise.resolve(list)),
     save: mock(() => Promise.resolve()),
+    delete: mock(() => Promise.resolve()),
+    countByHouseholdId: mock(() => Promise.resolve(1)),
   }
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import { parseCategoryId } from '../category/category-id'
 import { parseInventoryItemId } from '../inventory-item/inventory-item-id'
-import { parseCategoryId } from '../shared/category-id'
 import { parseShopIds } from '../shared/shop-id'
 import { parseShoppingListId } from './shopping-list-id'
 import { ShoppingListItem } from './shopping-list-item'

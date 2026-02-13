@@ -1,8 +1,7 @@
 import { isBlank } from '@/utils/is-blank'
-
 import { err, ok, Result } from '@glist/shared'
+import { CategoryId } from '../category/category-id'
 import { InventoryItemId } from '../inventory-item/inventory-item-id'
-import { CategoryId } from '../shared/category-id'
 import { InvalidNameError } from '../shared/errors'
 import { HouseholdId } from '../shared/household-id'
 import { ShopId } from '../shared/shop-id'

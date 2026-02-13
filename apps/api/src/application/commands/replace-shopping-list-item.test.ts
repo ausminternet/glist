@@ -1,12 +1,12 @@
-import { parseHouseholdId } from '@/domain/shared/household-id';
-import { ShoppingList } from '@/domain/shopping-list/shopping-list';
-import { generateShoppingListId } from '@/domain/shopping-list/shopping-list-id';
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository';
-import { describe, expect, mock, test } from 'bun:test';
+import { parseHouseholdId } from '@/domain/shared/household-id'
+import { ShoppingList } from '@/domain/shopping-list/shopping-list'
+import { generateShoppingListId } from '@/domain/shopping-list/shopping-list-id'
+import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import { describe, expect, mock, test } from 'bun:test'
 import {
-    ReplaceShoppingListItemCommand,
-    ReplaceShoppingListItemCommandHandler,
-} from './replace-shopping-list-item';
+  ReplaceShoppingListItemCommand,
+  ReplaceShoppingListItemCommandHandler,
+} from './replace-shopping-list-item'
 
 function createTestShoppingList(householdId: string) {
   const result = ShoppingList.create(
@@ -24,6 +24,8 @@ function createMockRepository(
   return {
     findById: mock(() => Promise.resolve(list)),
     save: mock(() => Promise.resolve()),
+    delete: mock(() => Promise.resolve()),
+    countByHouseholdId: mock(() => Promise.resolve(1)),
   }
 }
 

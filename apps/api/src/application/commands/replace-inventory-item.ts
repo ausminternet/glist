@@ -1,3 +1,4 @@
+import { parseCategoryId } from '@/domain/category/category-id'
 import { InventoryItemNotFoundError } from '@/domain/inventory-item/errors'
 import {
   ChangeBasePriceError,
@@ -5,7 +6,6 @@ import {
   ChangeTargetStockError,
 } from '@/domain/inventory-item/inventory-item'
 import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import { parseCategoryId } from '@/domain/shared/category-id'
 import { parseShopIds } from '@/domain/shared/shop-id'
 import { err, ok, Result, unitTypes } from '@glist/shared'
 import z from 'zod'

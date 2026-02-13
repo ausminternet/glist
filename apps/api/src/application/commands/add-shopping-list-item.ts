@@ -1,10 +1,10 @@
-import { parseCategoryId } from '@/domain/shared/category-id';
-import { parseShopIds } from '@/domain/shared/shop-id';
-import { CreateShoppingListItemError } from '@/domain/shopping-list/shopping-list-item';
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository';
-import { err, ok, Result, unitTypes } from '@glist/shared';
-import z from 'zod';
-import { RequestContext } from '../shared/request-context';
+import { parseCategoryId } from '@/domain/category/category-id'
+import { parseShopIds } from '@/domain/shared/shop-id'
+import { CreateShoppingListItemError } from '@/domain/shopping-list/shopping-list-item'
+import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import { err, ok, Result, unitTypes } from '@glist/shared'
+import z from 'zod'
+import { RequestContext } from '../shared/request-context'
 
 export const AddShoppingListItemCommandSchema = z.object({
   name: z.string().trim().min(1, 'Name cannot be empty'),
