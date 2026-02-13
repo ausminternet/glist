@@ -12,6 +12,10 @@ import {
   CreateShoppingListCommandSchema,
 } from '@/application/commands/create-shopping-list'
 import { RemoveShoppingListItemCommandHandler } from '@/application/commands/remove-shopping-list-item'
+import {
+  ReplaceShoppingListItemCommandHandler,
+  ReplaceShoppingListItemCommandSchema,
+} from '@/application/commands/replace-shopping-list-item'
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
 import { GetShoppingListQueryHandler } from '@/application/queries/get-shopping-list'
 import { createDb } from '@/infrastructure/persistence'
@@ -212,6 +216,51 @@ shoppingListsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
 
   return c.json({ success: true })
 })
+
+shoppingListsRouter.put(
+  '/:listId/items/:itemId',
+  zValidator('json', ReplaceShoppingListItemCommandSchema),
+  async (c) => {
+    const householdId = c.get('householdId')
+    const listId = c.req.param('listId')
+    const itemId = c.req.param('itemId')
+    const input = c.req.valid('json')
+
+    const db = createDb(c.env.glist_db)
+    const repository = new DrizzleShoppingListRepository(db)
+    const command = new ReplaceShoppingListItemCommandHandler(repository)
+
+    const result = await command.execute(listId, itemId, input, { householdId })
+
+    if (!result.ok) {
+      switch (result.error.type) {
+        case 'SHOPPING_LIST_NOT_FOUND':
+        case 'SHOPPING_LIST_ITEM_NOT_FOUND':
+          console.error('Failed to replace shopping list item', {
+            listId,
+            itemId,
+            householdId,
+            error: result.error,
+          })
+          return c.json({ success: false, error: result.error }, 404)
+        case 'INVALID_NAME':
+        case 'INVALID_QUANTITY':
+        case 'INVALID_UNIT':
+        case 'UNIT_WITHOUT_VALUE':
+          console.error('Failed to replace shopping list item', {
+            listId,
+            itemId,
+            input,
+            householdId,
+            error: result.error,
+          })
+          return c.json({ success: false, error: result.error }, 400)
+      }
+    }
+
+    return c.json({ success: true })
+  },
+)
 
 shoppingListsRouter.delete('/:listId/items/:itemId', async (c) => {
   const householdId = c.get('householdId')
