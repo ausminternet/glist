@@ -2,13 +2,11 @@ import { isBlank } from '@/utils/is-blank'
 import { err, ok, Result, UnitType } from '@glist/shared'
 import { InventoryItemId } from '../inventory-item/inventory-item-id'
 import { CategoryId } from '../shared/category-id'
+import { InvalidNameError } from '../shared/errors'
 import { Quantity, QuantityError } from '../shared/quantity'
 import { ShopId } from '../shared/shop-id'
-import { InvalidNameError } from './errors'
 import { ShoppingListId } from './shopping-list-id'
 import { ShoppingListItemId } from './shopping-list-item-id'
-
-export type ShoppingListItemError = InvalidNameError | QuantityError
 
 export type NewShoppingListItemInput = {
   name: string
@@ -33,6 +31,12 @@ export type ShoppingListItemProps = {
   updatedAt: Date | null
 }
 
+export type CreateShoppingListItemError = InvalidNameError | QuantityError
+
+export type ChangeNameError = InvalidNameError
+
+export type ChangeQuantityError = QuantityError
+
 export class ShoppingListItem {
   constructor(private props: ShoppingListItemProps) {}
 
@@ -40,7 +44,7 @@ export class ShoppingListItem {
     id: ShoppingListItemId,
     shoppingListId: ShoppingListId,
     input: NewShoppingListItemInput,
-  ): Result<ShoppingListItem, InvalidNameError | QuantityError> {
+  ): Result<ShoppingListItem, CreateShoppingListItemError> {
     if (isBlank(input.name)) {
       return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
     }
@@ -135,7 +139,7 @@ export class ShoppingListItem {
     return this.props.inventoryItemId
   }
 
-  changeName(name: string): Result<void, InvalidNameError> {
+  changeName(name: string): Result<void, ChangeNameError> {
     if (isBlank(name)) {
       return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
     }
@@ -153,7 +157,7 @@ export class ShoppingListItem {
   changeQuantity(
     quantity: number | null,
     quantityUnit: string | null,
-  ): Result<void, QuantityError> {
+  ): Result<void, ChangeQuantityError> {
     const quantityResult = Quantity.create(quantity, quantityUnit)
 
     if (!quantityResult.ok) {

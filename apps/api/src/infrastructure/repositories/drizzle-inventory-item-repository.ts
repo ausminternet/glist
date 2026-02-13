@@ -71,6 +71,46 @@ function toSchema(item: InventoryItem): typeof inventoryItems.$inferInsert {
 export class DrizzleInventoryItemRepository implements InventoryItemRepository {
   constructor(private db: Database) {}
 
+  async save(item: InventoryItem): Promise<void> {
+    const itemSchema = toSchema(item)
+
+    const upsertItem = this.db
+      .insert(inventoryItems)
+      .values(itemSchema)
+      .onConflictDoUpdate({
+        target: inventoryItems.id,
+        set: {
+          name: itemSchema.name,
+          description: itemSchema.description,
+          categoryId: itemSchema.categoryId,
+          targetStock: itemSchema.targetStock,
+          targetStockUnit: itemSchema.targetStockUnit,
+          basePriceCents: itemSchema.basePriceCents,
+          basePriceUnit: itemSchema.basePriceUnit,
+          updatedAt: itemSchema.updatedAt,
+        },
+      })
+
+    const deleteShops = this.db
+      .delete(inventoryItemShops)
+      .where(eq(inventoryItemShops.inventoryItemId, item.id))
+
+    const shopAssociations = [...item.shopIds].map((shopId) => ({
+      inventoryItemId: item.id,
+      shopId,
+    }))
+
+    if (shopAssociations.length > 0) {
+      const insertShops = this.db
+        .insert(inventoryItemShops)
+        .values(shopAssociations)
+
+      await this.db.batch([upsertItem, deleteShops, insertShops])
+    } else {
+      await this.db.batch([upsertItem, deleteShops])
+    }
+  }
+
   async findAllByHouseholdId(householdId: string): Promise<InventoryItem[]> {
     const itemRows = await this.db
       .select()

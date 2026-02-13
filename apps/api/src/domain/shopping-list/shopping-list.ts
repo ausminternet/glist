@@ -3,14 +3,15 @@ import { isBlank } from '@/utils/is-blank'
 import { err, ok, Result } from '@glist/shared'
 import { InventoryItemId } from '../inventory-item/inventory-item-id'
 import { CategoryId } from '../shared/category-id'
+import { InvalidNameError } from '../shared/errors'
 import { HouseholdId } from '../shared/household-id'
 import { ShopId } from '../shared/shop-id'
-import { InvalidNameError, ShoppingListItemNotFoundError } from './errors'
+import { ShoppingListItemNotFoundError } from './errors'
 import { ShoppingListId } from './shopping-list-id'
 import {
+  CreateShoppingListItemError,
   NewShoppingListItemInput,
   ShoppingListItem,
-  ShoppingListItemError,
 } from './shopping-list-item'
 import { generateShoppingListItemId } from './shopping-list-item-id'
 
@@ -23,6 +24,16 @@ export type ShoppingListProps = {
   updatedAt: Date | null
 }
 
+export type CreateShoppingListError = InvalidNameError
+
+export type ChangeNameError = InvalidNameError
+
+export type AddItemError = CreateShoppingListItemError
+
+export type RemoveItemError = ShoppingListItemNotFoundError
+
+export type GetItemError = ShoppingListItemNotFoundError
+
 export class ShoppingList {
   constructor(private props: ShoppingListProps) {}
 
@@ -30,7 +41,7 @@ export class ShoppingList {
     id: ShoppingListId,
     householdId: HouseholdId,
     name: string,
-  ): Result<ShoppingList, InvalidNameError> {
+  ): Result<ShoppingList, CreateShoppingListError> {
     if (isBlank(name)) {
       return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
     }
@@ -66,7 +77,7 @@ export class ShoppingList {
     return this.props.updatedAt
   }
 
-  changeName(name: string): Result<void, InvalidNameError> {
+  changeName(name: string): Result<void, ChangeNameError> {
     if (isBlank(name)) {
       return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
     }
@@ -84,7 +95,7 @@ export class ShoppingList {
 
   addItem(
     input: NewShoppingListItemInput,
-  ): Result<ShoppingListItem, ShoppingListItemError> {
+  ): Result<ShoppingListItem, AddItemError> {
     const itemResult = ShoppingListItem.create(
       generateShoppingListItemId(),
       this.props.id,
@@ -116,7 +127,7 @@ export class ShoppingList {
     return shoppingListItem
   }
 
-  removeItem(itemId: string): Result<void, ShoppingListItemNotFoundError> {
+  removeItem(itemId: string): Result<void, RemoveItemError> {
     const index = this.props.items.findIndex((item) => item.id === itemId)
     if (index === -1) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
@@ -128,9 +139,7 @@ export class ShoppingList {
     return ok(undefined)
   }
 
-  getItem(
-    itemId: string,
-  ): Result<ShoppingListItem, ShoppingListItemNotFoundError> {
+  getItem(itemId: string): Result<ShoppingListItem, GetItemError> {
     const item = this.props.items.find((item) => item.id === itemId)
     if (!item) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })

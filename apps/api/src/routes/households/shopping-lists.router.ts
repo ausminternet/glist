@@ -25,12 +25,12 @@ shoppingListsRouter.get('/:id', async (c) => {
   if (!result.ok) {
     switch (result.error.type) {
       case 'SHOPPING_LIST_NOT_FOUND':
-        console.error('ShoppingList not found', {
-          id: result.error.id,
+        console.error('Failed to get shopping list', {
+          id,
           householdId,
+          error: result.error,
         })
-
-        return c.json({ success: false, error: 'Shopping list not found' }, 404)
+        return c.json({ success: false, error: result.error }, 404)
     }
   }
 
@@ -53,13 +53,12 @@ shoppingListsRouter.post(
     if (!result.ok) {
       switch (result.error.type) {
         case 'INVALID_NAME':
-          console.error('Invalid shopping list name', {
+          console.error('Failed to create shopping list due to invalid name', {
             name,
             householdId,
-            reason: result.error.reason,
+            error: result.error,
           })
-
-          return c.json({ success: false, error: result.error.reason }, 400)
+          return c.json({ success: false, error: result.error }, 400)
       }
     }
 
@@ -79,30 +78,19 @@ shoppingListsRouter.post('/:listId/items/:itemId/check', async (c) => {
     { shoppingListId: listId, itemId },
     { householdId },
   )
+
   if (!result.ok) {
-    if (result.error.type === 'SHOPPING_LIST_NOT_FOUND') {
-      console.error('Shopping list not found', {
-        shoppingListId: listId,
-        householdId,
-      })
-
-      return c.json({ success: false, error: 'Shopping list not found' }, 404)
+    switch (result.error.type) {
+      case 'SHOPPING_LIST_NOT_FOUND':
+      case 'SHOPPING_LIST_ITEM_NOT_FOUND':
+        console.error('Failed to check shopping list item', {
+          listId,
+          itemId,
+          householdId,
+          error: result.error,
+        })
+        return c.json({ success: false, error: result.error }, 404)
     }
-
-    if (result.error.type === 'SHOPPING_LIST_ITEM_NOT_FOUND') {
-      console.error('Shopping list item not found', {
-        shoppingListId: listId,
-        itemId,
-        householdId,
-      })
-
-      return c.json(
-        { success: false, error: 'Shopping list item not found' },
-        404,
-      )
-    }
-
-    return c.json({ success: false, error: 'An error occurred' }, 500)
   }
 
   return c.json({ success: true })
@@ -120,27 +108,18 @@ shoppingListsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
     { shoppingListId: listId, itemId },
     { householdId },
   )
+
   if (!result.ok) {
     switch (result.error.type) {
       case 'SHOPPING_LIST_NOT_FOUND':
-        console.error('Shopping list not found', {
-          shoppingListId: listId,
-          householdId,
-        })
-
-        return c.json({ success: false, error: 'Shopping list not found' }, 404)
-
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
-        console.error('Shopping list item not found', {
-          shoppingListId: listId,
+        console.error('Failed to check shopping list item', {
+          listId,
           itemId,
           householdId,
+          error: result.error,
         })
-
-        return c.json(
-          { success: false, error: 'Shopping list item not found' },
-          404,
-        )
+        return c.json({ success: false, error: result.error }, 404)
     }
   }
 

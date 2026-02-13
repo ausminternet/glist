@@ -1,0 +1,33 @@
+meta {
+  name: POST create
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/households/:householdId/inventory-items
+  body: json
+  auth: inherit
+}
+
+params:path {
+  householdId: d80457d8-c534-4d7f-9c2c-51ece5f1e319
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+body:json {
+  {
+    "name": "Milch",
+    "description": "Bio Vollmilch",
+    "targetStock": 2,
+    "targetStockUnit": "l"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

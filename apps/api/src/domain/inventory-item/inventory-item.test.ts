@@ -82,7 +82,10 @@ describe('InventoryItem', () => {
       )
       expect(result1.ok).toBe(false)
       if (result1.ok) return
-      expect(result1.error).toEqual({ type: 'INVALID_NAME' })
+      expect(result1.error).toEqual({
+        type: 'INVALID_NAME',
+        reason: 'Name cannot be empty',
+      })
 
       const result2 = InventoryItem.create(
         generateInventoryItemId(),
@@ -91,7 +94,10 @@ describe('InventoryItem', () => {
       )
       expect(result2.ok).toBe(false)
       if (result2.ok) return
-      expect(result2.error).toEqual({ type: 'INVALID_NAME' })
+      expect(result2.error).toEqual({
+        type: 'INVALID_NAME',
+        reason: 'Name cannot be empty',
+      })
     })
 
     test('returns INVALID_QUANTITY error for invalid targetStock', () => {
@@ -198,12 +204,18 @@ describe('InventoryItem', () => {
       const result1 = item.changeName('')
       expect(result1.ok).toBe(false)
       if (result1.ok) return
-      expect(result1.error).toEqual({ type: 'INVALID_NAME' })
+      expect(result1.error).toEqual({
+        type: 'INVALID_NAME',
+        reason: 'Name cannot be empty',
+      })
 
       const result2 = item.changeName('   ')
       expect(result2.ok).toBe(false)
       if (result2.ok) return
-      expect(result2.error).toEqual({ type: 'INVALID_NAME' })
+      expect(result2.error).toEqual({
+        type: 'INVALID_NAME',
+        reason: 'Name cannot be empty',
+      })
     })
 
     test('changeTargetStock validates quantity', () => {

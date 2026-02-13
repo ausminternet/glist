@@ -1,11 +1,15 @@
-import { InvalidNameError } from '@/domain/shopping-list/errors'
-import { ShoppingList } from '@/domain/shopping-list/shopping-list'
+import { parseHouseholdId } from '@/domain/shared/household-id'
+import {
+  CreateShoppingListError,
+  ShoppingList,
+} from '@/domain/shopping-list/shopping-list'
+import { generateShoppingListId } from '@/domain/shopping-list/shopping-list-id'
 import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import { err, ok, Result } from '@glist/shared'
 import z from 'zod'
 import { RequestContext } from '../shared/request-context'
 
-type CreateShoppingListCommandError = InvalidNameError
+type CreateShoppingListCommandError = CreateShoppingListError
 
 export const CreateShoppingListCommandSchema = z.object({
   name: z.string().trim().nonempty('Name cannot be empty'),
@@ -23,9 +27,13 @@ export class CreateShoppingListCommandHandler {
     context: RequestContext,
   ): Promise<Result<string, CreateShoppingListCommandError>> {
     const { name } = command
-    const { householdId } = context
+    const householdId = parseHouseholdId(context.householdId)
 
-    const newList = ShoppingList.create(householdId, name)
+    const newList = ShoppingList.create(
+      generateShoppingListId(),
+      householdId,
+      name,
+    )
 
     if (!newList.ok) {
       return err(newList.error)

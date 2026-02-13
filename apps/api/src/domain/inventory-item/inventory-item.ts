@@ -1,11 +1,11 @@
 import { isBlank } from '@/utils/is-blank'
 import { err, ok, Result, UnitType } from '@glist/shared'
 import { CategoryId } from '../shared/category-id'
+import { InvalidNameError } from '../shared/errors'
 import { HouseholdId } from '../shared/household-id'
-import { Price } from '../shared/price'
-import { Quantity } from '../shared/quantity'
+import { Price, PriceError } from '../shared/price'
+import { Quantity, QuantityError } from '../shared/quantity'
 import { ShopId } from '../shared/shop-id'
-import { InventoryItemError } from './errors'
 import { InventoryItemId } from './inventory-item-id'
 
 export type NewInventoryItemInput = {
@@ -32,6 +32,17 @@ export type InventoryItemProps = {
   updatedAt: Date | null
 }
 
+export type CreateInventoryItemError =
+  | InvalidNameError
+  | QuantityError
+  | PriceError
+
+export type ChangeNameError = InvalidNameError
+
+export type ChangeTargetStockError = QuantityError
+
+export type ChangeBasePriceError = PriceError
+
 export class InventoryItem {
   constructor(private props: InventoryItemProps) {}
 
@@ -39,9 +50,9 @@ export class InventoryItem {
     id: InventoryItemId,
     householdId: HouseholdId,
     input: NewInventoryItemInput,
-  ): Result<InventoryItem, InventoryItemError> {
+  ): Result<InventoryItem, CreateInventoryItemError> {
     if (isBlank(input.name)) {
-      return err({ type: 'INVALID_NAME' })
+      return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
     }
 
     const targetStockResult = Quantity.create(
@@ -115,9 +126,9 @@ export class InventoryItem {
     return this.props.updatedAt
   }
 
-  changeName(name: string): Result<void, InventoryItemError> {
+  changeName(name: string): Result<void, ChangeNameError> {
     if (isBlank(name)) {
-      return err({ type: 'INVALID_NAME' })
+      return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
     }
     this.props.name = name
     this.props.updatedAt = new Date()
@@ -138,7 +149,7 @@ export class InventoryItem {
   changeTargetStock(
     targetStock: number | null,
     targetStockUnit: string | null,
-  ): Result<void, InventoryItemError> {
+  ): Result<void, ChangeTargetStockError> {
     const targetStockResult = Quantity.create(targetStock, targetStockUnit)
 
     if (!targetStockResult.ok) {
@@ -154,7 +165,7 @@ export class InventoryItem {
   changeBasePrice(
     basePriceCents: number | null,
     basePriceUnit: string | null,
-  ): Result<void, InventoryItemError> {
+  ): Result<void, ChangeBasePriceError> {
     const basePriceResult = Price.create(basePriceCents, basePriceUnit)
 
     if (!basePriceResult.ok) {
