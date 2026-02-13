@@ -1,6 +1,6 @@
 import { UnitType } from '@glist/shared'
 
-export type ShoppingListItemDto = {
+export type ShoppingListItemView = {
   id: string
   shoppingListId: string
   name: string
@@ -16,11 +16,11 @@ export type ShoppingListItemDto = {
   photoUrl: string | null
 }
 
-export type ShoppingListDto = {
+export type ShoppingListView = {
   id: string
   householdId: string
   name: string
-  items: ShoppingListItemDto[]
+  items: ShoppingListItemView[]
   createdAt: string
   updatedAt: string | null
 }

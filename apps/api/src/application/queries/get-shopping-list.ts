@@ -1,5 +1,5 @@
-import { ShoppingListDtoRepository } from '@/domain/shopping-list/shopping-list-dto-repository'
-import { ShoppingListDto } from '@glist/dtos'
+import { ShoppingListQueryRepository } from '@/domain/shopping-list/shopping-list-query-repository'
+import { ShoppingListView } from '@glist/views'
 import { err, ok, Result } from '@glist/shared'
 import { RequestContext } from '../shared/request-context'
 
@@ -10,12 +10,12 @@ export interface GetShoppingListQuery {
 }
 
 export class GetShoppingListQueryHandler {
-  constructor(private repository: ShoppingListDtoRepository) {}
+  constructor(private repository: ShoppingListQueryRepository) {}
 
   async execute(
     command: GetShoppingListQuery,
     context: RequestContext,
-  ): Promise<Result<ShoppingListDto, GetShoppingListQueryError>> {
+  ): Promise<Result<ShoppingListView, GetShoppingListQueryError>> {
     const { id } = command
     const { householdId } = context
 

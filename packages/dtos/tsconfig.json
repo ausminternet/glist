@@ -1,16 +1,1 @@
-{
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "skipLibCheck": true,
-    "lib": ["ESNext"],
-    "declaration": true,
-    "declarationMap": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
-}
+../views/dist../views/src../views/src/**/*../views/node_modules../views/dist

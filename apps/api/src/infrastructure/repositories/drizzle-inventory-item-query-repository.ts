@@ -1,15 +1,15 @@
-import { InventoryItemDtoRepository } from '@/domain/inventory-item/inventory-item-dto-repository'
-import { InventoryItemDto } from '@glist/dtos'
+import { InventoryItemQueryRepository } from '@/domain/inventory-item/inventory-item-query-repository'
+import { InventoryItemView } from '@glist/views'
 import { asc, eq, inArray } from 'drizzle-orm'
 import { Database } from '../persistence'
 import { inventoryItems, inventoryItemShops } from '../persistence/schema'
 
 type InventoryItemRow = typeof inventoryItems.$inferSelect
 
-function inventoryItemRowToDto(
+function inventoryItemRowToView(
   row: InventoryItemRow,
   shopIds: string[],
-): InventoryItemDto {
+): InventoryItemView {
   return {
     id: row.id,
     householdId: row.householdId,
@@ -27,10 +27,12 @@ function inventoryItemRowToDto(
   }
 }
 
-export class DrizzleInventoryItemDtoRepository implements InventoryItemDtoRepository {
+export class DrizzleInventoryItemQueryRepository implements InventoryItemQueryRepository {
   constructor(private db: Database) {}
 
-  async findAllByHouseholdId(householdId: string): Promise<InventoryItemDto[]> {
+  async findAllByHouseholdId(
+    householdId: string,
+  ): Promise<InventoryItemView[]> {
     const rows = await this.db
       .select()
       .from(inventoryItems)
@@ -56,7 +58,7 @@ export class DrizzleInventoryItemDtoRepository implements InventoryItemDtoReposi
 
     return rows.map((row) => {
       const shopIds = shopIdsByItemId.get(row.id) ?? []
-      return inventoryItemRowToDto(row, shopIds)
+      return inventoryItemRowToView(row, shopIds)
     })
   }
 }

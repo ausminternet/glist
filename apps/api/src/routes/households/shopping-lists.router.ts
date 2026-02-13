@@ -24,7 +24,7 @@ import { UploadShoppingListItemPhotoCommandHandler } from '@/application/command
 import { GetShoppingListQueryHandler } from '@/application/queries/get-shopping-list'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
-import { DrizzleShoppingListDtoRepository } from '@/infrastructure/repositories/drizzle-shopping-list-dto-repository'
+import { DrizzleShoppingListQueryRepository } from '@/infrastructure/repositories/drizzle-shopping-list-query-repository'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import { zValidator } from '@hono/zod-validator'
@@ -37,7 +37,7 @@ shoppingListsRouter.get('/:id', async (c) => {
   const householdId = c.get('householdId')
   const id = c.req.param('id')
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleShoppingListDtoRepository(db)
+  const repository = new DrizzleShoppingListQueryRepository(db)
   const query = new GetShoppingListQueryHandler(repository)
 
   const result = await query.execute({ id }, { householdId })

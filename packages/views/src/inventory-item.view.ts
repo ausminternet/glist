@@ -1,6 +1,6 @@
 import { UnitType } from '@glist/shared'
 
-export type InventoryItemDto = {
+export type InventoryItemView = {
   id: string
   householdId: string
   name: string

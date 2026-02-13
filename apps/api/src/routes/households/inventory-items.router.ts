@@ -11,7 +11,7 @@ import {
 import { UploadInventoryItemPhotoCommandHandler } from '@/application/commands/upload-inventory-item-photo'
 import { GetInventoryItemsQueryHandler } from '@/application/queries/get-inventory-items'
 import { createDb } from '@/infrastructure/persistence'
-import { DrizzleInventoryItemDtoRepository } from '@/infrastructure/repositories/drizzle-inventory-item-dto-repository'
+import { DrizzleInventoryItemQueryRepository } from '@/infrastructure/repositories/drizzle-inventory-item-query-repository'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import { zValidator } from '@hono/zod-validator'
@@ -23,7 +23,7 @@ const inventoryItemsRouter = new Hono<HouseholdContext>()
 inventoryItemsRouter.get('/', async (c) => {
   const householdId = c.get('householdId')
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleInventoryItemDtoRepository(db)
+  const repository = new DrizzleInventoryItemQueryRepository(db)
   const query = new GetInventoryItemsQueryHandler(repository)
 
   const items = await query.execute({ householdId })

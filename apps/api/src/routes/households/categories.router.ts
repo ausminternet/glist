@@ -12,7 +12,7 @@ import {
   ReplaceCategoryCommandSchema,
 } from '@/application/commands/replace-category'
 import { createDb } from '@/infrastructure/persistence'
-import { DrizzleCategoryDtoRepository } from '@/infrastructure/repositories/drizzle-category-dto-repository'
+import { DrizzleCategoryQueryRepository } from '@/infrastructure/repositories/drizzle-category-query-repository'
 import { DrizzleCategoryRepository } from '@/infrastructure/repositories/drizzle-category-repository'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
@@ -23,7 +23,7 @@ const categoriesRouter = new Hono<HouseholdContext>()
 categoriesRouter.get('/', async (c) => {
   const householdId = c.get('householdId')
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleCategoryDtoRepository(db)
+  const repository = new DrizzleCategoryQueryRepository(db)
 
   const categories = await repository.findAllByHouseholdId(householdId)
 

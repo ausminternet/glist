@@ -1,29 +1,29 @@
 import {
-    CreateShopCommandHandler,
-    CreateShopCommandSchema,
-} from '@/application/commands/create-shop';
-import { DeleteShopCommandHandler } from '@/application/commands/delete-shop';
+  CreateShopCommandHandler,
+  CreateShopCommandSchema,
+} from '@/application/commands/create-shop'
+import { DeleteShopCommandHandler } from '@/application/commands/delete-shop'
 import {
-    ReorderShopsCommandHandler,
-    ReorderShopsCommandSchema,
-} from '@/application/commands/reorder-shops';
+  ReorderShopsCommandHandler,
+  ReorderShopsCommandSchema,
+} from '@/application/commands/reorder-shops'
 import {
-    ReplaceShopCommandHandler,
-    ReplaceShopCommandSchema,
-} from '@/application/commands/replace-shop';
-import { createDb } from '@/infrastructure/persistence';
-import { DrizzleShopDtoRepository } from '@/infrastructure/repositories/drizzle-shop-dto-repository';
-import { DrizzleShopRepository } from '@/infrastructure/repositories/drizzle-shop-repository';
-import { zValidator } from '@hono/zod-validator';
-import { Hono } from 'hono';
-import { HouseholdContext } from './context';
+  ReplaceShopCommandHandler,
+  ReplaceShopCommandSchema,
+} from '@/application/commands/replace-shop'
+import { createDb } from '@/infrastructure/persistence'
+import { DrizzleShopQueryRepository } from '@/infrastructure/repositories/drizzle-shop-query-repository'
+import { DrizzleShopRepository } from '@/infrastructure/repositories/drizzle-shop-repository'
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import { HouseholdContext } from './context'
 
 const shopsRouter = new Hono<HouseholdContext>()
 
 shopsRouter.get('/', async (c) => {
   const householdId = c.get('householdId')
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleShopDtoRepository(db)
+  const repository = new DrizzleShopQueryRepository(db)
 
   const shops = await repository.findAllByHouseholdId(householdId)
 

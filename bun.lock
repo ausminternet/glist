@@ -11,8 +11,8 @@
     "apps/api": {
       "name": "api",
       "dependencies": {
-        "@glist/dtos": "workspace:*",
         "@glist/shared": "workspace:*",
+        "@glist/views": "workspace:*",
         "@hono/zod-validator": "^0.7.6",
         "drizzle-orm": "^0.45.1",
         "hono": "^4.11.9",
@@ -25,19 +25,19 @@
         "wrangler": "^4.65.0",
       },
     },
-    "packages/dtos": {
-      "name": "@glist/dtos",
-      "version": "1.0.0",
-      "dependencies": {
-        "@glist/shared": "workspace:*",
-      },
+    "packages/shared": {
+      "name": "@glist/shared",
+      "version": "0.0.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
-    "packages/shared": {
-      "name": "@glist/shared",
-      "version": "0.0.1",
+    "packages/views": {
+      "name": "@glist/views",
+      "version": "1.0.0",
+      "dependencies": {
+        "@glist/shared": "workspace:*",
+      },
       "devDependencies": {
         "typescript": "^5.0.0",
       },
@@ -120,9 +120,9 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
-    "@glist/dtos": ["@glist/dtos@workspace:packages/dtos"],
-
     "@glist/shared": ["@glist/shared@workspace:packages/shared"],
+
+    "@glist/views": ["@glist/views@workspace:packages/views"],
 
     "@hono/zod-validator": ["@hono/zod-validator@0.7.6", "", { "peerDependencies": { "hono": ">=3.9.0", "zod": "^3.25.0 || ^4.0.0" } }, "sha512-Io1B6d011Gj1KknV4rXYz4le5+5EubcWEU/speUjuw9XMMIaP3n78yXLhjd2A3PXaXaUwEAluOiAyLqhBEJgsw=="],
 

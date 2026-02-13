@@ -1,12 +1,12 @@
-import { CategoryDtoRepository } from '@/domain/category/category-dto-repository'
-import { CategoryDto } from '@glist/dtos'
+import { CategoryQueryRepository } from '@/domain/category/category-query-repository'
+import { CategoryView } from '@glist/views'
 import { asc, eq } from 'drizzle-orm'
 import { Database } from '../persistence'
 import { categories } from '../persistence/schema'
 
 type CategoryRow = typeof categories.$inferSelect
 
-function categoryRowToDto(row: CategoryRow): CategoryDto {
+function categoryRowToView(row: CategoryRow): CategoryView {
   return {
     id: row.id,
     householdId: row.householdId,
@@ -16,16 +16,16 @@ function categoryRowToDto(row: CategoryRow): CategoryDto {
   }
 }
 
-export class DrizzleCategoryDtoRepository implements CategoryDtoRepository {
+export class DrizzleCategoryQueryRepository implements CategoryQueryRepository {
   constructor(private db: Database) {}
 
-  async findAllByHouseholdId(householdId: string): Promise<CategoryDto[]> {
+  async findAllByHouseholdId(householdId: string): Promise<CategoryView[]> {
     const rows = await this.db
       .select()
       .from(categories)
       .where(eq(categories.householdId, householdId))
       .orderBy(asc(categories.sortOrder))
 
-    return rows.map(categoryRowToDto)
+    return rows.map(categoryRowToView)
   }
 }

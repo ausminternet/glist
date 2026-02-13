@@ -1,5 +1,5 @@
-import { ShoppingListDtoRepository } from '@/domain/shopping-list/shopping-list-dto-repository'
-import { ShoppingListDto, ShoppingListItemDto } from '@glist/dtos'
+import { ShoppingListQueryRepository } from '@/domain/shopping-list/shopping-list-query-repository'
+import { ShoppingListItemView, ShoppingListView } from '@glist/views'
 import { asc, eq, inArray } from 'drizzle-orm'
 import { Database } from '../persistence'
 import {
@@ -11,10 +11,10 @@ import {
 type ShoppingListRow = typeof shoppingLists.$inferSelect
 type ShoppingListItemRow = typeof shoppingListItems.$inferSelect
 
-function shoppingListItemToDto(
+function shoppingListItemToView(
   itemRow: ShoppingListItemRow,
   shopIds: string[],
-): ShoppingListItemDto {
+): ShoppingListItemView {
   return {
     id: itemRow.id,
     shoppingListId: itemRow.shoppingListId,
@@ -32,10 +32,10 @@ function shoppingListItemToDto(
   }
 }
 
-function shoppingListToDto(
+function shoppingListToView(
   listRow: ShoppingListRow,
-  items: ShoppingListItemDto[],
-): ShoppingListDto {
+  items: ShoppingListItemView[],
+): ShoppingListView {
   return {
     id: listRow.id,
     householdId: listRow.householdId,
@@ -46,10 +46,10 @@ function shoppingListToDto(
   }
 }
 
-export class DrizzleShoppingListDtoRepository implements ShoppingListDtoRepository {
+export class DrizzleShoppingListQueryRepository implements ShoppingListQueryRepository {
   constructor(private db: Database) {}
 
-  async findById(id: string): Promise<ShoppingListDto | null> {
+  async findById(id: string): Promise<ShoppingListView | null> {
     const listRow = await this.db
       .select()
       .from(shoppingLists)
@@ -83,9 +83,9 @@ export class DrizzleShoppingListDtoRepository implements ShoppingListDtoReposito
     }
 
     const items = itemRows.map((row) =>
-      shoppingListItemToDto(row, shopsByItemId.get(row.id) ?? []),
+      shoppingListItemToView(row, shopsByItemId.get(row.id) ?? []),
     )
 
-    return shoppingListToDto(listRow, items)
+    return shoppingListToView(listRow, items)
   }
 }

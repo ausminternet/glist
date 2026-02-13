@@ -1,4 +1,4 @@
-export type CategoryDto = {
+export type ShopView = {
   id: string
   householdId: string
   name: string
