@@ -7,6 +7,7 @@ import {
   AddShoppingListItemFromInventoryCommandSchema,
 } from '@/application/commands/add-shopping-list-item-from-inventory'
 import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
+import { ClearCheckedItemsCommandHandler } from '@/application/commands/clear-checked-items'
 import {
   CreateShoppingListCommandHandler,
   CreateShoppingListCommandSchema,
@@ -207,6 +208,30 @@ shoppingListsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
         console.error('Failed to uncheck shopping list item', {
           listId,
           itemId,
+          householdId,
+          error: result.error,
+        })
+        return c.json({ success: false, error: result.error }, 404)
+    }
+  }
+
+  return c.json({ success: true })
+})
+
+shoppingListsRouter.post('/:listId/items/clear-checked', async (c) => {
+  const householdId = c.get('householdId')
+  const listId = c.req.param('listId')
+  const db = createDb(c.env.glist_db)
+  const repository = new DrizzleShoppingListRepository(db)
+  const command = new ClearCheckedItemsCommandHandler(repository)
+
+  const result = await command.execute(listId, { householdId })
+
+  if (!result.ok) {
+    switch (result.error.type) {
+      case 'SHOPPING_LIST_NOT_FOUND':
+        console.error('Failed to clear checked items', {
+          listId,
           householdId,
           error: result.error,
         })
