@@ -111,6 +111,27 @@ export class DrizzleInventoryItemRepository implements InventoryItemRepository {
     }
   }
 
+  async findById(id: string): Promise<InventoryItem | null> {
+    const row = await this.db
+      .select()
+      .from(inventoryItems)
+      .where(eq(inventoryItems.id, id))
+      .get()
+
+    if (!row) {
+      return null
+    }
+
+    const shopAssociations = await this.db
+      .select()
+      .from(inventoryItemShops)
+      .where(eq(inventoryItemShops.inventoryItemId, id))
+
+    const shopIds = shopAssociations.map((r) => r.shopId)
+
+    return toDomain(row, shopIds)
+  }
+
   async findAllByHouseholdId(householdId: string): Promise<InventoryItem[]> {
     const itemRows = await this.db
       .select()

@@ -2,6 +2,10 @@ import {
   AddShoppingListItemCommandHandler,
   AddShoppingListItemCommandSchema,
 } from '@/application/commands/add-shopping-list-item'
+import {
+  AddShoppingListItemFromInventoryCommandHandler,
+  AddShoppingListItemFromInventoryCommandSchema,
+} from '@/application/commands/add-shopping-list-item-from-inventory'
 import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
 import {
   CreateShoppingListCommandHandler,
@@ -10,6 +14,7 @@ import {
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
 import { GetShoppingListQueryHandler } from '@/application/queries/get-shopping-list'
 import { createDb } from '@/infrastructure/persistence'
+import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { DrizzleShoppingListDtoRepository } from '@/infrastructure/repositories/drizzle-shopping-list-dto-repository'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { zValidator } from '@hono/zod-validator'
@@ -104,6 +109,42 @@ shoppingListsRouter.post(
             error: result.error,
           })
           return c.json({ success: false, error: result.error }, 400)
+      }
+    }
+
+    return c.json({ success: true, data: { id: result.value } }, 201)
+  },
+)
+
+shoppingListsRouter.post(
+  '/:listId/items/from-inventory',
+  zValidator('json', AddShoppingListItemFromInventoryCommandSchema),
+  async (c) => {
+    const householdId = c.get('householdId')
+    const listId = c.req.param('listId')
+    const input = c.req.valid('json')
+
+    const db = createDb(c.env.glist_db)
+    const shoppingListRepository = new DrizzleShoppingListRepository(db)
+    const inventoryItemRepository = new DrizzleInventoryItemRepository(db)
+    const command = new AddShoppingListItemFromInventoryCommandHandler(
+      shoppingListRepository,
+      inventoryItemRepository,
+    )
+
+    const result = await command.execute(listId, input, { householdId })
+
+    if (!result.ok) {
+      switch (result.error.type) {
+        case 'SHOPPING_LIST_NOT_FOUND':
+        case 'INVENTORY_ITEM_NOT_FOUND':
+          console.error('Failed to add shopping list item from inventory', {
+            listId,
+            inventoryItemId: input.inventoryItemId,
+            householdId,
+            error: result.error,
+          })
+          return c.json({ success: false, error: result.error }, 404)
       }
     }
 
