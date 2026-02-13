@@ -3,7 +3,7 @@ CREATE TABLE `categories` (
 	`name` text NOT NULL,
 	`household_id` text NOT NULL,
 	`sort_order` real DEFAULT 1000,
-	`created_at` integer,
+	`created_at` integer NOT NULL,
 	`updated_at` integer,
 	FOREIGN KEY (`household_id`) REFERENCES `households`(`id`) ON UPDATE no action ON DELETE cascade
 );
@@ -13,7 +13,7 @@ CREATE INDEX `idx_categories_household_name` ON `categories` (`household_id`,`na
 CREATE TABLE `households` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
-	`created_at` integer,
+	`created_at` integer NOT NULL,
 	`updated_at` integer
 );
 --> statement-breakpoint
@@ -35,7 +35,7 @@ CREATE TABLE `inventory_items` (
 	`target_stock_unit` text,
 	`base_price_unit` text,
 	`base_price_cents` integer,
-	`created_at` integer,
+	`created_at` integer NOT NULL,
 	`updated_at` integer,
 	FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON UPDATE no action ON DELETE set null,
 	FOREIGN KEY (`household_id`) REFERENCES `households`(`id`) ON UPDATE no action ON DELETE cascade
@@ -61,7 +61,7 @@ CREATE TABLE `shopping_list_items` (
 	`quantity` real,
 	`quantity_unit` text,
 	`checked` integer DEFAULT false NOT NULL,
-	`created_at` integer,
+	`created_at` integer NOT NULL,
 	`updated_at` integer,
 	FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON UPDATE no action ON DELETE set null,
 	FOREIGN KEY (`shopping_list_id`) REFERENCES `shopping_lists`(`id`) ON UPDATE no action ON DELETE cascade,
@@ -75,7 +75,7 @@ CREATE TABLE `shopping_lists` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`household_id` text NOT NULL,
-	`created_at` integer,
+	`created_at` integer NOT NULL,
 	`updated_at` integer,
 	FOREIGN KEY (`household_id`) REFERENCES `households`(`id`) ON UPDATE no action ON DELETE cascade
 );
@@ -85,7 +85,7 @@ CREATE TABLE `shops` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`household_id` text NOT NULL,
-	`created_at` integer,
+	`created_at` integer NOT NULL,
 	`updated_at` integer,
 	`sort_order` real DEFAULT 1000,
 	FOREIGN KEY (`household_id`) REFERENCES `households`(`id`) ON UPDATE no action ON DELETE cascade

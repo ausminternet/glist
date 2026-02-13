@@ -1,6 +1,6 @@
 import { InventoryItemDtoRepository } from '@/domain/inventory-item/inventory-item-dto-repository'
 import { InventoryItemDto } from '@glist/dtos'
-import { eq, inArray } from 'drizzle-orm'
+import { asc, eq, inArray } from 'drizzle-orm'
 import { Database } from '../persistence'
 import { inventoryItems, inventoryItemShops } from '../persistence/schema'
 
@@ -34,6 +34,7 @@ export class DrizzleInventoryItemDtoRepository implements InventoryItemDtoReposi
       .select()
       .from(inventoryItems)
       .where(eq(inventoryItems.householdId, householdId))
+      .orderBy(asc(inventoryItems.createdAt))
 
     if (rows.length === 0) {
       return []

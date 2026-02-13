@@ -14,7 +14,7 @@ import {
   shoppingListItemShops,
   shoppingLists,
 } from '@/infrastructure/persistence/schema'
-import { eq, inArray } from 'drizzle-orm'
+import { asc, eq, inArray } from 'drizzle-orm'
 
 type ShoppingListRow = typeof shoppingLists.$inferSelect
 type ShoppingListItemRow = typeof shoppingListItems.$inferSelect
@@ -156,6 +156,7 @@ export class DrizzleShoppingListRepository implements ShoppingListRepository {
       .select()
       .from(shoppingListItems)
       .where(eq(shoppingListItems.shoppingListId, id))
+      .orderBy(asc(shoppingListItems.createdAt))
 
     const itemIds = itemRows.map((row) => row.id)
     const shopRows =

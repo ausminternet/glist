@@ -90,6 +90,7 @@ async function seed(d1: D1Database) {
       createdCategories.find((c) => c.name === name)
     const findShop = (name: string) => createdShops.find((s) => s.name === name)
 
+    const inventoryNow = Date.now()
     const createdInventoryItems = await db
       .insert(inventoryItems)
       .values([
@@ -102,6 +103,7 @@ async function seed(d1: D1Database) {
           targetStockUnit: 'l',
           basePriceCents: 150,
           basePriceUnit: 'l',
+          createdAt: new Date(inventoryNow),
         },
         {
           householdId: household.id,
@@ -112,6 +114,7 @@ async function seed(d1: D1Database) {
           targetStockUnit: 'piece',
           basePriceCents: 250,
           basePriceUnit: 'piece',
+          createdAt: new Date(inventoryNow + 1000),
         },
         {
           householdId: household.id,
@@ -122,6 +125,7 @@ async function seed(d1: D1Database) {
           targetStockUnit: 'piece',
           basePriceCents: 30,
           basePriceUnit: 'piece',
+          createdAt: new Date(inventoryNow + 2000),
         },
         {
           householdId: household.id,
@@ -132,6 +136,7 @@ async function seed(d1: D1Database) {
           targetStockUnit: 'kg',
           basePriceCents: 300,
           basePriceUnit: 'kg',
+          createdAt: new Date(inventoryNow + 3000),
         },
       ])
       .returning()
@@ -141,6 +146,7 @@ async function seed(d1: D1Database) {
     const findInventoryItem = (name: string) =>
       createdInventoryItems.find((i) => i.name === name)
 
+    const now = Date.now()
     const createdShoppingListItems = await db
       .insert(shoppingListItems)
       .values([
@@ -152,6 +158,7 @@ async function seed(d1: D1Database) {
           quantity: 2,
           quantityUnit: 'l',
           checked: false,
+          createdAt: new Date(now),
         },
         {
           shoppingListId: shoppingList.id,
@@ -161,6 +168,7 @@ async function seed(d1: D1Database) {
           quantity: 2,
           quantityUnit: 'piece',
           checked: false,
+          createdAt: new Date(now + 1000),
         },
         {
           shoppingListId: shoppingList.id,
@@ -170,6 +178,7 @@ async function seed(d1: D1Database) {
           quantity: 1,
           quantityUnit: 'kg',
           checked: false,
+          createdAt: new Date(now + 2000),
         },
         {
           shoppingListId: shoppingList.id,
@@ -178,6 +187,7 @@ async function seed(d1: D1Database) {
           quantity: 500,
           quantityUnit: 'g',
           checked: true,
+          createdAt: new Date(now + 3000),
         },
       ])
       .returning()

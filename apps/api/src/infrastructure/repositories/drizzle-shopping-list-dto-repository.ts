@@ -1,6 +1,6 @@
 import { ShoppingListDtoRepository } from '@/domain/shopping-list/shopping-list-dto-repository'
 import { ShoppingListDto, ShoppingListItemDto } from '@glist/dtos'
-import { eq, inArray } from 'drizzle-orm'
+import { asc, eq, inArray } from 'drizzle-orm'
 import { Database } from '../persistence'
 import {
   shoppingListItems,
@@ -63,6 +63,7 @@ export class DrizzleShoppingListDtoRepository implements ShoppingListDtoReposito
       .select()
       .from(shoppingListItems)
       .where(eq(shoppingListItems.shoppingListId, id))
+      .orderBy(asc(shoppingListItems.createdAt))
 
     const itemIds = itemRows.map((row) => row.id)
     const shopRows =

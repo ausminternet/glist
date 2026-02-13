@@ -10,7 +10,7 @@ import {
   inventoryItems,
   inventoryItemShops,
 } from '@/infrastructure/persistence/schema'
-import { eq, inArray } from 'drizzle-orm'
+import { asc, eq, inArray } from 'drizzle-orm'
 
 type InventoryItemRow = typeof inventoryItems.$inferSelect
 
@@ -72,6 +72,7 @@ export class DrizzleInventoryItemRepository implements InventoryItemRepository {
       .select()
       .from(inventoryItems)
       .where(eq(inventoryItems.householdId, householdId))
+      .orderBy(asc(inventoryItems.createdAt))
 
     if (itemRows.length === 0) {
       return []
