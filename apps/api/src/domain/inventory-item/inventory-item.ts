@@ -1,9 +1,8 @@
 import { isBlank } from '@/utils/is-blank'
+import { err, ok, Result, UnitType } from '@glist/shared'
 import { Price } from '../shared/price'
 import { Quantity } from '../shared/quantity'
-
-import { UnitType } from '@glist/shared'
-import { InvalidNameError } from './errors'
+import { InventoryItemError } from './errors'
 
 export type NewInventoryItemInput = {
   name: string
@@ -35,29 +34,43 @@ export class InventoryItem {
   static create(
     householdId: string,
     input: NewInventoryItemInput,
-  ): InventoryItem {
+  ): Result<InventoryItem, InventoryItemError> {
     if (isBlank(input.name)) {
-      throw new InvalidNameError()
+      return err({ type: 'INVALID_NAME' })
     }
 
-    return new InventoryItem({
-      id: crypto.randomUUID(),
-      householdId,
-      name: input.name,
-      description: input.description ?? null,
-      categoryId: input.categoryId ?? null,
-      targetStock: Quantity.create(
-        input.targetStock ?? null,
-        input.targetStockUnit ?? null,
-      ),
-      basePrice: Price.create(
-        input.basePriceCents ?? null,
-        input.basePriceUnit ?? null,
-      ),
-      shopIds: input.shopIds ?? [],
-      createdAt: new Date(),
-      updatedAt: null,
-    })
+    const targetStockResult = Quantity.create(
+      input.targetStock ?? null,
+      input.targetStockUnit ?? null,
+    )
+
+    if (!targetStockResult.ok) {
+      return err(targetStockResult.error)
+    }
+
+    const basePriceResult = Price.create(
+      input.basePriceCents ?? null,
+      input.basePriceUnit ?? null,
+    )
+
+    if (!basePriceResult.ok) {
+      return err(basePriceResult.error)
+    }
+
+    return ok(
+      new InventoryItem({
+        id: crypto.randomUUID(),
+        householdId,
+        name: input.name,
+        description: input.description ?? null,
+        categoryId: input.categoryId ?? null,
+        targetStock: targetStockResult.value,
+        basePrice: basePriceResult.value,
+        shopIds: input.shopIds ?? [],
+        createdAt: new Date(),
+        updatedAt: null,
+      }),
+    )
   }
 
   static reconstitute(data: {
@@ -74,14 +87,28 @@ export class InventoryItem {
     createdAt: Date
     updatedAt: Date | null
   }): InventoryItem {
+    const targetStockResult = Quantity.create(
+      data.targetStock,
+      data.targetStockUnit,
+    )
+    const targetStock = targetStockResult.ok
+      ? targetStockResult.value
+      : Quantity.empty()
+
+    const basePriceResult = Price.create(
+      data.basePriceCents,
+      data.basePriceUnit,
+    )
+    const basePrice = basePriceResult.ok ? basePriceResult.value : Price.empty()
+
     return new InventoryItem({
       id: data.id,
       householdId: data.householdId,
       name: data.name,
       description: data.description,
       categoryId: data.categoryId,
-      targetStock: Quantity.create(data.targetStock, data.targetStockUnit),
-      basePrice: Price.create(data.basePriceCents, data.basePriceUnit),
+      targetStock,
+      basePrice,
       shopIds: data.shopIds,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -125,12 +152,14 @@ export class InventoryItem {
     return this.props.updatedAt
   }
 
-  changeName(name: string): void {
+  changeName(name: string): Result<void, InventoryItemError> {
     if (isBlank(name)) {
-      throw new InvalidNameError()
+      return err({ type: 'INVALID_NAME' })
     }
     this.props.name = name
     this.props.updatedAt = new Date()
+
+    return ok(undefined)
   }
 
   changeDescription(description: string | null): void {
@@ -146,17 +175,33 @@ export class InventoryItem {
   changeTargetStock(
     targetStock: number | null,
     targetStockUnit: string | null,
-  ): void {
-    this.props.targetStock = Quantity.create(targetStock, targetStockUnit)
+  ): Result<void, InventoryItemError> {
+    const targetStockResult = Quantity.create(targetStock, targetStockUnit)
+
+    if (!targetStockResult.ok) {
+      return err(targetStockResult.error)
+    }
+
+    this.props.targetStock = targetStockResult.value
     this.props.updatedAt = new Date()
+
+    return ok(undefined)
   }
 
   changeBasePrice(
     basePriceCents: number | null,
     basePriceUnit: string | null,
-  ): void {
-    this.props.basePrice = Price.create(basePriceCents, basePriceUnit)
+  ): Result<void, InventoryItemError> {
+    const basePriceResult = Price.create(basePriceCents, basePriceUnit)
+
+    if (!basePriceResult.ok) {
+      return err(basePriceResult.error)
+    }
+
+    this.props.basePrice = basePriceResult.value
     this.props.updatedAt = new Date()
+
+    return ok(undefined)
   }
 
   changeShops(shopIds: string[]): void {

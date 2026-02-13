@@ -1,54 +1,93 @@
-import { InvalidUnitError } from '@glist/shared'
 import { describe, expect, test } from 'bun:test'
-import { InvalidPriceError, Price, UnitWithoutValueError } from './price'
+import { Price } from './price'
 
 describe('Price', () => {
   describe('create', () => {
     test('creates price with cents and unit', () => {
-      const price = Price.create(199, 'kg')
+      const result = Price.create(199, 'kg')
 
-      expect(price.cents).toBe(199)
-      expect(price.unit).toBe('kg')
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      expect(result.value.cents).toBe(199)
+      expect(result.value.unit).toBe('kg')
     })
 
     test('creates price with cents only', () => {
-      const price = Price.create(500, null)
+      const result = Price.create(500, null)
 
-      expect(price.cents).toBe(500)
-      expect(price.unit).toBeNull()
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      expect(result.value.cents).toBe(500)
+      expect(result.value.unit).toBeNull()
     })
 
     test('creates empty price with null/null', () => {
-      const price = Price.create(null, null)
+      const result = Price.create(null, null)
 
-      expect(price.cents).toBeNull()
-      expect(price.unit).toBeNull()
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      expect(result.value.cents).toBeNull()
+      expect(result.value.unit).toBeNull()
     })
 
-    test('throws InvalidPriceError for zero or negative price', () => {
-      expect(() => Price.create(0, 'piece')).toThrow(InvalidPriceError)
-      expect(() => Price.create(-1, 'kg')).toThrow(InvalidPriceError)
-      expect(() => Price.create(-100, null)).toThrow(InvalidPriceError)
+    test('returns INVALID_PRICE error for zero or negative price', () => {
+      const result1 = Price.create(0, 'piece')
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_PRICE' })
+
+      const result2 = Price.create(-1, 'kg')
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_PRICE' })
+
+      const result3 = Price.create(-100, null)
+      expect(result3.ok).toBe(false)
+      if (result3.ok) return
+      expect(result3.error).toEqual({ type: 'INVALID_PRICE' })
     })
 
-    test('throws UnitWithoutValueError when unit provided without price', () => {
-      expect(() => Price.create(null, 'kg')).toThrow(UnitWithoutValueError)
+    test('returns PRICE_UNIT_WITHOUT_VALUE error when unit provided without price', () => {
+      const result = Price.create(null, 'kg')
+
+      expect(result.ok).toBe(false)
+      if (result.ok) return
+      expect(result.error).toEqual({ type: 'PRICE_UNIT_WITHOUT_VALUE' })
     })
 
-    test('throws InvalidUnitError for invalid unit', () => {
-      expect(() => Price.create(100, 'euros')).toThrow(InvalidUnitError)
-      expect(() => Price.create(100, 'invalid')).toThrow(InvalidUnitError)
+    test('returns INVALID_UNIT error for invalid unit', () => {
+      const result1 = Price.create(100, 'euros')
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_UNIT', unit: 'euros' })
+
+      const result2 = Price.create(100, 'invalid')
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_UNIT', unit: 'invalid' })
     })
 
     test('accepts all valid unit types', () => {
-      expect(Price.create(100, 'piece').unit).toBe('piece')
-      expect(Price.create(100, 'kg').unit).toBe('kg')
-      expect(Price.create(100, 'g').unit).toBe('g')
-      expect(Price.create(100, 'l').unit).toBe('l')
-      expect(Price.create(100, 'ml').unit).toBe('ml')
-      expect(Price.create(100, 'can').unit).toBe('can')
-      expect(Price.create(100, 'bottle').unit).toBe('bottle')
-      expect(Price.create(100, 'pack').unit).toBe('pack')
+      const units = [
+        'piece',
+        'kg',
+        'g',
+        'l',
+        'ml',
+        'can',
+        'bottle',
+        'pack',
+      ] as const
+
+      for (const unit of units) {
+        const result = Price.create(100, unit)
+        expect(result.ok).toBe(true)
+        if (!result.ok) return
+        expect(result.value.unit).toBe(unit)
+      }
     })
   })
 

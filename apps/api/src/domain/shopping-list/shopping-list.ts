@@ -1,9 +1,12 @@
 import { isBlank } from '@/utils/is-blank'
-import { InvalidNameError, ShoppingListItemNotFoundError } from './errors'
+
+import { err, ok, Result } from '@glist/shared'
+import { ShoppingListError } from './errors'
 import {
   NewShoppingListItemInput,
   ShoppingListItem,
 } from './shopping-list-item'
+
 type ShoppingListProps = {
   id: string
   householdId: string
@@ -16,18 +19,24 @@ type ShoppingListProps = {
 export class ShoppingList {
   private constructor(private props: ShoppingListProps) {}
 
-  static create(householdId: string, name: string): ShoppingList {
+  static create(
+    householdId: string,
+    name: string,
+  ): Result<ShoppingList, ShoppingListError> {
     if (isBlank(name)) {
-      throw new InvalidNameError()
+      return err({ type: 'INVALID_NAME' })
     }
-    return new ShoppingList({
-      id: crypto.randomUUID(),
-      householdId,
-      name,
-      items: [],
-      createdAt: new Date(),
-      updatedAt: null,
-    })
+
+    return ok(
+      new ShoppingList({
+        id: crypto.randomUUID(),
+        householdId,
+        name,
+        items: [],
+        createdAt: new Date(),
+        updatedAt: null,
+      }),
+    )
   }
 
   static reconstitute(data: {
@@ -67,12 +76,15 @@ export class ShoppingList {
     return this.props.updatedAt
   }
 
-  changeName(name: string): void {
+  changeName(name: string): Result<void, ShoppingListError> {
     if (isBlank(name)) {
-      throw new InvalidNameError()
+      return err({ type: 'INVALID_NAME' })
     }
+
     this.props.name = name
     this.props.updatedAt = new Date()
+
+    return ok(undefined)
   }
 
   clearChecked(): void {
@@ -80,11 +92,17 @@ export class ShoppingList {
     this.props.updatedAt = new Date()
   }
 
-  addItem(input: NewShoppingListItemInput): ShoppingListItem {
-    const item = ShoppingListItem.create(this.props.id, input)
-    this.props.items.push(item)
+  addItem(
+    input: NewShoppingListItemInput,
+  ): Result<ShoppingListItem, ShoppingListError> {
+    const itemResult = ShoppingListItem.create(this.props.id, input)
+    if (!itemResult.ok) {
+      return itemResult
+    }
+
+    this.props.items.push(itemResult.value)
     this.props.updatedAt = new Date()
-    return item
+    return itemResult
   }
 
   addItemFromInventory(item: {
@@ -103,21 +121,25 @@ export class ShoppingList {
     return shoppingListItem
   }
 
-  removeItem(itemId: string): void {
+  removeItem(itemId: string): Result<void, ShoppingListError> {
     const index = this.props.items.findIndex((item) => item.id === itemId)
     if (index === -1) {
-      throw new ShoppingListItemNotFoundError(itemId)
+      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
     }
+
     this.props.items.splice(index, 1)
     this.props.updatedAt = new Date()
+
+    return ok(undefined)
   }
 
-  getItem(itemId: string): ShoppingListItem {
+  getItem(itemId: string): Result<ShoppingListItem, ShoppingListError> {
     const item = this.props.items.find((item) => item.id === itemId)
     if (!item) {
-      throw new ShoppingListItemNotFoundError(itemId)
+      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
     }
-    return item
+
+    return ok(item)
   }
 
   findItem(itemId: string): ShoppingListItem | undefined {

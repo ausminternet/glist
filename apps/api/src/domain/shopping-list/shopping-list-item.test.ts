@@ -1,6 +1,4 @@
 import { describe, expect, test } from 'bun:test'
-import { InvalidQuantityError } from '../shared/quantity'
-import { InvalidNameError } from './errors'
 import { ShoppingListItem } from './shopping-list-item'
 
 describe('ShoppingListItem', () => {
@@ -8,7 +6,7 @@ describe('ShoppingListItem', () => {
 
   describe('create', () => {
     test('creates item with all properties', () => {
-      const item = ShoppingListItem.create(shoppingListId, {
+      const result = ShoppingListItem.create(shoppingListId, {
         name: 'Organic Milk',
         description: 'From the farm',
         categoryId: 'cat-123',
@@ -17,6 +15,10 @@ describe('ShoppingListItem', () => {
         shopIds: ['shop-1', 'shop-2'],
       })
 
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      const item = result.value
       expect(item.id).toBeDefined()
       expect(item.shoppingListId).toBe(shoppingListId)
       expect(item.name).toBe('Organic Milk')
@@ -30,19 +32,27 @@ describe('ShoppingListItem', () => {
       expect(item.updatedAt).toBeNull()
     })
 
-    test('throws InvalidNameError for empty name', () => {
-      expect(() =>
-        ShoppingListItem.create(shoppingListId, { name: '' }),
-      ).toThrow(InvalidNameError)
-      expect(() =>
-        ShoppingListItem.create(shoppingListId, { name: '   ' }),
-      ).toThrow(InvalidNameError)
+    test('returns INVALID_NAME error for empty name', () => {
+      const result1 = ShoppingListItem.create(shoppingListId, { name: '' })
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_NAME' })
+
+      const result2 = ShoppingListItem.create(shoppingListId, { name: '   ' })
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_NAME' })
     })
 
-    test('throws InvalidQuantityError for invalid quantity', () => {
-      expect(() =>
-        ShoppingListItem.create(shoppingListId, { name: 'Milk', quantity: -1 }),
-      ).toThrow(InvalidQuantityError)
+    test('returns INVALID_QUANTITY error for invalid quantity', () => {
+      const result = ShoppingListItem.create(shoppingListId, {
+        name: 'Milk',
+        quantity: -1,
+      })
+
+      expect(result.ok).toBe(false)
+      if (result.ok) return
+      expect(result.error).toEqual({ type: 'INVALID_QUANTITY' })
     })
   })
 
@@ -76,23 +86,51 @@ describe('ShoppingListItem', () => {
   })
 
   describe('validation on change', () => {
-    test('changeName throws InvalidNameError for empty name', () => {
-      const item = ShoppingListItem.create(shoppingListId, { name: 'Milk' })
+    test('changeName returns INVALID_NAME error for empty name', () => {
+      const createResult = ShoppingListItem.create(shoppingListId, {
+        name: 'Milk',
+      })
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(() => item.changeName('')).toThrow(InvalidNameError)
-      expect(() => item.changeName('   ')).toThrow(InvalidNameError)
+      const item = createResult.value
+
+      const result1 = item.changeName('')
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_NAME' })
+
+      const result2 = item.changeName('   ')
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_NAME' })
     })
 
-    test('changeQuantity throws InvalidQuantityError for invalid quantity', () => {
-      const item = ShoppingListItem.create(shoppingListId, { name: 'Milk' })
+    test('changeQuantity returns INVALID_QUANTITY error for invalid quantity', () => {
+      const createResult = ShoppingListItem.create(shoppingListId, {
+        name: 'Milk',
+      })
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(() => item.changeQuantity(-1, 'kg')).toThrow(InvalidQuantityError)
+      const item = createResult.value
+
+      const result = item.changeQuantity(-1, 'kg')
+      expect(result.ok).toBe(false)
+      if (result.ok) return
+      expect(result.error).toEqual({ type: 'INVALID_QUANTITY' })
     })
   })
 
   describe('check/uncheck', () => {
     test('toggleChecked toggles the status', () => {
-      const item = ShoppingListItem.create(shoppingListId, { name: 'Milk' })
+      const createResult = ShoppingListItem.create(shoppingListId, {
+        name: 'Milk',
+      })
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
+
+      const item = createResult.value
 
       expect(item.checked).toBe(false)
       item.toggleChecked()
@@ -104,7 +142,7 @@ describe('ShoppingListItem', () => {
 
   describe('toSnapshot', () => {
     test('creates snapshot with all data', () => {
-      const item = ShoppingListItem.create(shoppingListId, {
+      const createResult = ShoppingListItem.create(shoppingListId, {
         name: 'Organic Milk',
         description: 'From the farm',
         categoryId: 'cat-123',
@@ -112,6 +150,10 @@ describe('ShoppingListItem', () => {
         quantityUnit: 'l',
         shopIds: ['shop-1'],
       })
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
+
+      const item = createResult.value
       item.check()
 
       const snapshot = item.toSnapshot()

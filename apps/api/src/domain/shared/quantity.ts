@@ -1,23 +1,9 @@
-import { InvalidUnitError, isValidUnitType, UnitType } from '@glist/shared'
+import { err, isValidUnitType, ok, Result, UnitType } from '@glist/shared'
 
-export class QuantityError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'QuantityError'
-  }
-}
-
-export class InvalidQuantityError extends QuantityError {
-  constructor() {
-    super('Quantity must be greater than zero')
-  }
-}
-
-export class UnitWithoutValueError extends QuantityError {
-  constructor() {
-    super('Unit cannot be specified without a value')
-  }
-}
+export type QuantityError =
+  | { type: 'INVALID_QUANTITY' }
+  | { type: 'UNIT_WITHOUT_VALUE' }
+  | { type: 'INVALID_UNIT'; unit: string }
 
 export class Quantity {
   private constructor(
@@ -25,20 +11,23 @@ export class Quantity {
     public readonly unit: UnitType | null,
   ) {}
 
-  static create(value: number | null, unit: string | null): Quantity {
+  static create(
+    value: number | null,
+    unit: string | null,
+  ): Result<Quantity, QuantityError> {
     if (value !== null && value <= 0) {
-      throw new InvalidQuantityError()
+      return err({ type: 'INVALID_QUANTITY' })
     }
 
     if (unit !== null && value === null) {
-      throw new UnitWithoutValueError()
+      return err({ type: 'UNIT_WITHOUT_VALUE' })
     }
 
     if (unit !== null && !isValidUnitType(unit)) {
-      throw new InvalidUnitError(unit)
+      return err({ type: 'INVALID_UNIT', unit })
     }
 
-    return new Quantity(value, unit as UnitType | null)
+    return ok(new Quantity(value, unit as UnitType | null))
   }
 
   static empty(): Quantity {

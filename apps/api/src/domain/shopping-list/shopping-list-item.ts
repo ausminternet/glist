@@ -1,7 +1,7 @@
 import { isBlank } from '@/utils/is-blank'
+import { err, ok, Result, UnitType } from '@glist/shared'
 import { Quantity } from '../shared/quantity'
-import { UnitType } from '../shared/unit-type'
-import { InvalidNameError } from './errors'
+import { ShoppingListError } from './errors'
 
 export type NewShoppingListItemInput = {
   name: string
@@ -32,27 +32,35 @@ export class ShoppingListItem {
   static create(
     shoppingListId: string,
     input: NewShoppingListItemInput,
-  ): ShoppingListItem {
+  ): Result<ShoppingListItem, ShoppingListError> {
     if (isBlank(input.name)) {
-      throw new InvalidNameError()
+      return err({ type: 'INVALID_NAME' })
     }
 
-    return new ShoppingListItem({
-      id: crypto.randomUUID(),
-      shoppingListId,
-      name: input.name,
-      description: input.description ?? null,
-      categoryId: input.categoryId ?? null,
-      quantity: Quantity.create(
-        input.quantity ?? null,
-        input.quantityUnit ?? null,
-      ),
-      checked: false,
-      shopIds: input.shopIds ?? [],
-      createdAt: new Date(),
-      updatedAt: null,
-      inventoryItemId: null,
-    })
+    const quantityResult = Quantity.create(
+      input.quantity ?? null,
+      input.quantityUnit ?? null,
+    )
+
+    if (!quantityResult.ok) {
+      return err(quantityResult.error)
+    }
+
+    return ok(
+      new ShoppingListItem({
+        id: crypto.randomUUID(),
+        shoppingListId,
+        name: input.name,
+        description: input.description ?? null,
+        categoryId: input.categoryId ?? null,
+        quantity: quantityResult.value,
+        checked: false,
+        shopIds: input.shopIds ?? [],
+        createdAt: new Date(),
+        updatedAt: null,
+        inventoryItemId: null,
+      }),
+    )
   }
 
   static createFromInventoryItem(
@@ -72,7 +80,7 @@ export class ShoppingListItem {
       name: inventoryItem.name,
       description: inventoryItem.description,
       categoryId: inventoryItem.categoryId,
-      quantity: Quantity.create(null, null),
+      quantity: Quantity.empty(),
       checked: false,
       shopIds: inventoryItem.shopIds,
       createdAt: new Date(),
@@ -94,13 +102,18 @@ export class ShoppingListItem {
     updatedAt: Date | null
     inventoryItemId: string | null
   }): ShoppingListItem {
+    const quantityResult = Quantity.create(data.quantity, data.quantityUnit)
+
+    // reconstitute assumes valid data from DB, use empty on failure
+    const quantity = quantityResult.ok ? quantityResult.value : Quantity.empty()
+
     return new ShoppingListItem({
       id: data.id,
       shoppingListId: data.shoppingListId,
       name: data.name,
       description: data.description,
       categoryId: data.categoryId,
-      quantity: Quantity.create(data.quantity, data.quantityUnit),
+      quantity,
       checked: data.checked,
       shopIds: data.shopIds,
       createdAt: data.createdAt,
@@ -147,12 +160,14 @@ export class ShoppingListItem {
     return this.props.inventoryItemId
   }
 
-  changeName(name: string): void {
+  changeName(name: string): Result<void, ShoppingListError> {
     if (isBlank(name)) {
-      throw new InvalidNameError()
+      return err({ type: 'INVALID_NAME' })
     }
     this.props.name = name
     this.props.updatedAt = new Date()
+
+    return ok(undefined)
   }
 
   changeDescription(description: string | null): void {
@@ -160,9 +175,20 @@ export class ShoppingListItem {
     this.props.updatedAt = new Date()
   }
 
-  changeQuantity(quantity: number | null, quantityUnit: string | null): void {
-    this.props.quantity = Quantity.create(quantity, quantityUnit)
+  changeQuantity(
+    quantity: number | null,
+    quantityUnit: string | null,
+  ): Result<void, ShoppingListError> {
+    const quantityResult = Quantity.create(quantity, quantityUnit)
+
+    if (!quantityResult.ok) {
+      return err(quantityResult.error)
+    }
+
+    this.props.quantity = quantityResult.value
     this.props.updatedAt = new Date()
+
+    return ok(undefined)
   }
 
   changeCategory(categoryId: string | null): void {

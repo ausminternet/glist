@@ -1,23 +1,9 @@
-import { InvalidUnitError, isValidUnitType, UnitType } from '@glist/shared'
+import { err, isValidUnitType, ok, Result, UnitType } from '@glist/shared'
 
-export class PriceError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'PriceError'
-  }
-}
-
-export class InvalidPriceError extends PriceError {
-  constructor() {
-    super('Price must be greater than zero')
-  }
-}
-
-export class UnitWithoutValueError extends PriceError {
-  constructor() {
-    super('Unit cannot be specified without a price value')
-  }
-}
+export type PriceError =
+  | { type: 'INVALID_PRICE' }
+  | { type: 'PRICE_UNIT_WITHOUT_VALUE' }
+  | { type: 'INVALID_UNIT'; unit: string }
 
 export class Price {
   private constructor(
@@ -25,20 +11,23 @@ export class Price {
     public readonly unit: UnitType | null,
   ) {}
 
-  static create(cents: number | null, unit: string | null): Price {
+  static create(
+    cents: number | null,
+    unit: string | null,
+  ): Result<Price, PriceError> {
     if (cents !== null && cents <= 0) {
-      throw new InvalidPriceError()
+      return err({ type: 'INVALID_PRICE' })
     }
 
     if (unit !== null && cents === null) {
-      throw new UnitWithoutValueError()
+      return err({ type: 'PRICE_UNIT_WITHOUT_VALUE' })
     }
 
     if (unit !== null && !isValidUnitType(unit)) {
-      throw new InvalidUnitError(unit)
+      return err({ type: 'INVALID_UNIT', unit })
     }
 
-    return new Price(cents, unit as UnitType | null)
+    return ok(new Price(cents, unit as UnitType | null))
   }
 
   static empty(): Price {

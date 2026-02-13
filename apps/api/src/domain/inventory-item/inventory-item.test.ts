@@ -1,9 +1,4 @@
 import { describe, expect, test } from 'bun:test'
-import { InvalidPriceError } from '../shared/price'
-import { InvalidQuantityError } from '../shared/quantity'
-
-import { InvalidUnitError } from '@glist/shared'
-import { InvalidNameError } from './errors'
 import { InventoryItem } from './inventory-item'
 
 describe('InventoryItem', () => {
@@ -11,7 +6,7 @@ describe('InventoryItem', () => {
 
   describe('create', () => {
     test('creates item with all properties', () => {
-      const item = InventoryItem.create(householdId, {
+      const result = InventoryItem.create(householdId, {
         name: 'Milk',
         description: 'Organic whole milk',
         categoryId: 'cat-dairy',
@@ -22,6 +17,10 @@ describe('InventoryItem', () => {
         shopIds: ['shop-1', 'shop-2'],
       })
 
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      const item = result.value
       expect(item.id).toBeDefined()
       expect(item.householdId).toBe(householdId)
       expect(item.name).toBe('Milk')
@@ -37,8 +36,12 @@ describe('InventoryItem', () => {
     })
 
     test('creates item with minimal properties', () => {
-      const item = InventoryItem.create(householdId, { name: 'Bread' })
+      const result = InventoryItem.create(householdId, { name: 'Bread' })
 
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      const item = result.value
       expect(item.name).toBe('Bread')
       expect(item.description).toBeNull()
       expect(item.categoryId).toBeNull()
@@ -49,45 +52,65 @@ describe('InventoryItem', () => {
       expect(item.shopIds).toEqual([])
     })
 
-    test('throws InvalidNameError for empty name', () => {
-      expect(() => InventoryItem.create(householdId, { name: '' })).toThrow(
-        InvalidNameError,
-      )
-      expect(() => InventoryItem.create(householdId, { name: '   ' })).toThrow(
-        InvalidNameError,
-      )
+    test('returns INVALID_NAME error for empty name', () => {
+      const result1 = InventoryItem.create(householdId, { name: '' })
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_NAME' })
+
+      const result2 = InventoryItem.create(householdId, { name: '   ' })
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_NAME' })
     })
 
-    test('throws InvalidQuantityError for invalid targetStock', () => {
-      expect(() =>
-        InventoryItem.create(householdId, { name: 'Milk', targetStock: -1 }),
-      ).toThrow(InvalidQuantityError)
-      expect(() =>
-        InventoryItem.create(householdId, { name: 'Milk', targetStock: 0 }),
-      ).toThrow(InvalidQuantityError)
+    test('returns INVALID_QUANTITY error for invalid targetStock', () => {
+      const result1 = InventoryItem.create(householdId, {
+        name: 'Milk',
+        targetStock: -1,
+      })
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_QUANTITY' })
+
+      const result2 = InventoryItem.create(householdId, {
+        name: 'Milk',
+        targetStock: 0,
+      })
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_QUANTITY' })
     })
 
-    test('throws InvalidPriceError for negative price', () => {
-      expect(() =>
-        InventoryItem.create(householdId, { name: 'Milk', basePriceCents: -1 }),
-      ).toThrow(InvalidPriceError)
+    test('returns INVALID_PRICE error for negative price', () => {
+      const result = InventoryItem.create(householdId, {
+        name: 'Milk',
+        basePriceCents: -1,
+      })
+
+      expect(result.ok).toBe(false)
+      if (result.ok) return
+      expect(result.error).toEqual({ type: 'INVALID_PRICE' })
     })
 
-    test('throws InvalidUnitError for invalid unit', () => {
-      expect(() =>
-        InventoryItem.create(householdId, {
-          name: 'Milk',
-          targetStock: 1,
-          targetStockUnit: 'liters',
-        }),
-      ).toThrow(InvalidUnitError)
-      expect(() =>
-        InventoryItem.create(householdId, {
-          name: 'Milk',
-          basePriceCents: 100,
-          basePriceUnit: 'euros',
-        }),
-      ).toThrow(InvalidUnitError)
+    test('returns INVALID_UNIT error for invalid unit', () => {
+      const result1 = InventoryItem.create(householdId, {
+        name: 'Milk',
+        targetStock: 1,
+        targetStockUnit: 'liters',
+      })
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_UNIT', unit: 'liters' })
+
+      const result2 = InventoryItem.create(householdId, {
+        name: 'Milk',
+        basePriceCents: 100,
+        basePriceUnit: 'euros',
+      })
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_UNIT', unit: 'euros' })
     })
   })
 
@@ -125,46 +148,78 @@ describe('InventoryItem', () => {
 
   describe('mutations', () => {
     test('changeName updates name and updatedAt', () => {
-      const item = InventoryItem.create(householdId, { name: 'Milk' })
+      const createResult = InventoryItem.create(householdId, { name: 'Milk' })
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
+
+      const item = createResult.value
       expect(item.updatedAt).toBeNull()
 
-      item.changeName('Whole Milk')
+      const changeResult = item.changeName('Whole Milk')
+      expect(changeResult.ok).toBe(true)
 
       expect(item.name).toBe('Whole Milk')
       expect(item.updatedAt).toBeInstanceOf(Date)
     })
 
-    test('changeName throws InvalidNameError for empty name', () => {
-      const item = InventoryItem.create(householdId, { name: 'Milk' })
+    test('changeName returns INVALID_NAME error for empty name', () => {
+      const createResult = InventoryItem.create(householdId, { name: 'Milk' })
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(() => item.changeName('')).toThrow(InvalidNameError)
-      expect(() => item.changeName('   ')).toThrow(InvalidNameError)
+      const item = createResult.value
+
+      const result1 = item.changeName('')
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_NAME' })
+
+      const result2 = item.changeName('   ')
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_NAME' })
     })
 
     test('changeTargetStock validates quantity', () => {
-      const item = InventoryItem.create(householdId, { name: 'Milk' })
+      const createResult = InventoryItem.create(householdId, { name: 'Milk' })
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(() => item.changeTargetStock(-1, 'l')).toThrow(
-        InvalidQuantityError,
-      )
-      expect(() => item.changeTargetStock(1, 'invalid')).toThrow(
-        InvalidUnitError,
-      )
+      const item = createResult.value
+
+      const result1 = item.changeTargetStock(-1, 'l')
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_QUANTITY' })
+
+      const result2 = item.changeTargetStock(1, 'invalid')
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_UNIT', unit: 'invalid' })
     })
 
     test('changeBasePrice validates price', () => {
-      const item = InventoryItem.create(householdId, { name: 'Milk' })
+      const createResult = InventoryItem.create(householdId, { name: 'Milk' })
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(() => item.changeBasePrice(-100, 'l')).toThrow(InvalidPriceError)
-      expect(() => item.changeBasePrice(100, 'invalid')).toThrow(
-        InvalidUnitError,
-      )
+      const item = createResult.value
+
+      const result1 = item.changeBasePrice(-100, 'l')
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_PRICE' })
+
+      const result2 = item.changeBasePrice(100, 'invalid')
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_UNIT', unit: 'invalid' })
     })
   })
 
   describe('toSnapshot', () => {
     test('creates snapshot with all data', () => {
-      const item = InventoryItem.create(householdId, {
+      const createResult = InventoryItem.create(householdId, {
         name: 'Milk',
         description: 'Organic',
         categoryId: 'cat-dairy',
@@ -175,6 +230,10 @@ describe('InventoryItem', () => {
         shopIds: ['shop-1'],
       })
 
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
+
+      const item = createResult.value
       const snapshot = item.toSnapshot()
 
       expect(snapshot).toEqual({

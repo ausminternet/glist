@@ -1,18 +1,23 @@
-import { ShoppingListNotFoundError } from '@/domain/shopping-list/errors'
 import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import { ShoppingListDto } from '@glist/dtos'
+import { err, ok, Result } from '@glist/shared'
 import { toShoppingListDto } from '../mappers/shopping-list.mapper'
+
+type GetShoppingListQueryError = { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
 
 export class GetShoppingListQuery {
   constructor(private repository: ShoppingListRepository) {}
 
-  async execute(id: string, householdId: string): Promise<ShoppingListDto> {
+  async execute(
+    id: string,
+    householdId: string,
+  ): Promise<Result<ShoppingListDto, GetShoppingListQueryError>> {
     const shoppingList = await this.repository.findById(id)
 
     if (!shoppingList || shoppingList.householdId !== householdId) {
-      throw new ShoppingListNotFoundError(id)
+      return err({ type: 'SHOPPING_LIST_NOT_FOUND', id })
     }
 
-    return toShoppingListDto(shoppingList)
+    return ok(toShoppingListDto(shoppingList))
   }
 }

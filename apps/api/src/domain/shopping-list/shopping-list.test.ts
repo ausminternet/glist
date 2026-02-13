@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'bun:test'
-import { InvalidNameError, ShoppingListItemNotFoundError } from './errors'
 import { ShoppingList } from './shopping-list'
 
 describe('ShoppingList', () => {
@@ -7,8 +6,12 @@ describe('ShoppingList', () => {
 
   describe('create', () => {
     test('creates list with name', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
+      const result = ShoppingList.create(householdId, 'Weekly Shopping')
 
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      const list = result.value
       expect(list.id).toBeDefined()
       expect(list.householdId).toBe(householdId)
       expect(list.name).toBe('Weekly Shopping')
@@ -17,13 +20,16 @@ describe('ShoppingList', () => {
       expect(list.updatedAt).toBeNull()
     })
 
-    test('throws InvalidNameError for empty name', () => {
-      expect(() => ShoppingList.create(householdId, '')).toThrow(
-        InvalidNameError,
-      )
-      expect(() => ShoppingList.create(householdId, '   ')).toThrow(
-        InvalidNameError,
-      )
+    test('returns INVALID_NAME error for empty name', () => {
+      const result1 = ShoppingList.create(householdId, '')
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_NAME' })
+
+      const result2 = ShoppingList.create(householdId, '   ')
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_NAME' })
     })
   })
 
@@ -50,70 +56,141 @@ describe('ShoppingList', () => {
   })
 
   describe('validation on change', () => {
-    test('changeName throws InvalidNameError for empty name', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
+    test('changeName returns INVALID_NAME error for empty name', () => {
+      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(() => list.changeName('')).toThrow(InvalidNameError)
-      expect(() => list.changeName('   ')).toThrow(InvalidNameError)
+      const list = createResult.value
+
+      const result1 = list.changeName('')
+      expect(result1.ok).toBe(false)
+      if (result1.ok) return
+      expect(result1.error).toEqual({ type: 'INVALID_NAME' })
+
+      const result2 = list.changeName('   ')
+      expect(result2.ok).toBe(false)
+      if (result2.ok) return
+      expect(result2.error).toEqual({ type: 'INVALID_NAME' })
     })
   })
 
   describe('item operations', () => {
     test('addItem adds item to list', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      const item = list.addItem({ name: 'Milk' })
+      const list = createResult.value
+      const itemResult = list.addItem({ name: 'Milk' })
 
+      expect(itemResult.ok).toBe(true)
+      if (!itemResult.ok) return
+
+      const item = itemResult.value
       expect(list.items).toHaveLength(1)
       expect(list.items[0]).toBe(item)
       expect(item.shoppingListId).toBe(list.id)
     })
 
     test('removeItem removes item from list', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
-      const item = list.addItem({ name: 'Milk' })
+      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      list.removeItem(item.id)
+      const list = createResult.value
+      const itemResult = list.addItem({ name: 'Milk' })
+      expect(itemResult.ok).toBe(true)
+      if (!itemResult.ok) return
 
+      const item = itemResult.value
+      const removeResult = list.removeItem(item.id)
+
+      expect(removeResult.ok).toBe(true)
       expect(list.items).toHaveLength(0)
     })
 
-    test('removeItem throws ItemNotFoundError for non-existent item', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
+    test('removeItem returns SHOPPING_LIST_ITEM_NOT_FOUND error for non-existent item', () => {
+      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(() => list.removeItem('non-existent-id')).toThrow(
-        ShoppingListItemNotFoundError,
-      )
+      const list = createResult.value
+      const removeResult = list.removeItem('non-existent-id')
+
+      expect(removeResult.ok).toBe(false)
+      if (removeResult.ok) return
+      expect(removeResult.error).toEqual({
+        type: 'SHOPPING_LIST_ITEM_NOT_FOUND',
+        id: 'non-existent-id',
+      })
     })
 
     test('getItem returns item by id', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
-      const item = list.addItem({ name: 'Milk' })
+      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(list.getItem(item.id)).toBe(item)
+      const list = createResult.value
+      const itemResult = list.addItem({ name: 'Milk' })
+      expect(itemResult.ok).toBe(true)
+      if (!itemResult.ok) return
+
+      const item = itemResult.value
+      const getResult = list.getItem(item.id)
+
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+      expect(getResult.value).toBe(item)
     })
 
-    test('getItem throws ItemNotFoundError for non-existent item', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
+    test('getItem returns SHOPPING_LIST_ITEM_NOT_FOUND error for non-existent item', () => {
+      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(() => list.getItem('non-existent-id')).toThrow(
-        ShoppingListItemNotFoundError,
-      )
+      const list = createResult.value
+      const getResult = list.getItem('non-existent-id')
+
+      expect(getResult.ok).toBe(false)
+      if (getResult.ok) return
+      expect(getResult.error).toEqual({
+        type: 'SHOPPING_LIST_ITEM_NOT_FOUND',
+        id: 'non-existent-id',
+      })
     })
 
     test('findItem returns undefined for non-existent item', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
+      const list = createResult.value
       expect(list.findItem('non-existent-id')).toBeUndefined()
     })
   })
 
   describe('clearChecked', () => {
     test('removes all checked items', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
-      const milk = list.addItem({ name: 'Milk' })
-      list.addItem({ name: 'Bread' })
-      const eggs = list.addItem({ name: 'Eggs' })
+      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
+
+      const list = createResult.value
+
+      const milkResult = list.addItem({ name: 'Milk' })
+      expect(milkResult.ok).toBe(true)
+      if (!milkResult.ok) return
+      const milk = milkResult.value
+
+      const breadResult = list.addItem({ name: 'Bread' })
+      expect(breadResult.ok).toBe(true)
+      if (!breadResult.ok) return
+
+      const eggsResult = list.addItem({ name: 'Eggs' })
+      expect(eggsResult.ok).toBe(true)
+      if (!eggsResult.ok) return
+      const eggs = eggsResult.value
 
       milk.check()
       eggs.check()
@@ -126,8 +203,17 @@ describe('ShoppingList', () => {
 
   describe('toSnapshot', () => {
     test('creates snapshot with all data including items', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
-      list.addItem({ name: 'Milk', quantity: 2, quantityUnit: 'l' })
+      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
+
+      const list = createResult.value
+      const itemResult = list.addItem({
+        name: 'Milk',
+        quantity: 2,
+        quantityUnit: 'l',
+      })
+      expect(itemResult.ok).toBe(true)
 
       const snapshot = list.toSnapshot()
 
@@ -141,7 +227,11 @@ describe('ShoppingList', () => {
 
   describe('addItemFromInventory', () => {
     test('adds item from inventory to list', () => {
-      const list = ShoppingList.create(householdId, 'Weekly Shopping')
+      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
+
+      const list = createResult.value
       const inventoryItem = {
         inventoryItemId: 'inv-123',
         name: 'Milk',
