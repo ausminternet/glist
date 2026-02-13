@@ -1,18 +1,26 @@
 import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import { err, ok, Result } from '@glist/shared'
+import { RequestContext } from '../shared/request-context'
 
 type UncheckShoppingListItemError =
   | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
   | { type: 'SHOPPING_LIST_ITEM_NOT_FOUND'; id: string }
 
-export class UncheckShoppingListItemCommand {
+export type UncheckShoppingListItemCommand = {
+  shoppingListId: string
+  itemId: string
+}
+
+export class UncheckShoppingListItemCommandHandler {
   constructor(private repository: ShoppingListRepository) {}
 
   async execute(
-    shoppingListId: string,
-    itemId: string,
-    householdId: string,
+    command: UncheckShoppingListItemCommand,
+    context: RequestContext,
   ): Promise<Result<void, UncheckShoppingListItemError>> {
+    const { shoppingListId, itemId } = command
+    const { householdId } = context
+
     const shoppingList = await this.repository.findById(shoppingListId)
 
     if (!shoppingList || shoppingList.householdId !== householdId) {

@@ -1,11 +1,10 @@
-import { CheckShoppingListItemCommand } from '@/application/commands/check-shopping-list-item'
-import { UncheckShoppingListItemCommand } from '@/application/commands/uncheck-shopping-list-item'
-import { GetShoppingListQuery } from '@/application/queries/get-shopping-list'
-
+import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
 import {
   CreateShoppingListCommandHandler,
   CreateShoppingListCommandSchema,
 } from '@/application/commands/create-shopping-list'
+import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
+import { GetShoppingListQueryHandler } from '@/application/queries/get-shopping-list'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { zValidator } from '@hono/zod-validator'
@@ -19,9 +18,9 @@ shoppingListsRouter.get('/:id', async (c) => {
   const id = c.req.param('id')
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleShoppingListRepository(db)
-  const query = new GetShoppingListQuery(repository)
+  const query = new GetShoppingListQueryHandler(repository)
 
-  const result = await query.execute(id, householdId)
+  const result = await query.execute({ id }, { householdId })
   if (!result.ok) {
     switch (result.error.type) {
       case 'SHOPPING_LIST_NOT_FOUND':
@@ -64,9 +63,12 @@ shoppingListsRouter.post('/:listId/items/:itemId/check', async (c) => {
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleShoppingListRepository(db)
-  const command = new CheckShoppingListItemCommand(repository)
+  const command = new CheckShoppingListItemCommandHandler(repository)
 
-  const result = await command.execute(listId, itemId, householdId)
+  const result = await command.execute(
+    { shoppingListId: listId, itemId },
+    { householdId },
+  )
   if (!result.ok) {
     if (result.error.type === 'SHOPPING_LIST_NOT_FOUND') {
       return c.json({ success: false, error: 'Shopping list not found' }, 404)
@@ -91,9 +93,12 @@ shoppingListsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleShoppingListRepository(db)
-  const command = new UncheckShoppingListItemCommand(repository)
+  const command = new UncheckShoppingListItemCommandHandler(repository)
 
-  const result = await command.execute(listId, itemId, householdId)
+  const result = await command.execute(
+    { shoppingListId: listId, itemId },
+    { householdId },
+  )
   if (!result.ok) {
     if (result.error.type === 'SHOPPING_LIST_NOT_FOUND') {
       return c.json({ success: false, error: 'Shopping list not found' }, 404)

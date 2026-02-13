@@ -8,7 +8,7 @@ import { RequestContext } from '../shared/request-context'
 type CreateShoppingListCommandError = InvalidNameError
 
 export const CreateShoppingListCommandSchema = z.object({
-  name: z.string().min(5, 'Name must be at least 5 characters long'),
+  name: z.string().trim().nonempty('Name cannot be empty'),
 })
 
 export type CreateShoppingListCommand = z.infer<

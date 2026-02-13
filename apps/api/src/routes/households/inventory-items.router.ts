@@ -1,18 +1,17 @@
-import { GetInventoryItemsQuery } from '@/application/queries/get-inventory-items'
+import { GetInventoryItemsQueryHandler } from '@/application/queries/get-inventory-items'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { Hono } from 'hono'
 import { HouseholdContext } from './context'
-
 const inventoryItemsRouter = new Hono<HouseholdContext>()
 
 inventoryItemsRouter.get('/', async (c) => {
   const householdId = c.get('householdId')
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleInventoryItemRepository(db)
-  const query = new GetInventoryItemsQuery(repository)
+  const query = new GetInventoryItemsQueryHandler(repository)
 
-  const items = await query.execute(householdId)
+  const items = await query.execute({ householdId })
 
   return c.json({ success: true, data: items })
 })
