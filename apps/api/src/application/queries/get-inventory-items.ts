@@ -1,16 +1,14 @@
-import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import { InventoryItemDtoRepository } from '@/domain/inventory-item/inventory-item-dto-repository'
 import { InventoryItemDto } from '@glist/dtos'
-import { toInventoryItemDto } from '../mappers/inventory-item.mapper'
 import { RequestContext } from '../shared/request-context'
-
 export class GetInventoryItemsQueryHandler {
-  constructor(private repository: InventoryItemRepository) {}
+  constructor(private repository: InventoryItemDtoRepository) {}
 
   async execute(context: RequestContext): Promise<InventoryItemDto[]> {
     const items = await this.repository.findAllByHouseholdId(
       context.householdId,
     )
 
-    return items.map(toInventoryItemDto)
+    return items
   }
 }

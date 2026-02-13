@@ -6,6 +6,7 @@ import {
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
 import { GetShoppingListQueryHandler } from '@/application/queries/get-shopping-list'
 import { createDb } from '@/infrastructure/persistence'
+import { DrizzleShoppingListDtoRepository } from '@/infrastructure/repositories/drizzle-shopping-list-dto-repository'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
@@ -17,7 +18,7 @@ shoppingListsRouter.get('/:id', async (c) => {
   const householdId = c.get('householdId')
   const id = c.req.param('id')
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleShoppingListRepository(db)
+  const repository = new DrizzleShoppingListDtoRepository(db)
   const query = new GetShoppingListQueryHandler(repository)
 
   const result = await query.execute({ id }, { householdId })

@@ -1,7 +1,6 @@
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import { ShoppingListDtoRepository } from '@/domain/shopping-list/shopping-list-dto-repository'
 import { ShoppingListDto } from '@glist/dtos'
 import { err, ok, Result } from '@glist/shared'
-import { toShoppingListDto } from '../mappers/shopping-list.mapper'
 import { RequestContext } from '../shared/request-context'
 
 type GetShoppingListQueryError = { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
@@ -11,7 +10,7 @@ export interface GetShoppingListQuery {
 }
 
 export class GetShoppingListQueryHandler {
-  constructor(private repository: ShoppingListRepository) {}
+  constructor(private repository: ShoppingListDtoRepository) {}
 
   async execute(
     command: GetShoppingListQuery,
@@ -26,6 +25,6 @@ export class GetShoppingListQueryHandler {
       return err({ type: 'SHOPPING_LIST_NOT_FOUND', id })
     }
 
-    return ok(toShoppingListDto(shoppingList))
+    return ok(shoppingList)
   }
 }

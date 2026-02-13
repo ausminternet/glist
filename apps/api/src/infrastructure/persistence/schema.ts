@@ -14,9 +14,9 @@ export const households = sqliteTable('households', {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: text('name').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(
-    () => new Date(),
-  ),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .$defaultFn(() => new Date())
+    .notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(
     () => new Date(),
   ),
@@ -33,9 +33,9 @@ export const categories = sqliteTable(
       .notNull()
       .references(() => households.id, { onDelete: 'cascade' }),
     sortOrder: real('sort_order').default(1000.0),
-    createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(
-      () => new Date(),
-    ),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .$defaultFn(() => new Date())
+      .notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(
       () => new Date(),
     ),
@@ -56,9 +56,9 @@ export const shops = sqliteTable(
     householdId: text('household_id')
       .notNull()
       .references(() => households.id, { onDelete: 'cascade' }),
-    createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(
-      () => new Date(),
-    ),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .$defaultFn(() => new Date())
+      .notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(
       () => new Date(),
     ),
@@ -80,9 +80,9 @@ export const shoppingLists = sqliteTable(
     householdId: text('household_id')
       .notNull()
       .references(() => households.id, { onDelete: 'cascade' }),
-    createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(
-      () => new Date(),
-    ),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .$defaultFn(() => new Date())
+      .notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(
       () => new Date(),
     ),
@@ -108,9 +108,9 @@ export const inventoryItems = sqliteTable(
     targetStockUnit: text('target_stock_unit').$type<UnitType>(),
     basePriceUnit: text('base_price_unit').$type<UnitType>(),
     basePriceCents: integer('base_price_cents'),
-    createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(
-      () => new Date(),
-    ),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .$defaultFn(() => new Date())
+      .notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(
       () => new Date(),
     ),
@@ -142,9 +142,9 @@ export const shoppingListItems = sqliteTable(
     quantity: real('quantity'),
     quantityUnit: text('quantity_unit').$type<UnitType>(),
     checked: integer('checked', { mode: 'boolean' }).notNull().default(false),
-    createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(
-      () => new Date(),
-    ),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .$defaultFn(() => new Date())
+      .notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(
       () => new Date(),
     ),

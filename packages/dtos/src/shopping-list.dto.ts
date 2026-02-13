@@ -2,6 +2,7 @@ import { UnitType } from '@glist/shared'
 
 export type ShoppingListItemDto = {
   id: string
+  shoppingListId: string
   name: string
   description: string | null
   categoryId: string | null
@@ -10,6 +11,8 @@ export type ShoppingListItemDto = {
   checked: boolean
   shopIds: string[]
   inventoryItemId: string | null
+  createdAt: string
+  updatedAt: string | null
 }
 
 export type ShoppingListDto = {

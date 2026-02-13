@@ -78,18 +78,21 @@ export class DrizzleInventoryItemRepository implements InventoryItemRepository {
     }
 
     const itemIds = itemRows.map((row) => row.id)
-    const shopRows = await this.db
+    const shopAssociations = await this.db
       .select()
       .from(inventoryItemShops)
       .where(inArray(inventoryItemShops.inventoryItemId, itemIds))
 
     const shopsByItemId = new Map<string, string[]>()
-    for (const row of shopRows) {
+    for (const row of shopAssociations) {
       const shops = shopsByItemId.get(row.inventoryItemId) ?? []
       shops.push(row.shopId)
       shopsByItemId.set(row.inventoryItemId, shops)
     }
 
-    return itemRows.map((row) => toDomain(row, shopsByItemId.get(row.id) ?? []))
+    return itemRows.map((row) => {
+      const shopIds = shopsByItemId.get(row.id) ?? []
+      return toDomain(row, shopIds)
+    })
   }
 }
