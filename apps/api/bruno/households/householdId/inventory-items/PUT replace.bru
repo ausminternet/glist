@@ -1,0 +1,38 @@
+meta {
+  name: PUT replace
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{base_url}}/households/:householdId/inventory-items/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  householdId: d80457d8-c534-4d7f-9c2c-51ece5f1e319
+  id:
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+body:json {
+  {
+    "name": "Milch",
+    "description": "Bio Vollmilch",
+    "categoryId": null,
+    "targetStock": 2,
+    "targetStockUnit": "l",
+    "basePriceCents": null,
+    "basePriceUnit": null,
+    "shopIds": []
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
