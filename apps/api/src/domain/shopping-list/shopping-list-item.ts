@@ -4,7 +4,7 @@ import { CategoryId } from '../category/category-id'
 import { InventoryItemId } from '../inventory-item/inventory-item-id'
 import { InvalidNameError } from '../shared/errors'
 import { Quantity, QuantityError } from '../shared/quantity'
-import { ShopId } from '../shared/shop-id'
+import { ShopId } from '../shop/shop-id'
 import { ShoppingListId } from './shopping-list-id'
 import { ShoppingListItemId } from './shopping-list-item-id'
 

@@ -5,7 +5,7 @@ import { InvalidNameError } from '../shared/errors'
 import { HouseholdId } from '../shared/household-id'
 import { Price, PriceError } from '../shared/price'
 import { Quantity, QuantityError } from '../shared/quantity'
-import { ShopId } from '../shared/shop-id'
+import { ShopId } from '../shop/shop-id'
 import { InventoryItemId } from './inventory-item-id'
 
 export type NewInventoryItemInput = {

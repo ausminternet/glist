@@ -1,5 +1,5 @@
 import { parseCategoryId } from '@/domain/category/category-id'
-import { parseShopIds } from '@/domain/shared/shop-id'
+import { parseShopIds } from '@/domain/shop/shop-id'
 import {
   ShoppingListItemNotFoundError,
   ShoppingListNotFoundError,

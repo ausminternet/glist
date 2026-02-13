@@ -1,0 +1,34 @@
+meta {
+  name: PUT reorder
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{base_url}}/households/:householdId/shops/reorder
+  body: json
+  auth: inherit
+}
+
+params:path {
+  householdId: d80457d8-c534-4d7f-9c2c-51ece5f1e319
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+body:json {
+  {
+    "ids": [
+      "shop-id-1",
+      "shop-id-2",
+      "shop-id-3"
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

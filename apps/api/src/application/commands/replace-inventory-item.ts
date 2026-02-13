@@ -6,7 +6,7 @@ import {
   ChangeTargetStockError,
 } from '@/domain/inventory-item/inventory-item'
 import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import { parseShopIds } from '@/domain/shared/shop-id'
+import { parseShopIds } from '@/domain/shop/shop-id'
 import { err, ok, Result, unitTypes } from '@glist/shared'
 import z from 'zod'
 import { RequestContext } from '../shared/request-context'

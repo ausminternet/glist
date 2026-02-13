@@ -1,0 +1,24 @@
+meta {
+  name: GET all
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/households/:householdId/shops
+  body: none
+  auth: inherit
+}
+
+params:path {
+  householdId: d80457d8-c534-4d7f-9c2c-51ece5f1e319
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

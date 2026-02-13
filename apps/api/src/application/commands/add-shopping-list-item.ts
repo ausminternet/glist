@@ -1,5 +1,5 @@
 import { parseCategoryId } from '@/domain/category/category-id'
-import { parseShopIds } from '@/domain/shared/shop-id'
+import { parseShopIds } from '@/domain/shop/shop-id'
 import { CreateShoppingListItemError } from '@/domain/shopping-list/shopping-list-item'
 import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import { err, ok, Result, unitTypes } from '@glist/shared'

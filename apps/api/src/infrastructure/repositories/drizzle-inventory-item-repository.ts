@@ -8,7 +8,7 @@ import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-
 import { parseHouseholdId } from '@/domain/shared/household-id'
 import { Price } from '@/domain/shared/price'
 import { Quantity } from '@/domain/shared/quantity'
-import { parseShopIds } from '@/domain/shared/shop-id'
+import { parseShopIds } from '@/domain/shop/shop-id'
 import { Database } from '@/infrastructure/persistence'
 import {
   inventoryItems,

@@ -1,0 +1,31 @@
+meta {
+  name: PUT replace
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/households/:householdId/shops/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  householdId: d80457d8-c534-4d7f-9c2c-51ece5f1e319
+  id:
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+body:json {
+  {
+    "name": "Aldi (updated)"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
