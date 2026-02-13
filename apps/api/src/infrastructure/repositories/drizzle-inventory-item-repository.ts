@@ -111,6 +111,10 @@ export class DrizzleInventoryItemRepository implements InventoryItemRepository {
     }
   }
 
+  async delete(id: string): Promise<void> {
+    await this.db.delete(inventoryItems).where(eq(inventoryItems.id, id))
+  }
+
   async findById(id: string): Promise<InventoryItem | null> {
     const row = await this.db
       .select()
