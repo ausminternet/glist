@@ -1,0 +1,34 @@
+meta {
+  name: POST add
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/households/:householdId/shopping-lists/:listId/items
+  body: json
+  auth: inherit
+}
+
+params:path {
+  householdId: d80457d8-c534-4d7f-9c2c-51ece5f1e319
+  listId:
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+body:json {
+  {
+    "name": "Milch",
+    "description": "Bio Vollmilch",
+    "quantity": 2,
+    "quantityUnit": "l"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

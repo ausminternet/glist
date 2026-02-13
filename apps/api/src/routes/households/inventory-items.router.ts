@@ -44,14 +44,11 @@ inventoryItemsRouter.post(
         case 'INVALID_QUANTITY':
         case 'INVALID_UNIT':
         case 'UNIT_WITHOUT_VALUE':
-          console.error(
-            'Failed to create inventory item due to invalid input',
-            {
-              input,
-              householdId,
-              error: result.error,
-            },
-          )
+          console.error('Failed to create inventory item', {
+            input,
+            householdId,
+            error: result.error,
+          })
           return c.json({ success: false, error: result.error }, 400)
       }
     }

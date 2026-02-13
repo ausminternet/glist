@@ -1,3 +1,7 @@
+import {
+  AddShoppingListItemCommandHandler,
+  AddShoppingListItemCommandSchema,
+} from '@/application/commands/add-shopping-list-item'
 import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
 import {
   CreateShoppingListCommandHandler,
@@ -53,8 +57,49 @@ shoppingListsRouter.post(
     if (!result.ok) {
       switch (result.error.type) {
         case 'INVALID_NAME':
-          console.error('Failed to create shopping list due to invalid name', {
+          console.error('Failed to create shopping list', {
             name,
+            householdId,
+            error: result.error,
+          })
+          return c.json({ success: false, error: result.error }, 400)
+      }
+    }
+
+    return c.json({ success: true, data: { id: result.value } }, 201)
+  },
+)
+
+shoppingListsRouter.post(
+  '/:listId/items',
+  zValidator('json', AddShoppingListItemCommandSchema),
+  async (c) => {
+    const householdId = c.get('householdId')
+    const listId = c.req.param('listId')
+    const input = c.req.valid('json')
+
+    const db = createDb(c.env.glist_db)
+    const repository = new DrizzleShoppingListRepository(db)
+    const command = new AddShoppingListItemCommandHandler(repository)
+
+    const result = await command.execute(listId, input, { householdId })
+
+    if (!result.ok) {
+      switch (result.error.type) {
+        case 'SHOPPING_LIST_NOT_FOUND':
+          console.error('Failed to add shopping list item', {
+            listId,
+            householdId,
+            error: result.error,
+          })
+          return c.json({ success: false, error: result.error }, 404)
+        case 'INVALID_NAME':
+        case 'INVALID_QUANTITY':
+        case 'INVALID_UNIT':
+        case 'UNIT_WITHOUT_VALUE':
+          console.error('Failed to add shopping list item', {
+            listId,
+            input,
             householdId,
             error: result.error,
           })
@@ -113,7 +158,7 @@ shoppingListsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
     switch (result.error.type) {
       case 'SHOPPING_LIST_NOT_FOUND':
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
-        console.error('Failed to check shopping list item', {
+        console.error('Failed to uncheck shopping list item', {
           listId,
           itemId,
           householdId,
