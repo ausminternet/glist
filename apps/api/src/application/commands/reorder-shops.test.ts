@@ -61,6 +61,7 @@ describe('ReorderShopsCommandHandler', () => {
     if (result.ok) return
 
     expect(result.error.type).toBe('SHOP_NOT_FOUND')
+    if (result.error.type !== 'SHOP_NOT_FOUND') return
     expect(result.error.id).toBe('non-existent-id')
     expect(repository.save).not.toHaveBeenCalled()
   })
@@ -82,6 +83,7 @@ describe('ReorderShopsCommandHandler', () => {
     if (result.ok) return
 
     expect(result.error.type).toBe('SHOP_IDS_MISMATCH')
+    if (result.error.type !== 'SHOP_IDS_MISMATCH') return
     expect(result.error.reason).toContain('Expected 3')
     expect(repository.save).not.toHaveBeenCalled()
   })
@@ -102,6 +104,7 @@ describe('ReorderShopsCommandHandler', () => {
     if (result.ok) return
 
     expect(result.error.type).toBe('SHOP_IDS_MISMATCH')
+    if (result.error.type !== 'SHOP_IDS_MISMATCH') return
     expect(result.error.reason).toContain('Duplicate')
     expect(repository.save).not.toHaveBeenCalled()
   })
