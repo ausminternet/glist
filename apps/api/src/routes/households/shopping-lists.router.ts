@@ -12,6 +12,7 @@ import {
   CreateShoppingListCommandHandler,
   CreateShoppingListCommandSchema,
 } from '@/application/commands/create-shopping-list'
+import { DeleteShoppingListCommandHandler } from '@/application/commands/delete-shopping-list'
 import { RemoveShoppingListItemCommandHandler } from '@/application/commands/remove-shopping-list-item'
 import {
   ReplaceShoppingListItemCommandHandler,
@@ -80,6 +81,37 @@ shoppingListsRouter.post(
     return c.json({ success: true, data: { id: result.value } }, 201)
   },
 )
+
+shoppingListsRouter.delete('/:id', async (c) => {
+  const householdId = c.get('householdId')
+  const id = c.req.param('id')
+  const db = createDb(c.env.glist_db)
+  const repository = new DrizzleShoppingListRepository(db)
+  const command = new DeleteShoppingListCommandHandler(repository)
+
+  const result = await command.execute(id, { householdId })
+
+  if (!result.ok) {
+    switch (result.error.type) {
+      case 'SHOPPING_LIST_NOT_FOUND':
+        console.error('Failed to delete shopping list', {
+          id,
+          householdId,
+          error: result.error,
+        })
+        return c.json({ success: false, error: result.error }, 404)
+      case 'CANNOT_DELETE_LAST_SHOPPING_LIST':
+        console.error('Failed to delete shopping list', {
+          id,
+          householdId,
+          error: result.error,
+        })
+        return c.json({ success: false, error: result.error }, 400)
+    }
+  }
+
+  return c.json({ success: true })
+})
 
 shoppingListsRouter.post(
   '/:listId/items',

@@ -20,7 +20,7 @@ import {
   shoppingListItemShops,
   shoppingLists,
 } from '@/infrastructure/persistence/schema'
-import { asc, eq, inArray } from 'drizzle-orm'
+import { asc, count, eq, inArray } from 'drizzle-orm'
 
 type ShoppingListRow = typeof shoppingLists.$inferSelect
 type ShoppingListItemRow = typeof shoppingListItems.$inferSelect
@@ -187,5 +187,19 @@ export class DrizzleShoppingListRepository implements ShoppingListRepository {
     )
 
     return shoppingListToDomain(listRow, items)
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.db.delete(shoppingLists).where(eq(shoppingLists.id, id))
+  }
+
+  async countByHouseholdId(householdId: string): Promise<number> {
+    const result = await this.db
+      .select({ count: count() })
+      .from(shoppingLists)
+      .where(eq(shoppingLists.householdId, householdId))
+      .get()
+
+    return result?.count ?? 0
   }
 }
