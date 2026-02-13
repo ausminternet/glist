@@ -1,7 +1,14 @@
+import { err, ok, Result } from '@glist/shared'
+
 export interface PhotoStorage {
   upload(key: string, data: ArrayBuffer, contentType: string): Promise<void>
   delete(key: string): Promise<void>
   getPublicUrl(key: string): string
+}
+
+type PhotoNotFoundError = {
+  type: 'PHOTO_NOT_FOUND'
+  key: string
 }
 
 export class R2PhotoStorage implements PhotoStorage {
@@ -26,12 +33,14 @@ export class R2PhotoStorage implements PhotoStorage {
     await this.bucket.delete(key)
   }
 
-  async get(key: string): Promise<R2ObjectBody> {
+  async get(key: string): Promise<Result<R2ObjectBody, PhotoNotFoundError>> {
     const object = await this.bucket.get(key)
+
     if (!object) {
-      throw new Error(`Object with key ${key} not found`)
+      return err({ type: 'PHOTO_NOT_FOUND', key })
     }
-    return object
+
+    return ok(object)
   }
 
   getPublicUrl(key: string): string {

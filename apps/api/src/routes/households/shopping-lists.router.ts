@@ -438,13 +438,6 @@ shoppingListsRouter.delete('/:listId/items/:itemId/photo', async (c) => {
   if (!result.ok) {
     switch (result.error.type) {
       case 'SHOPPING_LIST_NOT_FOUND':
-        console.error('Failed to delete shopping list item photo', {
-          listId,
-          itemId,
-          householdId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to delete shopping list item photo', {
           listId,

@@ -1,7 +1,7 @@
 import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import {
-    generatePhotoKey,
-    PhotoStorage,
+  generatePhotoKey,
+  PhotoStorage,
 } from '@/infrastructure/storage/photo-storage'
 import { err, ok, Result } from '@glist/shared'
 import { RequestContext } from '../shared/request-context'
@@ -44,16 +44,13 @@ export class UploadShoppingListItemPhotoCommandHandler {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
     }
 
-    // Delete old photo if exists
     if (item.photoKey) {
       await this.photoStorage.delete(item.photoKey)
     }
 
-    // Upload new photo
     const photoKey = generatePhotoKey('shopping-list-item', itemId)
     await this.photoStorage.upload(photoKey, photoData, contentType)
 
-    // Update item with new photo key
     item.setPhotoKey(photoKey)
     await this.repository.save(shoppingList)
 

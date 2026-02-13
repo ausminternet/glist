@@ -1,7 +1,7 @@
 import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import {
-    generatePhotoKey,
-    PhotoStorage,
+  generatePhotoKey,
+  PhotoStorage,
 } from '@/infrastructure/storage/photo-storage'
 import { err, ok, Result } from '@glist/shared'
 import { RequestContext } from '../shared/request-context'
