@@ -3,9 +3,8 @@ import { ShoppingListDto } from '@glist/dtos'
 import { err, ok, Result } from '@glist/shared'
 import { toShoppingListDto } from '../mappers/shopping-list.mapper'
 import { RequestContext } from '../shared/request-context'
-type GetShoppingListQueryError =
-  | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
-  | { type: 'UNKNOWN_ERROR' }
+
+type GetShoppingListQueryError = { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
 
 export interface GetShoppingListQuery {
   id: string
