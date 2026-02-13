@@ -14,7 +14,7 @@ export type NewShoppingListItemInput = {
   shopIds?: string[]
 }
 
-type ShoppingListItemProps = {
+export type ShoppingListItemProps = {
   id: string
   shoppingListId: string
   inventoryItemId: string | null
@@ -29,7 +29,7 @@ type ShoppingListItemProps = {
 }
 
 export class ShoppingListItem {
-  private constructor(private props: ShoppingListItemProps) {}
+  constructor(private props: ShoppingListItemProps) {}
 
   static create(
     shoppingListId: string,
@@ -87,40 +87,6 @@ export class ShoppingListItem {
       shopIds: inventoryItem.shopIds,
       createdAt: new Date(),
       updatedAt: null,
-    })
-  }
-
-  static reconstitute(data: {
-    id: string
-    shoppingListId: string
-    name: string
-    description: string | null
-    categoryId: string | null
-    quantity: number | null
-    quantityUnit: string | null
-    checked: boolean
-    shopIds: string[]
-    createdAt: Date
-    updatedAt: Date | null
-    inventoryItemId: string | null
-  }): ShoppingListItem {
-    const quantityResult = Quantity.create(data.quantity, data.quantityUnit)
-
-    // reconstitute assumes valid data from DB, use empty on failure
-    const quantity = quantityResult.ok ? quantityResult.value : Quantity.empty()
-
-    return new ShoppingListItem({
-      id: data.id,
-      shoppingListId: data.shoppingListId,
-      name: data.name,
-      description: data.description,
-      categoryId: data.categoryId,
-      quantity,
-      checked: data.checked,
-      shopIds: data.shopIds,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      inventoryItemId: data.inventoryItemId,
     })
   }
 
@@ -216,22 +182,5 @@ export class ShoppingListItem {
   uncheck(): void {
     this.props.checked = false
     this.props.updatedAt = new Date()
-  }
-
-  toSnapshot() {
-    return {
-      id: this.props.id,
-      shoppingListId: this.props.shoppingListId,
-      name: this.props.name,
-      description: this.props.description,
-      categoryId: this.props.categoryId,
-      quantity: this.props.quantity.value,
-      quantityUnit: this.props.quantity.unit,
-      checked: this.props.checked,
-      shopIds: [...this.props.shopIds],
-      createdAt: this.props.createdAt,
-      updatedAt: this.props.updatedAt,
-      inventoryItemId: this.props.inventoryItemId,
-    } as const
   }
 }

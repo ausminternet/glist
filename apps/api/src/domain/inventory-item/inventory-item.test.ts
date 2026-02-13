@@ -114,38 +114,6 @@ describe('InventoryItem', () => {
     })
   })
 
-  describe('reconstitute', () => {
-    test('restores item from database', () => {
-      const createdAt = new Date('2024-01-01')
-      const updatedAt = new Date('2024-01-02')
-
-      const item = InventoryItem.reconstitute({
-        id: 'item-456',
-        householdId: 'household-789',
-        name: 'Butter',
-        description: 'Irish butter',
-        categoryId: 'cat-dairy',
-        targetStock: 500,
-        targetStockUnit: 'g',
-        basePriceCents: 349,
-        basePriceUnit: 'pack',
-        shopIds: ['shop-1'],
-        createdAt,
-        updatedAt,
-      })
-
-      expect(item.id).toBe('item-456')
-      expect(item.householdId).toBe('household-789')
-      expect(item.name).toBe('Butter')
-      expect(item.targetStock).toBe(500)
-      expect(item.targetStockUnit).toBe('g')
-      expect(item.basePriceCents).toBe(349)
-      expect(item.basePriceUnit).toBe('pack')
-      expect(item.createdAt).toBe(createdAt)
-      expect(item.updatedAt).toBe(updatedAt)
-    })
-  })
-
   describe('mutations', () => {
     test('changeName updates name and updatedAt', () => {
       const createResult = InventoryItem.create(householdId, { name: 'Milk' })
@@ -214,42 +182,6 @@ describe('InventoryItem', () => {
       expect(result2.ok).toBe(false)
       if (result2.ok) return
       expect(result2.error).toEqual({ type: 'INVALID_UNIT', unit: 'invalid' })
-    })
-  })
-
-  describe('toSnapshot', () => {
-    test('creates snapshot with all data', () => {
-      const createResult = InventoryItem.create(householdId, {
-        name: 'Milk',
-        description: 'Organic',
-        categoryId: 'cat-dairy',
-        targetStock: 2,
-        targetStockUnit: 'l',
-        basePriceCents: 199,
-        basePriceUnit: 'l',
-        shopIds: ['shop-1'],
-      })
-
-      expect(createResult.ok).toBe(true)
-      if (!createResult.ok) return
-
-      const item = createResult.value
-      const snapshot = item.toSnapshot()
-
-      expect(snapshot).toEqual({
-        id: item.id,
-        householdId,
-        name: 'Milk',
-        description: 'Organic',
-        categoryId: 'cat-dairy',
-        targetStock: 2,
-        targetStockUnit: 'l',
-        basePriceCents: 199,
-        basePriceUnit: 'l',
-        shopIds: ['shop-1'],
-        createdAt: expect.any(Date),
-        updatedAt: null,
-      })
     })
   })
 })

@@ -8,7 +8,7 @@ import {
   ShoppingListItemError,
 } from './shopping-list-item'
 
-type ShoppingListProps = {
+export type ShoppingListProps = {
   id: string
   householdId: string
   name: string
@@ -18,7 +18,7 @@ type ShoppingListProps = {
 }
 
 export class ShoppingList {
-  private constructor(private props: ShoppingListProps) {}
+  constructor(private props: ShoppingListProps) {}
 
   static create(
     householdId: string,
@@ -38,24 +38,6 @@ export class ShoppingList {
         updatedAt: null,
       }),
     )
-  }
-
-  static reconstitute(data: {
-    id: string
-    householdId: string
-    name: string
-    items: ShoppingListItem[]
-    createdAt: Date
-    updatedAt: Date | null
-  }): ShoppingList {
-    return new ShoppingList({
-      id: data.id,
-      householdId: data.householdId,
-      name: data.name,
-      items: data.items,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    })
   }
 
   get id(): string {
@@ -147,16 +129,5 @@ export class ShoppingList {
 
   findItem(itemId: string): ShoppingListItem | undefined {
     return this.props.items.find((item) => item.id === itemId)
-  }
-
-  toSnapshot() {
-    return {
-      id: this.props.id,
-      householdId: this.props.householdId,
-      name: this.props.name,
-      items: this.props.items.map((item) => item.toSnapshot()),
-      createdAt: this.props.createdAt,
-      updatedAt: this.props.updatedAt,
-    } as const
   }
 }

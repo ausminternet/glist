@@ -39,28 +39,6 @@ describe('ShoppingList', () => {
     })
   })
 
-  describe('reconstitute', () => {
-    test('restores list from database', () => {
-      const createdAt = new Date('2024-01-01')
-      const updatedAt = new Date('2024-01-02')
-
-      const list = ShoppingList.reconstitute({
-        id: 'list-456',
-        householdId: 'household-789',
-        name: 'Groceries',
-        items: [],
-        createdAt,
-        updatedAt,
-      })
-
-      expect(list.id).toBe('list-456')
-      expect(list.householdId).toBe('household-789')
-      expect(list.name).toBe('Groceries')
-      expect(list.createdAt).toBe(createdAt)
-      expect(list.updatedAt).toBe(updatedAt)
-    })
-  })
-
   describe('validation on change', () => {
     test('changeName returns INVALID_NAME error for empty name', () => {
       const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
@@ -210,30 +188,6 @@ describe('ShoppingList', () => {
 
       expect(list.items).toHaveLength(1)
       expect(list.items[0].name).toBe('Bread')
-    })
-  })
-
-  describe('toSnapshot', () => {
-    test('creates snapshot with all data including items', () => {
-      const createResult = ShoppingList.create(householdId, 'Weekly Shopping')
-      expect(createResult.ok).toBe(true)
-      if (!createResult.ok) return
-
-      const list = createResult.value
-      const itemResult = list.addItem({
-        name: 'Milk',
-        quantity: 2,
-        quantityUnit: 'l',
-      })
-      expect(itemResult.ok).toBe(true)
-
-      const snapshot = list.toSnapshot()
-
-      expect(snapshot.id).toBe(list.id)
-      expect(snapshot.householdId).toBe(householdId)
-      expect(snapshot.name).toBe('Weekly Shopping')
-      expect(snapshot.items).toHaveLength(1)
-      expect(snapshot.items[0].name).toBe('Milk')
     })
   })
 

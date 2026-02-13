@@ -62,35 +62,6 @@ describe('ShoppingListItem', () => {
     })
   })
 
-  describe('reconstitute', () => {
-    test('restores item from database', () => {
-      const createdAt = new Date('2024-01-01')
-      const updatedAt = new Date('2024-01-02')
-
-      const item = ShoppingListItem.reconstitute({
-        id: 'item-456',
-        shoppingListId: 'list-789',
-        name: 'Butter',
-        description: 'Irish butter',
-        categoryId: 'cat-dairy',
-        quantity: 250,
-        quantityUnit: 'g',
-        checked: true,
-        shopIds: ['shop-1'],
-        createdAt,
-        updatedAt,
-        inventoryItemId: null,
-      })
-
-      expect(item.id).toBe('item-456')
-      expect(item.shoppingListId).toBe('list-789')
-      expect(item.name).toBe('Butter')
-      expect(item.checked).toBe(true)
-      expect(item.createdAt).toBe(createdAt)
-      expect(item.updatedAt).toBe(updatedAt)
-    })
-  })
-
   describe('validation on change', () => {
     test('changeName returns INVALID_NAME error for empty name', () => {
       const createResult = ShoppingListItem.create(shoppingListId, {
@@ -149,41 +120,6 @@ describe('ShoppingListItem', () => {
       expect(item.checked).toBe(true)
       item.toggleChecked()
       expect(item.checked).toBe(false)
-    })
-  })
-
-  describe('toSnapshot', () => {
-    test('creates snapshot with all data', () => {
-      const createResult = ShoppingListItem.create(shoppingListId, {
-        name: 'Organic Milk',
-        description: 'From the farm',
-        categoryId: 'cat-123',
-        quantity: 2,
-        quantityUnit: 'l',
-        shopIds: ['shop-1'],
-      })
-      expect(createResult.ok).toBe(true)
-      if (!createResult.ok) return
-
-      const item = createResult.value
-      item.check()
-
-      const snapshot = item.toSnapshot()
-
-      expect(snapshot).toEqual({
-        id: item.id,
-        shoppingListId,
-        name: 'Organic Milk',
-        description: 'From the farm',
-        categoryId: 'cat-123',
-        quantity: 2,
-        quantityUnit: 'l',
-        checked: true,
-        shopIds: ['shop-1'],
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
-        inventoryItemId: null,
-      })
     })
   })
 
