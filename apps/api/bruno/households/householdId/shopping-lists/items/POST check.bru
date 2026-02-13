@@ -5,15 +5,15 @@ meta {
 }
 
 post {
-  url: {{base_url}}/v1/households/:householdId/shopping-lists/:listId/items/:itemId/check
+  url: {{base_url}}/households/:householdId/shopping-lists/:listId/items/:itemId/check
   body: none
   auth: inherit
 }
 
 params:path {
-  householdId:
-  listId:
-  itemId:
+  householdId: 
+  listId: 
+  itemId: 
 }
 
 headers {

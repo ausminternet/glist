@@ -1,32 +1,20 @@
-// export class ShoppingListError extends Error {
-//   constructor(message: string) {
-//     super(message)
-//     this.name = 'ShoppingListError'
-//   }
-// }
-
-// export class InvalidNameError extends ShoppingListError {
-//   constructor() {
-//     super('name should not be empty')
-//   }
-// }
-
-// export class ShoppingListItemNotFoundError extends ShoppingListError {
-//   constructor(public readonly itemId: string) {
-//     super(`item with id ${itemId} not found`)
-//   }
-// }
-
-// export class ShoppingListNotFoundError extends ShoppingListError {
-//   constructor(public readonly id: string) {
-//     super(`Shopping list not found: ${id}`)
-//   }
-// }
+export type InvalidNameError = { type: 'INVALID_NAME'; reason: string }
+export type InvalidQuantityError = { type: 'INVALID_QUANTITY' }
+export type UnitWithoutValueError = { type: 'UNIT_WITHOUT_VALUE' }
+export type InvalidUnitError = { type: 'INVALID_UNIT'; unit: string }
+export type ShoppingListNotFoundError = {
+  type: 'SHOPPING_LIST_NOT_FOUND'
+  id: string
+}
+export type ShoppingListItemNotFoundError = {
+  type: 'SHOPPING_LIST_ITEM_NOT_FOUND'
+  id: string
+}
 
 export type ShoppingListError =
-  | { type: 'SHOPPING_LIST_ITEM_NOT_FOUND'; id: string }
-  | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
-  | { type: 'INVALID_NAME' }
-  | { type: 'INVALID_QUANTITY' }
-  | { type: 'UNIT_WITHOUT_VALUE' }
-  | { type: 'INVALID_UNIT'; unit: string }
+  | InvalidNameError
+  | InvalidQuantityError
+  | UnitWithoutValueError
+  | InvalidUnitError
+  | ShoppingListNotFoundError
+  | ShoppingListItemNotFoundError

@@ -24,12 +24,18 @@ describe('ShoppingList', () => {
       const result1 = ShoppingList.create(householdId, '')
       expect(result1.ok).toBe(false)
       if (result1.ok) return
-      expect(result1.error).toEqual({ type: 'INVALID_NAME' })
+      expect(result1.error).toEqual({
+        type: 'INVALID_NAME',
+        reason: 'Name cannot be empty',
+      })
 
       const result2 = ShoppingList.create(householdId, '   ')
       expect(result2.ok).toBe(false)
       if (result2.ok) return
-      expect(result2.error).toEqual({ type: 'INVALID_NAME' })
+      expect(result2.error).toEqual({
+        type: 'INVALID_NAME',
+        reason: 'Name cannot be empty',
+      })
     })
   })
 
@@ -66,12 +72,18 @@ describe('ShoppingList', () => {
       const result1 = list.changeName('')
       expect(result1.ok).toBe(false)
       if (result1.ok) return
-      expect(result1.error).toEqual({ type: 'INVALID_NAME' })
+      expect(result1.error).toEqual({
+        type: 'INVALID_NAME',
+        reason: 'Name cannot be empty',
+      })
 
       const result2 = list.changeName('   ')
       expect(result2.ok).toBe(false)
       if (result2.ok) return
-      expect(result2.error).toEqual({ type: 'INVALID_NAME' })
+      expect(result2.error).toEqual({
+        type: 'INVALID_NAME',
+        reason: 'Name cannot be empty',
+      })
     })
   })
 

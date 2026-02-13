@@ -3,10 +3,13 @@ import { Hono } from 'hono'
 const app = new Hono<{ Bindings: CloudflareBindings }>()
 
 import serverKey from './middleware/server-key.js'
-import v1Router from './router.js'
+import router from './router.js'
 
 app.use(serverKey)
-
-app.route('/v1', v1Router)
+app.onError((err, c) => {
+  console.error('An error occurred:', err)
+  return c.json({ success: false, error: 'Internal Server Error' }, 500)
+})
+app.route('/', router)
 
 export default app

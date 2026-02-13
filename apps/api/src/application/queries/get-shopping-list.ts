@@ -3,7 +3,9 @@ import { ShoppingListDto } from '@glist/dtos'
 import { err, ok, Result } from '@glist/shared'
 import { toShoppingListDto } from '../mappers/shopping-list.mapper'
 
-type GetShoppingListQueryError = { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
+type GetShoppingListQueryError =
+  | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
+  | { type: 'UNKNOWN_ERROR' }
 
 export class GetShoppingListQuery {
   constructor(private repository: ShoppingListRepository) {}
@@ -12,12 +14,17 @@ export class GetShoppingListQuery {
     id: string,
     householdId: string,
   ): Promise<Result<ShoppingListDto, GetShoppingListQueryError>> {
-    const shoppingList = await this.repository.findById(id)
+    try {
+      const shoppingList = await this.repository.findById(id)
 
-    if (!shoppingList || shoppingList.householdId !== householdId) {
-      return err({ type: 'SHOPPING_LIST_NOT_FOUND', id })
+      if (!shoppingList || shoppingList.householdId !== householdId) {
+        return err({ type: 'SHOPPING_LIST_NOT_FOUND', id })
+      }
+
+      return ok(toShoppingListDto(shoppingList))
+    } catch (error) {
+      console.error('Error executing GetShoppingListQuery:', error)
+      return err({ type: 'UNKNOWN_ERROR', id })
     }
-
-    return ok(toShoppingListDto(shoppingList))
   }
 }

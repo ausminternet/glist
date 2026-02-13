@@ -1,10 +1,11 @@
 import { isBlank } from '@/utils/is-blank'
 
 import { err, ok, Result } from '@glist/shared'
-import { ShoppingListError } from './errors'
+import { InvalidNameError, ShoppingListItemNotFoundError } from './errors'
 import {
   NewShoppingListItemInput,
   ShoppingListItem,
+  ShoppingListItemError,
 } from './shopping-list-item'
 
 type ShoppingListProps = {
@@ -22,9 +23,9 @@ export class ShoppingList {
   static create(
     householdId: string,
     name: string,
-  ): Result<ShoppingList, ShoppingListError> {
+  ): Result<ShoppingList, InvalidNameError> {
     if (isBlank(name)) {
-      return err({ type: 'INVALID_NAME' })
+      return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
     }
 
     return ok(
@@ -76,9 +77,9 @@ export class ShoppingList {
     return this.props.updatedAt
   }
 
-  changeName(name: string): Result<void, ShoppingListError> {
+  changeName(name: string): Result<void, InvalidNameError> {
     if (isBlank(name)) {
-      return err({ type: 'INVALID_NAME' })
+      return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
     }
 
     this.props.name = name
@@ -94,7 +95,7 @@ export class ShoppingList {
 
   addItem(
     input: NewShoppingListItemInput,
-  ): Result<ShoppingListItem, ShoppingListError> {
+  ): Result<ShoppingListItem, ShoppingListItemError> {
     const itemResult = ShoppingListItem.create(this.props.id, input)
     if (!itemResult.ok) {
       return itemResult
@@ -121,7 +122,7 @@ export class ShoppingList {
     return shoppingListItem
   }
 
-  removeItem(itemId: string): Result<void, ShoppingListError> {
+  removeItem(itemId: string): Result<void, ShoppingListItemNotFoundError> {
     const index = this.props.items.findIndex((item) => item.id === itemId)
     if (index === -1) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
@@ -133,7 +134,9 @@ export class ShoppingList {
     return ok(undefined)
   }
 
-  getItem(itemId: string): Result<ShoppingListItem, ShoppingListError> {
+  getItem(
+    itemId: string,
+  ): Result<ShoppingListItem, ShoppingListItemNotFoundError> {
     const item = this.props.items.find((item) => item.id === itemId)
     if (!item) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })

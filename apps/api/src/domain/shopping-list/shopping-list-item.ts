@@ -1,7 +1,9 @@
 import { isBlank } from '@/utils/is-blank'
 import { err, ok, Result, UnitType } from '@glist/shared'
-import { Quantity } from '../shared/quantity'
-import { ShoppingListError } from './errors'
+import { Quantity, QuantityError } from '../shared/quantity'
+import { InvalidNameError } from './errors'
+
+export type ShoppingListItemError = InvalidNameError | QuantityError
 
 export type NewShoppingListItemInput = {
   name: string
@@ -32,9 +34,9 @@ export class ShoppingListItem {
   static create(
     shoppingListId: string,
     input: NewShoppingListItemInput,
-  ): Result<ShoppingListItem, ShoppingListError> {
+  ): Result<ShoppingListItem, InvalidNameError | QuantityError> {
     if (isBlank(input.name)) {
-      return err({ type: 'INVALID_NAME' })
+      return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
     }
 
     const quantityResult = Quantity.create(
@@ -160,9 +162,9 @@ export class ShoppingListItem {
     return this.props.inventoryItemId
   }
 
-  changeName(name: string): Result<void, ShoppingListError> {
+  changeName(name: string): Result<void, InvalidNameError> {
     if (isBlank(name)) {
-      return err({ type: 'INVALID_NAME' })
+      return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
     }
     this.props.name = name
     this.props.updatedAt = new Date()
@@ -178,7 +180,7 @@ export class ShoppingListItem {
   changeQuantity(
     quantity: number | null,
     quantityUnit: string | null,
-  ): Result<void, ShoppingListError> {
+  ): Result<void, QuantityError> {
     const quantityResult = Quantity.create(quantity, quantityUnit)
 
     if (!quantityResult.ok) {

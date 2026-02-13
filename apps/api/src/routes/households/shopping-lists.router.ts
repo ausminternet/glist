@@ -2,8 +2,13 @@ import { CheckShoppingListItemCommand } from '@/application/commands/check-shopp
 import { UncheckShoppingListItemCommand } from '@/application/commands/uncheck-shopping-list-item'
 import { GetShoppingListQuery } from '@/application/queries/get-shopping-list'
 
+import {
+  CreateShoppingListCommandHandler,
+  CreateShoppingListCommandSchema,
+} from '@/application/commands/create-shopping-list'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
+import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { HouseholdContext } from './context'
 
@@ -18,15 +23,40 @@ shoppingListsRouter.get('/:id', async (c) => {
 
   const result = await query.execute(id, householdId)
   if (!result.ok) {
-    if (result.error.type === 'SHOPPING_LIST_NOT_FOUND') {
-      return c.json({ success: false, error: 'Shopping list not found' }, 404)
+    switch (result.error.type) {
+      case 'SHOPPING_LIST_NOT_FOUND':
+        return c.json({ success: false, error: 'Shopping list not found' }, 404)
+      case 'UNKNOWN_ERROR':
+        return c.json({ success: false, error: 'An error occurred' }, 500)
     }
-
-    return c.json({ success: false, error: 'An error occurred' }, 500)
   }
 
   return c.json({ success: true, data: result.value })
 })
+
+shoppingListsRouter.post(
+  '/',
+  zValidator('json', CreateShoppingListCommandSchema),
+  async (c) => {
+    const householdId = c.get('householdId')
+    const { name } = c.req.valid('json')
+
+    const db = createDb(c.env.glist_db)
+    const repository = new DrizzleShoppingListRepository(db)
+    const command = new CreateShoppingListCommandHandler(repository)
+
+    const result = await command.execute({ name }, { householdId })
+
+    if (!result.ok) {
+      switch (result.error.type) {
+        case 'INVALID_NAME':
+          return c.json({ success: false, error: result.error.reason }, 400)
+      }
+    }
+
+    return c.json({ success: true, data: { id: result.value } }, 201)
+  },
+)
 
 shoppingListsRouter.post('/:listId/items/:itemId/check', async (c) => {
   const householdId = c.get('householdId')

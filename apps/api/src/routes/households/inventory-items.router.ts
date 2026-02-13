@@ -12,8 +12,9 @@ inventoryItemsRouter.get('/', async (c) => {
   const repository = new DrizzleInventoryItemRepository(db)
   const query = new GetInventoryItemsQuery(repository)
 
-  const data = await query.execute(householdId)
-  return c.json({ success: true, data })
+  const items = await query.execute(householdId)
+
+  return c.json({ success: true, data: items })
 })
 
 export default inventoryItemsRouter

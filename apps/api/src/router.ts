@@ -1,14 +1,14 @@
 import { Hono } from 'hono'
-import adminRouter from './routes/v1/admin'
-import householdRouter from './routes/v1/households'
+import adminRouter from './routes/admin'
+import householdRouter from './routes/households'
 
-const v1Router = new Hono<{ Bindings: CloudflareBindings }>()
+const router = new Hono<{ Bindings: CloudflareBindings }>()
 
-v1Router.get('/', (c) => {
+router.get('/', (c) => {
   return c.text('Hello Hono!')
 })
 
-v1Router.route('/admin', adminRouter)
-v1Router.route('/households/:householdId', householdRouter)
+router.route('/admin', adminRouter)
+router.route('/households/:householdId', householdRouter)
 
-export default v1Router
+export default router
