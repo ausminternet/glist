@@ -1,14 +1,11 @@
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+import { assertValidUuid, DomainId, generateId } from './domain-id'
 
-export type HouseholdId = string & { readonly __brand: 'HouseholdId' }
+export type HouseholdId = DomainId<'HouseholdId'>
 
 export const parseHouseholdId = (raw: string): HouseholdId => {
-  if (!UUID_REGEX.test(raw)) {
-    throw new Error('invalid HouseholdId')
-  }
+  assertValidUuid(raw)
   return raw as HouseholdId
 }
 
 export const generateHouseholdId = (): HouseholdId =>
-  crypto.randomUUID() as HouseholdId
+  generateId<'HouseholdId'>()

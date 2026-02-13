@@ -1,14 +1,10 @@
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+import { assertValidUuid, DomainId, generateId } from '../shared/domain-id'
 
-export type CategoryId = string & { readonly __brand: 'CategoryId' }
+export type CategoryId = DomainId<'CategoryId'>
 
 export const parseCategoryId = (raw: string): CategoryId => {
-  if (!UUID_REGEX.test(raw)) {
-    throw new Error('invalid CategoryId')
-  }
+  assertValidUuid(raw)
   return raw as CategoryId
 }
 
-export const generateCategoryId = (): CategoryId =>
-  crypto.randomUUID() as CategoryId
+export const generateCategoryId = (): CategoryId => generateId<'CategoryId'>()

@@ -1,18 +1,11 @@
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-type DomainId<Brand extends string> = string & {
-  readonly __brand: Brand
-}
+import { assertValidUuid, DomainId, generateId } from '../shared/domain-id'
 
 export type InventoryItemId = DomainId<'InventoryItemId'>
 
 export const parseInventoryItemId = (raw: string): InventoryItemId => {
-  if (!UUID_REGEX.test(raw)) {
-    throw new Error('invalid InventoryItemId')
-  }
+  assertValidUuid(raw)
   return raw as InventoryItemId
 }
 
 export const generateInventoryItemId = (): InventoryItemId =>
-  crypto.randomUUID() as InventoryItemId
+  generateId<'InventoryItemId'>()
