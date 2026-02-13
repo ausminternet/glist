@@ -11,6 +11,7 @@ import {
   CreateShoppingListCommandHandler,
   CreateShoppingListCommandSchema,
 } from '@/application/commands/create-shopping-list'
+import { RemoveShoppingListItemCommandHandler } from '@/application/commands/remove-shopping-list-item'
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
 import { GetShoppingListQueryHandler } from '@/application/queries/get-shopping-list'
 import { createDb } from '@/infrastructure/persistence'
@@ -200,6 +201,33 @@ shoppingListsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
       case 'SHOPPING_LIST_NOT_FOUND':
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to uncheck shopping list item', {
+          listId,
+          itemId,
+          householdId,
+          error: result.error,
+        })
+        return c.json({ success: false, error: result.error }, 404)
+    }
+  }
+
+  return c.json({ success: true })
+})
+
+shoppingListsRouter.delete('/:listId/items/:itemId', async (c) => {
+  const householdId = c.get('householdId')
+  const listId = c.req.param('listId')
+  const itemId = c.req.param('itemId')
+  const db = createDb(c.env.glist_db)
+  const repository = new DrizzleShoppingListRepository(db)
+  const command = new RemoveShoppingListItemCommandHandler(repository)
+
+  const result = await command.execute(listId, itemId, { householdId })
+
+  if (!result.ok) {
+    switch (result.error.type) {
+      case 'SHOPPING_LIST_NOT_FOUND':
+      case 'SHOPPING_LIST_ITEM_NOT_FOUND':
+        console.error('Failed to remove shopping list item', {
           listId,
           itemId,
           householdId,
