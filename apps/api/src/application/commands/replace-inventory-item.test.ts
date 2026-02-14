@@ -1,10 +1,10 @@
+import { describe, expect, mock, test } from 'bun:test'
 import { InventoryItem } from '@/domain/inventory-item/inventory-item'
 import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
-import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import { parseHouseholdId } from '@/domain/shared/household-id'
-import { describe, expect, mock, test } from 'bun:test'
 import {
-  ReplaceInventoryItemCommand,
+  type ReplaceInventoryItemCommand,
   ReplaceInventoryItemCommandHandler,
 } from './replace-inventory-item'
 

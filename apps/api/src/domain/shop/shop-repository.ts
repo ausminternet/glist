@@ -1,4 +1,4 @@
-import { Shop } from './shop';
+import type { Shop } from './shop'
 
 export interface ShopRepository {
   findById(id: string): Promise<Shop | null>

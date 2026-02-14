@@ -1,10 +1,10 @@
-import { ShoppingListQueryRepository } from '@/domain/shopping-list/shopping-list-query-repository'
-import { ShoppingListItemView, ShoppingListView } from '@glist/views'
+import type { ShoppingListItemView, ShoppingListView } from '@glist/views'
 import { asc, eq, inArray } from 'drizzle-orm'
-import { Database } from '../persistence'
+import type { ShoppingListQueryRepository } from '@/domain/shopping-list/shopping-list-query-repository'
+import type { Database } from '../persistence'
 import {
-  shoppingListItems,
   shoppingListItemShops,
+  shoppingListItems,
   shoppingLists,
 } from '../persistence/schema'
 
@@ -46,7 +46,9 @@ function shoppingListToView(
   }
 }
 
-export class DrizzleShoppingListQueryRepository implements ShoppingListQueryRepository {
+export class DrizzleShoppingListQueryRepository
+  implements ShoppingListQueryRepository
+{
   constructor(private db: Database) {}
 
   async findById(id: string): Promise<ShoppingListView | null> {

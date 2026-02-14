@@ -1,9 +1,9 @@
-import { Category, CreateCategoryError } from '@/domain/category/category'
+import { err, ok, type Result } from '@glist/shared'
+import { Category, type CreateCategoryError } from '@/domain/category/category'
 import { generateCategoryId } from '@/domain/category/category-id'
-import { CategoryRepository } from '@/domain/category/category-repository'
+import type { CategoryRepository } from '@/domain/category/category-repository'
 import { parseHouseholdId } from '@/domain/shared/household-id'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import type { RequestContext } from '../shared/request-context'
 
 export type CreateCategoryCommand = {
   name: string

@@ -1,5 +1,5 @@
-import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import { Hono } from 'hono'
+import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
 
 const photosRouter = new Hono<{ Bindings: CloudflareBindings }>()
 

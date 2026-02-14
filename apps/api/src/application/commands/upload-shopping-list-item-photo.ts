@@ -1,10 +1,10 @@
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import { err, ok, type Result } from '@glist/shared'
+import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import {
   generatePhotoKey,
-  PhotoStorage,
+  type PhotoStorage,
 } from '@/infrastructure/storage/photo-storage'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import type { RequestContext } from '../shared/request-context'
 
 export type UploadShoppingListItemPhotoError =
   | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }

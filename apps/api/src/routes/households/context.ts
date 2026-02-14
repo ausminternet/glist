@@ -1,7 +1,7 @@
+import { eq } from 'drizzle-orm'
+import type { MiddlewareHandler } from 'hono'
 import { createDb } from '@/infrastructure/persistence'
 import { households } from '@/infrastructure/persistence/schema'
-import { eq } from 'drizzle-orm'
-import { MiddlewareHandler } from 'hono'
 
 export type HouseholdContext = {
   Bindings: CloudflareBindings

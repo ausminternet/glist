@@ -1,8 +1,8 @@
+import { err, ok, type Result } from '@glist/shared'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
-import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type AddShoppingListItemFromInventoryCommand = {
   inventoryItemId: string

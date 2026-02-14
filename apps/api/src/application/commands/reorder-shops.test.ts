@@ -1,8 +1,8 @@
+import { describe, expect, mock, test } from 'bun:test'
 import { parseHouseholdId } from '@/domain/shared/household-id'
 import { Shop } from '@/domain/shop/shop'
 import { generateShopId } from '@/domain/shop/shop-id'
-import { ShopRepository } from '@/domain/shop/shop-repository'
-import { describe, expect, mock, test } from 'bun:test'
+import type { ShopRepository } from '@/domain/shop/shop-repository'
 import { ReorderShopsCommandHandler } from './reorder-shops'
 
 const householdId = '00000000-0000-0000-0000-000000000001'

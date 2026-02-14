@@ -1,13 +1,13 @@
+import { describe, expect, mock, test } from 'bun:test'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { InventoryItem } from '@/domain/inventory-item/inventory-item'
 import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
-import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import { parseHouseholdId } from '@/domain/shared/household-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
 import { ShoppingList } from '@/domain/shopping-list/shopping-list'
 import { generateShoppingListId } from '@/domain/shopping-list/shopping-list-id'
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
-import { describe, expect, mock, test } from 'bun:test'
+import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import { AddShoppingListItemFromInventoryCommandHandler } from './add-shopping-list-item-from-inventory'
 
 function createTestShoppingList(householdId: string) {

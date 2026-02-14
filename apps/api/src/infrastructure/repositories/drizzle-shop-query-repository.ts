@@ -1,7 +1,7 @@
-import { ShopQueryRepository } from '@/domain/shop/shop-query-repository'
-import { ShopView } from '@glist/views'
+import type { ShopView } from '@glist/views'
 import { asc, eq } from 'drizzle-orm'
-import { Database } from '../persistence'
+import type { ShopQueryRepository } from '@/domain/shop/shop-query-repository'
+import type { Database } from '../persistence'
 import { shops } from '../persistence/schema'
 
 type ShopRow = typeof shops.$inferSelect
@@ -11,7 +11,7 @@ function shopRowToView(row: ShopRow): ShopView {
     id: row.id,
     householdId: row.householdId,
     name: row.name,
-    createdAt: row.createdAt!.toISOString(),
+    createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt?.toISOString() ?? null,
   }
 }

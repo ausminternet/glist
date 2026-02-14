@@ -1,12 +1,13 @@
+import { err, ok, type Result } from '@glist/shared'
 import { parseHouseholdId } from '@/domain/shared/household-id'
 import {
-  CreateShoppingListError,
+  type CreateShoppingListError,
   ShoppingList,
 } from '@/domain/shopping-list/shopping-list'
 import { generateShoppingListId } from '@/domain/shopping-list/shopping-list-id'
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { RequestContext } from '../shared/request-context'
+
 type CreateShoppingListCommandError = CreateShoppingListError
 
 export type CreateShoppingListCommand = {

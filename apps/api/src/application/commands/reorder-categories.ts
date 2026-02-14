@@ -1,6 +1,6 @@
-import { CategoryRepository } from '@/domain/category/category-repository'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import { err, ok, type Result } from '@glist/shared'
+import type { CategoryRepository } from '@/domain/category/category-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type ReorderCategoriesCommand = {
   ids: string[]
@@ -49,7 +49,10 @@ export class ReorderCategoriesCommandHandler {
     // Update sort order for each category
     const categoryMap = new Map(categories.map((c) => [c.id as string, c]))
     const updates = command.ids.map((id, index) => {
-      const category = categoryMap.get(id)!
+      const category = categoryMap.get(id)
+      if (!category) {
+        throw new Error(`Category not found for id ${id}`)
+      }
       category.changeSortOrder(index)
       return this.repository.save(category)
     })

@@ -1,4 +1,4 @@
-import { UnitType } from '@glist/shared'
+import type { UnitType } from '@glist/shared'
 
 export type InventoryItemView = {
   id: string

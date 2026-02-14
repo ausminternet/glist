@@ -1,8 +1,8 @@
-import { InventoryItemQueryRepository } from '@/domain/inventory-item/inventory-item-query-repository'
-import { InventoryItemView } from '@glist/views'
+import type { InventoryItemView } from '@glist/views'
 import { asc, eq, inArray } from 'drizzle-orm'
-import { Database } from '../persistence'
-import { inventoryItems, inventoryItemShops } from '../persistence/schema'
+import type { InventoryItemQueryRepository } from '@/domain/inventory-item/inventory-item-query-repository'
+import type { Database } from '../persistence'
+import { inventoryItemShops, inventoryItems } from '../persistence/schema'
 
 type InventoryItemRow = typeof inventoryItems.$inferSelect
 
@@ -20,14 +20,16 @@ function inventoryItemRowToView(
     basePriceUnit: row.basePriceUnit,
     targetStock: row.targetStock,
     targetStockUnit: row.targetStockUnit,
-    createdAt: row.createdAt!.toISOString(),
+    createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt?.toISOString() ?? null,
     shopIds,
     photoUrl: row.photoKey,
   }
 }
 
-export class DrizzleInventoryItemQueryRepository implements InventoryItemQueryRepository {
+export class DrizzleInventoryItemQueryRepository
+  implements InventoryItemQueryRepository
+{
   constructor(private db: Database) {}
 
   async findAllByHouseholdId(

@@ -1,7 +1,7 @@
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
-import { PhotoStorage } from '@/infrastructure/storage/photo-storage'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import { err, ok, type Result } from '@glist/shared'
+import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
+import type { RequestContext } from '../shared/request-context'
 
 export type DeleteShoppingListItemPhotoError =
   | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }

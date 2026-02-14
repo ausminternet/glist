@@ -1,3 +1,4 @@
+import { asc, count, eq, inArray } from 'drizzle-orm'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import { parseHouseholdId } from '@/domain/shared/household-id'
@@ -5,22 +6,21 @@ import { Quantity } from '@/domain/shared/quantity'
 import { parseShopIds } from '@/domain/shop/shop-id'
 import {
   ShoppingList,
-  ShoppingListProps,
+  type ShoppingListProps,
 } from '@/domain/shopping-list/shopping-list'
 import { parseShoppingListId } from '@/domain/shopping-list/shopping-list-id'
 import {
   ShoppingListItem,
-  ShoppingListItemProps,
+  type ShoppingListItemProps,
 } from '@/domain/shopping-list/shopping-list-item'
 import { parseShoppingListItemId } from '@/domain/shopping-list/shopping-list-item-id'
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
-import { Database } from '@/infrastructure/persistence'
+import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { Database } from '@/infrastructure/persistence'
 import {
-  shoppingListItems,
   shoppingListItemShops,
+  shoppingListItems,
   shoppingLists,
 } from '@/infrastructure/persistence/schema'
-import { asc, count, eq, inArray } from 'drizzle-orm'
 
 type ShoppingListRow = typeof shoppingLists.$inferSelect
 type ShoppingListItemRow = typeof shoppingListItems.$inferSelect
@@ -46,7 +46,7 @@ function shoppingListItemToDomain(
     checked: row.checked,
     shopIds: parseShopIds(shopIds),
     photoKey: row.photoKey,
-    createdAt: row.createdAt!,
+    createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     inventoryItemId: row.inventoryItemId
       ? parseInventoryItemId(row.inventoryItemId)
@@ -84,7 +84,7 @@ function shoppingListToDomain(
     householdId: parseHouseholdId(row.householdId),
     name: row.name,
     items,
-    createdAt: row.createdAt!,
+    createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
 

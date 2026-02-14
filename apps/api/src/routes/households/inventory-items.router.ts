@@ -1,3 +1,7 @@
+import { unitTypes } from '@glist/shared'
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import { z } from 'zod'
 import { CreateInventoryItemCommandHandler } from '@/application/commands/create-inventory-item'
 import { DeleteInventoryItemCommandHandler } from '@/application/commands/delete-inventory-item'
 import { DeleteInventoryItemPhotoCommandHandler } from '@/application/commands/delete-inventory-item-photo'
@@ -8,11 +12,7 @@ import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemQueryRepository } from '@/infrastructure/repositories/drizzle-inventory-item-query-repository'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
-import { unitTypes } from '@glist/shared'
-import { zValidator } from '@hono/zod-validator'
-import { Hono } from 'hono'
-import { z } from 'zod'
-import { HouseholdContext } from './context'
+import type { HouseholdContext } from './context'
 
 const inventoryItemsRouter = new Hono<HouseholdContext>()
 

@@ -1,6 +1,6 @@
-import { ShopRepository } from '@/domain/shop/shop-repository'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import { err, ok, type Result } from '@glist/shared'
+import type { ShopRepository } from '@/domain/shop/shop-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type ReorderShopsCommand = {
   ids: string[]
@@ -49,7 +49,10 @@ export class ReorderShopsCommandHandler {
     // Update sort order for each shop
     const shopMap = new Map(shops.map((s) => [s.id as string, s]))
     const updates = command.ids.map((id, index) => {
-      const shop = shopMap.get(id)!
+      const shop = shopMap.get(id)
+      if (!shop) {
+        throw new Error(`Shop not found for id ${id}`)
+      }
       shop.changeSortOrder(index)
       return this.repository.save(shop)
     })

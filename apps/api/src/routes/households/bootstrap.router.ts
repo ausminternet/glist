@@ -5,21 +5,21 @@ import { createDb } from '@/infrastructure/persistence'
 import {
   categories,
   households,
-  inventoryItems,
   inventoryItemShops,
-  shoppingListItems,
+  inventoryItems,
   shoppingListItemShops,
+  shoppingListItems,
   shoppingLists,
   shops,
 } from '@/infrastructure/persistence/schema'
-import { HouseholdContext } from './context'
+import type { HouseholdContext } from './context'
 
 const bootstrapRouter = new Hono<HouseholdContext>()
 
 bootstrapRouter.get('/', async (c) => {
   try {
     const householdId = c.get('householdId')
-    const db = createDb(c.env.glist_db!)
+    const db = createDb(c.env.glist_db)
 
     const [household] = await db
       .select()

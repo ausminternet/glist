@@ -1,7 +1,7 @@
-import { CategoryQueryRepository } from '@/domain/category/category-query-repository'
-import { CategoryView } from '@glist/views'
+import type { CategoryView } from '@glist/views'
 import { asc, eq } from 'drizzle-orm'
-import { Database } from '../persistence'
+import type { CategoryQueryRepository } from '@/domain/category/category-query-repository'
+import type { Database } from '../persistence'
 import { categories } from '../persistence/schema'
 
 type CategoryRow = typeof categories.$inferSelect
@@ -11,7 +11,7 @@ function categoryRowToView(row: CategoryRow): CategoryView {
     id: row.id,
     householdId: row.householdId,
     name: row.name,
-    createdAt: row.createdAt!.toISOString(),
+    createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt?.toISOString() ?? null,
   }
 }

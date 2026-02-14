@@ -1,6 +1,6 @@
-import { CategoryRepository } from '@/domain/category/category-repository';
-import { err, ok, Result } from '@glist/shared';
-import { RequestContext } from '../shared/request-context';
+import { err, ok, type Result } from '@glist/shared'
+import type { CategoryRepository } from '@/domain/category/category-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type DeleteCategoryError = { type: 'CATEGORY_NOT_FOUND'; id: string }
 

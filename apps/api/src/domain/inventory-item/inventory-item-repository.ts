@@ -1,4 +1,4 @@
-import { InventoryItem } from './inventory-item'
+import type { InventoryItem } from './inventory-item'
 
 export interface InventoryItemRepository {
   findById(id: string): Promise<InventoryItem | null>

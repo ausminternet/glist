@@ -1,6 +1,6 @@
-import { ShopRepository } from '@/domain/shop/shop-repository';
-import { err, ok, Result } from '@glist/shared';
-import { RequestContext } from '../shared/request-context';
+import { err, ok, type Result } from '@glist/shared'
+import type { ShopRepository } from '@/domain/shop/shop-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type DeleteShopError = { type: 'SHOP_NOT_FOUND'; id: string }
 

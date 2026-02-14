@@ -1,12 +1,12 @@
+import { err, ok, type Result, type UnitType } from '@glist/shared'
 import { isBlank } from '@/utils/is-blank'
-import { err, ok, Result, UnitType } from '@glist/shared'
-import { CategoryId } from '../category/category-id'
-import { InventoryItemId } from '../inventory-item/inventory-item-id'
-import { InvalidNameError } from '../shared/errors'
-import { Quantity, QuantityError } from '../shared/quantity'
-import { ShopId } from '../shop/shop-id'
-import { ShoppingListId } from './shopping-list-id'
-import { ShoppingListItemId } from './shopping-list-item-id'
+import type { CategoryId } from '../category/category-id'
+import type { InventoryItemId } from '../inventory-item/inventory-item-id'
+import type { InvalidNameError } from '../shared/errors'
+import { Quantity, type QuantityError } from '../shared/quantity'
+import type { ShopId } from '../shop/shop-id'
+import type { ShoppingListId } from './shopping-list-id'
+import type { ShoppingListItemId } from './shopping-list-item-id'
 
 export type NewShoppingListItemInput = {
   name: string

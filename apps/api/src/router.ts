@@ -1,9 +1,10 @@
+import { Hono } from 'hono'
 import { createDb } from '@/infrastructure/persistence'
 import { households } from '@/infrastructure/persistence/schema'
-import { Hono } from 'hono'
 import adminRouter from './routes/admin'
 import householdRouter from './routes/households'
 import photosRouter from './routes/households/photos.router'
+
 const router = new Hono<{ Bindings: CloudflareBindings }>()
 
 router.get('/', (c) => {

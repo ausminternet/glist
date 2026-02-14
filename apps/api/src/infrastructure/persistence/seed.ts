@@ -1,11 +1,12 @@
+// biome-ignore-all lint/style/noNonNullAssertion: Seed file with known data
 import { createDb } from './index'
 import {
   categories,
   households,
-  inventoryItems,
   inventoryItemShops,
-  shoppingListItems,
+  inventoryItems,
   shoppingListItemShops,
+  shoppingListItems,
   shoppingLists,
   shops,
 } from './schema'

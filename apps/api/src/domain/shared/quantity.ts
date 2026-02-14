@@ -1,4 +1,10 @@
-import { err, isValidUnitType, ok, Result, UnitType } from '@glist/shared'
+import {
+  err,
+  isValidUnitType,
+  ok,
+  type Result,
+  type UnitType,
+} from '@glist/shared'
 
 export type QuantityError =
   | { type: 'INVALID_QUANTITY' }

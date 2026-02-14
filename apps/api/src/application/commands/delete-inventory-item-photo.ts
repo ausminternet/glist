@@ -1,7 +1,7 @@
-import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import { PhotoStorage } from '@/infrastructure/storage/photo-storage'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import { err, ok, type Result } from '@glist/shared'
+import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
+import type { RequestContext } from '../shared/request-context'
 
 export type DeleteInventoryItemPhotoError =
   | { type: 'INVENTORY_ITEM_NOT_FOUND'; id: string }

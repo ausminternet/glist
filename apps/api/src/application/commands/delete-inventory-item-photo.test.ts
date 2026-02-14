@@ -1,9 +1,9 @@
+import { describe, expect, mock, test } from 'bun:test'
 import { InventoryItem } from '@/domain/inventory-item/inventory-item'
 import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
-import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import { parseHouseholdId } from '@/domain/shared/household-id'
-import { PhotoStorage } from '@/infrastructure/storage/photo-storage'
-import { describe, expect, mock, test } from 'bun:test'
+import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import { DeleteInventoryItemPhotoCommandHandler } from './delete-inventory-item-photo'
 
 function createTestInventoryItem(householdId: string, photoKey?: string) {

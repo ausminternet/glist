@@ -1,10 +1,10 @@
-import {
-    CannotDeleteLastShoppingListError,
-    ShoppingListNotFoundError,
-} from '@/domain/shopping-list/errors';
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository';
-import { err, ok, Result } from '@glist/shared';
-import { RequestContext } from '../shared/request-context';
+import { err, ok, type Result } from '@glist/shared'
+import type {
+  CannotDeleteLastShoppingListError,
+  ShoppingListNotFoundError,
+} from '@/domain/shopping-list/errors'
+import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type DeleteShoppingListError =
   | ShoppingListNotFoundError

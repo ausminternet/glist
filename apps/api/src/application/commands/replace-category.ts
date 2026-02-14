@@ -1,8 +1,8 @@
-import { ChangeNameError } from '@/domain/category/category'
-import { CategoryRepository } from '@/domain/category/category-repository'
-import { CategoryNotFoundError } from '@/domain/category/errors'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import { err, ok, type Result } from '@glist/shared'
+import type { ChangeNameError } from '@/domain/category/category'
+import type { CategoryRepository } from '@/domain/category/category-repository'
+import type { CategoryNotFoundError } from '@/domain/category/errors'
+import type { RequestContext } from '../shared/request-context'
 
 export type ReplaceCategoryCommand = {
   categoryId: string

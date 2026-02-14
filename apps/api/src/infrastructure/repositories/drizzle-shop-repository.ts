@@ -1,10 +1,10 @@
-import { parseHouseholdId } from '@/domain/shared/household-id';
-import { Shop, ShopProps } from '@/domain/shop/shop';
-import { parseShopId } from '@/domain/shop/shop-id';
-import { ShopRepository } from '@/domain/shop/shop-repository';
-import { Database } from '@/infrastructure/persistence';
-import { shops } from '@/infrastructure/persistence/schema';
-import { asc, eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm'
+import { parseHouseholdId } from '@/domain/shared/household-id'
+import { Shop, type ShopProps } from '@/domain/shop/shop'
+import { parseShopId } from '@/domain/shop/shop-id'
+import type { ShopRepository } from '@/domain/shop/shop-repository'
+import type { Database } from '@/infrastructure/persistence'
+import { shops } from '@/infrastructure/persistence/schema'
 
 type ShopRow = typeof shops.$inferSelect
 
@@ -14,7 +14,7 @@ function toDomain(row: ShopRow): Shop {
     householdId: parseHouseholdId(row.householdId),
     name: row.name,
     sortOrder: row.sortOrder ?? 1000.0,
-    createdAt: row.createdAt!,
+    createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
 
@@ -56,11 +56,7 @@ export class DrizzleShopRepository implements ShopRepository {
   }
 
   async findById(id: string): Promise<Shop | null> {
-    const row = await this.db
-      .select()
-      .from(shops)
-      .where(eq(shops.id, id))
-      .get()
+    const row = await this.db.select().from(shops).where(eq(shops.id, id)).get()
 
     if (!row) {
       return null

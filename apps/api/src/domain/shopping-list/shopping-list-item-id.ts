@@ -1,4 +1,4 @@
-import { assertValidUuid, DomainId, generateId } from '../shared/domain-id'
+import { assertValidUuid, type DomainId, generateId } from '../shared/domain-id'
 
 export type ShoppingListItemId = DomainId<'ShoppingListItemId'>
 

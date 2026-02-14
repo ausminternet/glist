@@ -1,16 +1,16 @@
+import { err, ok, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import {
+import type {
   ShoppingListItemNotFoundError,
   ShoppingListNotFoundError,
 } from '@/domain/shopping-list/errors'
-import {
+import type {
   ChangeNameError,
   ChangeQuantityError,
 } from '@/domain/shopping-list/shopping-list-item'
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type ReplaceShoppingListItemCommand = {
   itemId: string

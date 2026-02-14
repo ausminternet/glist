@@ -1,8 +1,8 @@
-import { isBlank } from '@/utils/is-blank';
-import { err, ok, Result } from '@glist/shared';
-import { InvalidNameError } from '../shared/errors';
-import { HouseholdId } from '../shared/household-id';
-import { ShopId } from './shop-id';
+import { err, ok, type Result } from '@glist/shared'
+import { isBlank } from '@/utils/is-blank'
+import type { InvalidNameError } from '../shared/errors'
+import type { HouseholdId } from '../shared/household-id'
+import type { ShopId } from './shop-id'
 
 export type NewShopInput = {
   name: string

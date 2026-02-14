@@ -1,3 +1,6 @@
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import { z } from 'zod'
 import { CreateShopCommandHandler } from '@/application/commands/create-shop'
 import { DeleteShopCommandHandler } from '@/application/commands/delete-shop'
 import { ReorderShopsCommandHandler } from '@/application/commands/reorder-shops'
@@ -5,10 +8,8 @@ import { ReplaceShopCommandHandler } from '@/application/commands/replace-shop'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleShopQueryRepository } from '@/infrastructure/repositories/drizzle-shop-query-repository'
 import { DrizzleShopRepository } from '@/infrastructure/repositories/drizzle-shop-repository'
-import { zValidator } from '@hono/zod-validator'
-import { Hono } from 'hono'
-import { z } from 'zod'
-import { HouseholdContext } from './context'
+import type { HouseholdContext } from './context'
+
 const shopsRouter = new Hono<HouseholdContext>()
 
 shopsRouter.get('/', async (c) => {

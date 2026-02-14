@@ -1,4 +1,4 @@
-import { assertValidUuid, DomainId, generateId } from './domain-id'
+import { assertValidUuid, type DomainId, generateId } from './domain-id'
 
 export type HouseholdId = DomainId<'HouseholdId'>
 

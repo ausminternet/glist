@@ -1,9 +1,9 @@
+import { err, ok, type Result } from '@glist/shared'
 import { parseHouseholdId } from '@/domain/shared/household-id'
-import { CreateShopError, Shop } from '@/domain/shop/shop'
+import { type CreateShopError, Shop } from '@/domain/shop/shop'
 import { generateShopId } from '@/domain/shop/shop-id'
-import { ShopRepository } from '@/domain/shop/shop-repository'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import type { ShopRepository } from '@/domain/shop/shop-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type CreateShopCommand = {
   name: string

@@ -1,9 +1,11 @@
-import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository';
-import { err, ok, Result } from '@glist/shared';
-import { RequestContext } from '../shared/request-context';
+import { err, ok, type Result } from '@glist/shared'
+import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import type { RequestContext } from '../shared/request-context'
 
-export type DeleteInventoryItemError =
-  | { type: 'INVENTORY_ITEM_NOT_FOUND'; id: string }
+export type DeleteInventoryItemError = {
+  type: 'INVENTORY_ITEM_NOT_FOUND'
+  id: string
+}
 
 export class DeleteInventoryItemCommandHandler {
   constructor(private repository: InventoryItemRepository) {}

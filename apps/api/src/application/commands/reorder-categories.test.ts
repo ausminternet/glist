@@ -1,8 +1,8 @@
+import { describe, expect, mock, test } from 'bun:test'
 import { Category } from '@/domain/category/category'
 import { generateCategoryId } from '@/domain/category/category-id'
-import { CategoryRepository } from '@/domain/category/category-repository'
+import type { CategoryRepository } from '@/domain/category/category-repository'
 import { parseHouseholdId } from '@/domain/shared/household-id'
-import { describe, expect, mock, test } from 'bun:test'
 import { ReorderCategoriesCommandHandler } from './reorder-categories'
 
 const householdId = '00000000-0000-0000-0000-000000000001'

@@ -1,6 +1,6 @@
-import { InventoryItemQueryRepository } from '@/domain/inventory-item/inventory-item-query-repository'
-import { InventoryItemView } from '@glist/views'
-import { RequestContext } from '../shared/request-context'
+import type { InventoryItemView } from '@glist/views'
+import type { InventoryItemQueryRepository } from '@/domain/inventory-item/inventory-item-query-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export class GetInventoryItemsQueryHandler {
   constructor(private repository: InventoryItemQueryRepository) {}

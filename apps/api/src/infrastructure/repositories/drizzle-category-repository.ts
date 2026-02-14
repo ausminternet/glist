@@ -1,10 +1,10 @@
-import { Category, CategoryProps } from '@/domain/category/category'
-import { parseCategoryId } from '@/domain/category/category-id'
-import { CategoryRepository } from '@/domain/category/category-repository'
-import { parseHouseholdId } from '@/domain/shared/household-id'
-import { Database } from '@/infrastructure/persistence'
-import { categories } from '@/infrastructure/persistence/schema'
 import { asc, eq } from 'drizzle-orm'
+import { Category, type CategoryProps } from '@/domain/category/category'
+import { parseCategoryId } from '@/domain/category/category-id'
+import type { CategoryRepository } from '@/domain/category/category-repository'
+import { parseHouseholdId } from '@/domain/shared/household-id'
+import type { Database } from '@/infrastructure/persistence'
+import { categories } from '@/infrastructure/persistence/schema'
 
 type CategoryRow = typeof categories.$inferSelect
 
@@ -14,7 +14,7 @@ function toDomain(row: CategoryRow): Category {
     householdId: parseHouseholdId(row.householdId),
     name: row.name,
     sortOrder: row.sortOrder ?? 1000.0,
-    createdAt: row.createdAt!,
+    createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
 

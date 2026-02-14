@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import bootstrapRouter from './bootstrap.router'
 import categoriesRouter from './categories.router'
-import { HouseholdContext, withHousehold } from './context'
+import { type HouseholdContext, withHousehold } from './context'
 import inventoryItemsRouter from './inventory-items.router'
 import shoppingListsRouter from './shopping-lists.router'
 import shopsRouter from './shops.router'

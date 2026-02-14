@@ -1,7 +1,7 @@
-import { ShoppingListQueryRepository } from '@/domain/shopping-list/shopping-list-query-repository'
-import { ShoppingListView } from '@glist/views'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import { err, ok, type Result } from '@glist/shared'
+import type { ShoppingListView } from '@glist/views'
+import type { ShoppingListQueryRepository } from '@/domain/shopping-list/shopping-list-query-repository'
+import type { RequestContext } from '../shared/request-context'
 
 type GetShoppingListQueryError = { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
 

@@ -1,5 +1,5 @@
-import { seed } from '@/infrastructure/persistence/seed'
 import { Hono } from 'hono'
+import { seed } from '@/infrastructure/persistence/seed'
 
 const seedRouter = new Hono<{ Bindings: CloudflareBindings }>()
 
@@ -17,7 +17,7 @@ seedRouter.post('/', async (c) => {
   }
 
   try {
-    const result = await seed(c.env.glist_db!)
+    const result = await seed(c.env.glist_db)
     return c.json({
       success: true,
       message: 'Database seeded successfully!',

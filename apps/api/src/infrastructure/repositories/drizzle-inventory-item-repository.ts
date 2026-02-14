@@ -1,20 +1,20 @@
+import { asc, eq, inArray } from 'drizzle-orm'
 import { parseCategoryId } from '@/domain/category/category-id'
 import {
   InventoryItem,
-  InventoryItemProps,
+  type InventoryItemProps,
 } from '@/domain/inventory-item/inventory-item'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
-import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import { parseHouseholdId } from '@/domain/shared/household-id'
 import { Price } from '@/domain/shared/price'
 import { Quantity } from '@/domain/shared/quantity'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import { Database } from '@/infrastructure/persistence'
+import type { Database } from '@/infrastructure/persistence'
 import {
-  inventoryItems,
   inventoryItemShops,
+  inventoryItems,
 } from '@/infrastructure/persistence/schema'
-import { asc, eq, inArray } from 'drizzle-orm'
 
 type InventoryItemRow = typeof inventoryItems.$inferSelect
 
@@ -46,7 +46,7 @@ function toDomain(row: InventoryItemRow, shopIds: string[]): InventoryItem {
     basePrice: basePriceResult.value,
     shopIds: parseShopIds(shopIds),
     photoKey: row.photoKey,
-    createdAt: row.createdAt!,
+    createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
 

@@ -1,14 +1,14 @@
+import { err, ok, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
-import { InventoryItemNotFoundError } from '@/domain/inventory-item/errors'
-import {
+import type { InventoryItemNotFoundError } from '@/domain/inventory-item/errors'
+import type {
   ChangeBasePriceError,
   ChangeNameError,
   ChangeTargetStockError,
 } from '@/domain/inventory-item/inventory-item'
-import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import type { RequestContext } from '../shared/request-context'
 
 export type ReplaceInventoryItemCommand = {
   inventoryItemId: string

@@ -1,3 +1,6 @@
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import { z } from 'zod'
 import { CreateCategoryCommandHandler } from '@/application/commands/create-category'
 import { DeleteCategoryCommandHandler } from '@/application/commands/delete-category'
 import { ReorderCategoriesCommandHandler } from '@/application/commands/reorder-categories'
@@ -5,10 +8,7 @@ import { ReplaceCategoryCommandHandler } from '@/application/commands/replace-ca
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleCategoryQueryRepository } from '@/infrastructure/repositories/drizzle-category-query-repository'
 import { DrizzleCategoryRepository } from '@/infrastructure/repositories/drizzle-category-repository'
-import { zValidator } from '@hono/zod-validator'
-import { Hono } from 'hono'
-import { z } from 'zod'
-import { HouseholdContext } from './context'
+import type { HouseholdContext } from './context'
 
 const categoriesRouter = new Hono<HouseholdContext>()
 

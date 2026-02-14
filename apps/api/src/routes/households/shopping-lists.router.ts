@@ -1,3 +1,7 @@
+import { unitTypes } from '@glist/shared'
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import { z } from 'zod'
 import { AddShoppingListItemCommandHandler } from '@/application/commands/add-shopping-list-item'
 import { AddShoppingListItemFromInventoryCommandHandler } from '@/application/commands/add-shopping-list-item-from-inventory'
 import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
@@ -15,11 +19,7 @@ import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/dr
 import { DrizzleShoppingListQueryRepository } from '@/infrastructure/repositories/drizzle-shopping-list-query-repository'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
-import { unitTypes } from '@glist/shared'
-import { zValidator } from '@hono/zod-validator'
-import { Hono } from 'hono'
-import { z } from 'zod'
-import { HouseholdContext } from './context'
+import type { HouseholdContext } from './context'
 
 const shoppingListsRouter = new Hono<HouseholdContext>()
 

@@ -1,15 +1,15 @@
+import { err, ok, type Result } from '@glist/shared'
 import { isBlank } from '@/utils/is-blank'
-import { err, ok, Result } from '@glist/shared'
-import { CategoryId } from '../category/category-id'
-import { InventoryItemId } from '../inventory-item/inventory-item-id'
-import { InvalidNameError } from '../shared/errors'
-import { HouseholdId } from '../shared/household-id'
-import { ShopId } from '../shop/shop-id'
-import { ShoppingListItemNotFoundError } from './errors'
-import { ShoppingListId } from './shopping-list-id'
+import type { CategoryId } from '../category/category-id'
+import type { InventoryItemId } from '../inventory-item/inventory-item-id'
+import type { InvalidNameError } from '../shared/errors'
+import type { HouseholdId } from '../shared/household-id'
+import type { ShopId } from '../shop/shop-id'
+import type { ShoppingListItemNotFoundError } from './errors'
+import type { ShoppingListId } from './shopping-list-id'
 import {
-  CreateShoppingListItemError,
-  NewShoppingListItemInput,
+  type CreateShoppingListItemError,
+  type NewShoppingListItemInput,
   ShoppingListItem,
 } from './shopping-list-item'
 import { generateShoppingListItemId } from './shopping-list-item-id'

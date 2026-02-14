@@ -1,9 +1,9 @@
+import { err, ok, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import { CreateShoppingListItemError } from '@/domain/shopping-list/shopping-list-item'
-import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
-import { err, ok, Result } from '@glist/shared'
-import { RequestContext } from '../shared/request-context'
+import type { CreateShoppingListItemError } from '@/domain/shopping-list/shopping-list-item'
+import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type AddShoppingListItemCommand = {
   shoppingListId: string

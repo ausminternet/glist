@@ -1,4 +1,4 @@
-import { err, ok, Result } from '@glist/shared'
+import { err, ok, type Result } from '@glist/shared'
 
 export interface PhotoStorage {
   upload(key: string, data: ArrayBuffer, contentType: string): Promise<void>
