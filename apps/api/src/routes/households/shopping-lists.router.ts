@@ -1,7 +1,3 @@
-import { unitTypes } from '@glist/shared'
-import { zValidator } from '@hono/zod-validator'
-import { Hono } from 'hono'
-import { z } from 'zod'
 import { AddShoppingListItemCommandHandler } from '@/application/commands/add-shopping-list-item'
 import { AddShoppingListItemFromInventoryCommandHandler } from '@/application/commands/add-shopping-list-item-from-inventory'
 import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
@@ -14,14 +10,30 @@ import { ReplaceShoppingListItemCommandHandler } from '@/application/commands/re
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
 import { UploadShoppingListItemPhotoCommandHandler } from '@/application/commands/upload-shopping-list-item-photo'
 import { GetShoppingListQueryHandler } from '@/application/queries/get-shopping-list'
+import { GetShoppingListsQueryHandler } from '@/application/queries/get-shopping-lists'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { DrizzleShoppingListQueryRepository } from '@/infrastructure/repositories/drizzle-shopping-list-query-repository'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
+import { unitTypes } from '@glist/shared'
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import { z } from 'zod'
 import type { HouseholdContext } from './context'
 
 const shoppingListsRouter = new Hono<HouseholdContext>()
+
+shoppingListsRouter.get('/', async (c) => {
+  const householdId = c.get('householdId')
+  const db = createDb(c.env.glist_db)
+  const repository = new DrizzleShoppingListQueryRepository(db)
+  const query = new GetShoppingListsQueryHandler(repository)
+
+  const result = await query.execute({ householdId })
+
+  return c.json({ success: true, data: result })
+})
 
 shoppingListsRouter.get('/:id', async (c) => {
   const householdId = c.get('householdId')
