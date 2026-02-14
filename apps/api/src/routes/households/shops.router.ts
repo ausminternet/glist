@@ -148,7 +148,7 @@ shopsRouter.delete('/:id', async (c) => {
   const repository = new DrizzleShopRepository(db)
   const command = new DeleteShopCommandHandler(repository)
 
-  const result = await command.execute(id, { householdId })
+  const result = await command.execute({ shopId: id }, { householdId })
 
   if (!result.ok) {
     switch (result.error.type) {

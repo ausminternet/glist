@@ -55,9 +55,16 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(item.id, photoData, contentType, {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        inventoryItemId: item.id,
+        photoData,
+        contentType,
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
@@ -77,9 +84,16 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(item.id, photoData, contentType, {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        inventoryItemId: item.id,
+        photoData,
+        contentType,
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(true)
     expect(photoStorage.delete).toHaveBeenCalledTimes(1)
@@ -96,10 +110,14 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      'non-existent-id',
-      photoData,
-      contentType,
-      { householdId },
+      {
+        inventoryItemId: 'non-existent-id',
+        photoData,
+        contentType,
+      },
+      {
+        householdId,
+      },
     )
 
     expect(result.ok).toBe(false)
@@ -121,9 +139,16 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(item.id, photoData, contentType, {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        inventoryItemId: item.id,
+        photoData,
+        contentType,
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -141,9 +166,16 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(item.id, photoData, 'image/gif', {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        inventoryItemId: item.id,
+        photoData,
+        contentType: 'image/gif',
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -164,9 +196,16 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(item.id, photoData, 'image/jpeg', {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        inventoryItemId: item.id,
+        photoData,
+        contentType: 'image/jpeg',
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(true)
   })
@@ -180,9 +219,16 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(item.id, photoData, 'image/png', {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        inventoryItemId: item.id,
+        photoData,
+        contentType: 'image/png',
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(true)
   })
@@ -196,9 +242,16 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(item.id, photoData, 'image/webp', {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        inventoryItemId: item.id,
+        photoData,
+        contentType: 'image/webp',
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(true)
   })
@@ -214,9 +267,16 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
 
     const originalUpdatedAt = item.updatedAt
 
-    const result = await handler.execute(item.id, photoData, contentType, {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        inventoryItemId: item.id,
+        photoData,
+        contentType: 'image/webp',
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).not.toBe(originalUpdatedAt)

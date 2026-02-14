@@ -151,7 +151,7 @@ categoriesRouter.delete('/:id', async (c) => {
   const repository = new DrizzleCategoryRepository(db)
   const command = new DeleteCategoryCommandHandler(repository)
 
-  const result = await command.execute(id, { householdId })
+  const result = await command.execute({ categoryId: id }, { householdId })
 
   if (!result.ok) {
     switch (result.error.type) {

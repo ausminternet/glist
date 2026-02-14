@@ -8,6 +8,11 @@ export type DeleteShoppingListItemPhotoError =
   | { type: 'SHOPPING_LIST_ITEM_NOT_FOUND'; id: string }
   | { type: 'NO_PHOTO_EXISTS' }
 
+type DeleteShoppingListItemPhotoCommand = {
+  shoppingListId: string
+  itemId: string
+}
+
 export class DeleteShoppingListItemPhotoCommandHandler {
   constructor(
     private repository: ShoppingListRepository,
@@ -15,22 +20,24 @@ export class DeleteShoppingListItemPhotoCommandHandler {
   ) {}
 
   async execute(
-    shoppingListId: string,
-    itemId: string,
+    command: DeleteShoppingListItemPhotoCommand,
     context: RequestContext,
   ): Promise<Result<void, DeleteShoppingListItemPhotoError>> {
     const { householdId } = context
 
-    const shoppingList = await this.repository.findById(shoppingListId)
+    const shoppingList = await this.repository.findById(command.shoppingListId)
 
     if (!shoppingList || shoppingList.householdId !== householdId) {
-      return err({ type: 'SHOPPING_LIST_NOT_FOUND', id: shoppingListId })
+      return err({
+        type: 'SHOPPING_LIST_NOT_FOUND',
+        id: command.shoppingListId,
+      })
     }
 
-    const item = shoppingList.findItem(itemId)
+    const item = shoppingList.findItem(command.itemId)
 
     if (!item) {
-      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
+      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })
     }
 
     if (!item.photoKey) {

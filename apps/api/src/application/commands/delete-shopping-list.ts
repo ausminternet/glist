@@ -10,19 +10,26 @@ export type DeleteShoppingListError =
   | ShoppingListNotFoundError
   | CannotDeleteLastShoppingListError
 
+export type DeleteShoppingListCommand = {
+  shoppingListId: string
+}
+
 export class DeleteShoppingListCommandHandler {
   constructor(private repository: ShoppingListRepository) {}
 
   async execute(
-    shoppingListId: string,
+    command: DeleteShoppingListCommand,
     context: RequestContext,
   ): Promise<Result<void, DeleteShoppingListError>> {
     const { householdId } = context
 
-    const shoppingList = await this.repository.findById(shoppingListId)
+    const shoppingList = await this.repository.findById(command.shoppingListId)
 
     if (!shoppingList || shoppingList.householdId !== householdId) {
-      return err({ type: 'SHOPPING_LIST_NOT_FOUND', id: shoppingListId })
+      return err({
+        type: 'SHOPPING_LIST_NOT_FOUND',
+        id: command.shoppingListId,
+      })
     }
 
     const count = await this.repository.countByHouseholdId(householdId)
@@ -31,7 +38,7 @@ export class DeleteShoppingListCommandHandler {
       return err({ type: 'CANNOT_DELETE_LAST_SHOPPING_LIST' })
     }
 
-    await this.repository.delete(shoppingListId)
+    await this.repository.delete(command.shoppingListId)
 
     return ok(undefined)
   }

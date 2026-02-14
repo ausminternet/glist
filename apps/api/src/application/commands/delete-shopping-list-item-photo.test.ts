@@ -52,9 +52,15 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(shoppingList.id, item.id, {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(true)
     expect(photoStorage.delete).toHaveBeenCalledTimes(1)
@@ -71,9 +77,15 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute('non-existent-list', 'some-item-id', {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        shoppingListId: 'non-existent-list',
+        itemId: 'some-item-id',
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -100,9 +112,15 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(shoppingList.id, item.id, {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -121,9 +139,15 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(shoppingList.id, 'non-existent-item', {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        shoppingListId: shoppingList.id,
+        itemId: 'non-existent-item',
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -148,9 +172,15 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(shoppingList.id, item.id, {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -174,9 +204,15 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
 
     const originalUpdatedAt = item.updatedAt
 
-    const result = await handler.execute(shoppingList.id, item.id, {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).not.toBe(originalUpdatedAt)

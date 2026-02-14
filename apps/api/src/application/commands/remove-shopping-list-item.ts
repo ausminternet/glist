@@ -6,23 +6,30 @@ export type RemoveShoppingListItemError =
   | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
   | { type: 'SHOPPING_LIST_ITEM_NOT_FOUND'; id: string }
 
+type RemoveShoppingListItemCommandInput = {
+  shoppingListId: string
+  itemId: string
+}
+
 export class RemoveShoppingListItemCommandHandler {
   constructor(private repository: ShoppingListRepository) {}
 
   async execute(
-    shoppingListId: string,
-    itemId: string,
+    command: RemoveShoppingListItemCommandInput,
     context: RequestContext,
   ): Promise<Result<void, RemoveShoppingListItemError>> {
     const { householdId } = context
 
-    const shoppingList = await this.repository.findById(shoppingListId)
+    const shoppingList = await this.repository.findById(command.shoppingListId)
 
     if (!shoppingList || shoppingList.householdId !== householdId) {
-      return err({ type: 'SHOPPING_LIST_NOT_FOUND', id: shoppingListId })
+      return err({
+        type: 'SHOPPING_LIST_NOT_FOUND',
+        id: command.shoppingListId,
+      })
     }
 
-    const removeResult = shoppingList.removeItem(itemId)
+    const removeResult = shoppingList.removeItem(command.itemId)
 
     if (!removeResult.ok) {
       return err(removeResult.error)

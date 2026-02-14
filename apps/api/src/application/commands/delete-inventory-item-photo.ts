@@ -7,6 +7,10 @@ export type DeleteInventoryItemPhotoError =
   | { type: 'INVENTORY_ITEM_NOT_FOUND'; id: string }
   | { type: 'NO_PHOTO_EXISTS' }
 
+type DeleteInventoryItemPhotoCommand = {
+  inventoryItemId: string
+}
+
 export class DeleteInventoryItemPhotoCommandHandler {
   constructor(
     private repository: InventoryItemRepository,
@@ -14,15 +18,18 @@ export class DeleteInventoryItemPhotoCommandHandler {
   ) {}
 
   async execute(
-    inventoryItemId: string,
+    command: DeleteInventoryItemPhotoCommand,
     context: RequestContext,
   ): Promise<Result<void, DeleteInventoryItemPhotoError>> {
     const { householdId } = context
 
-    const item = await this.repository.findById(inventoryItemId)
+    const item = await this.repository.findById(command.inventoryItemId)
 
     if (!item || item.householdId !== householdId) {
-      return err({ type: 'INVENTORY_ITEM_NOT_FOUND', id: inventoryItemId })
+      return err({
+        type: 'INVENTORY_ITEM_NOT_FOUND',
+        id: command.inventoryItemId,
+      })
     }
 
     if (!item.photoKey) {

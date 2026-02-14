@@ -44,7 +44,10 @@ describe('ClearCheckedItemsCommandHandler', () => {
     const repository = createMockRepository(shoppingList)
     const handler = new ClearCheckedItemsCommandHandler(repository)
 
-    const result = await handler.execute(shoppingList.id, { householdId })
+    const result = await handler.execute(
+      { shoppingListId: shoppingList.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(repository.save).toHaveBeenCalledTimes(1)
@@ -61,7 +64,10 @@ describe('ClearCheckedItemsCommandHandler', () => {
     const repository = createMockRepository(shoppingList)
     const handler = new ClearCheckedItemsCommandHandler(repository)
 
-    const result = await handler.execute(shoppingList.id, { householdId })
+    const result = await handler.execute(
+      { shoppingListId: shoppingList.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(repository.save).toHaveBeenCalledTimes(1)
@@ -80,7 +86,10 @@ describe('ClearCheckedItemsCommandHandler', () => {
     const repository = createMockRepository(shoppingList)
     const handler = new ClearCheckedItemsCommandHandler(repository)
 
-    const result = await handler.execute(shoppingList.id, { householdId })
+    const result = await handler.execute(
+      { shoppingListId: shoppingList.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(shoppingList.items).toHaveLength(0)
@@ -91,7 +100,10 @@ describe('ClearCheckedItemsCommandHandler', () => {
     const repository = createMockRepository(shoppingList)
     const handler = new ClearCheckedItemsCommandHandler(repository)
 
-    const result = await handler.execute(shoppingList.id, { householdId })
+    const result = await handler.execute(
+      { shoppingListId: shoppingList.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(repository.save).toHaveBeenCalledTimes(1)
@@ -102,7 +114,10 @@ describe('ClearCheckedItemsCommandHandler', () => {
     const repository = createMockRepository(null)
     const handler = new ClearCheckedItemsCommandHandler(repository)
 
-    const result = await handler.execute('non-existent-id', { householdId })
+    const result = await handler.execute(
+      { shoppingListId: 'non-existent-id' },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -121,7 +136,10 @@ describe('ClearCheckedItemsCommandHandler', () => {
     const repository = createMockRepository(shoppingList)
     const handler = new ClearCheckedItemsCommandHandler(repository)
 
-    const result = await handler.execute(shoppingList.id, { householdId })
+    const result = await handler.execute(
+      { shoppingListId: shoppingList.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return

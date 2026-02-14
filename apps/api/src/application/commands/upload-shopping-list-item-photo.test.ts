@@ -53,10 +53,12 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      photoData,
-      contentType,
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+        photoData,
+        contentType,
+      },
       { householdId },
     )
 
@@ -83,10 +85,12 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      photoData,
-      contentType,
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+        photoData,
+        contentType,
+      },
       { householdId },
     )
 
@@ -105,10 +109,12 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      'non-existent-list',
-      'some-item-id',
-      photoData,
-      contentType,
+      {
+        shoppingListId: 'non-existent-list',
+        itemId: 'some-item-id',
+        photoData,
+        contentType,
+      },
       { householdId },
     )
 
@@ -137,10 +143,12 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      photoData,
-      contentType,
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+        photoData,
+        contentType,
+      },
       { householdId },
     )
 
@@ -162,10 +170,12 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      'non-existent-item',
-      photoData,
-      contentType,
+      {
+        shoppingListId: shoppingList.id,
+        itemId: 'non-existent-item',
+        photoData,
+        contentType,
+      },
       { householdId },
     )
 
@@ -192,10 +202,12 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      photoData,
-      'image/gif',
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+        photoData,
+        contentType: 'image/gif',
+      },
       { householdId },
     )
 
@@ -222,10 +234,12 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      photoData,
-      'image/jpeg',
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+        photoData,
+        contentType: 'image/jpeg',
+      },
       { householdId },
     )
 
@@ -245,10 +259,12 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      photoData,
-      'image/png',
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+        photoData,
+        contentType: 'image/png',
+      },
       { householdId },
     )
 
@@ -268,10 +284,12 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      photoData,
-      'image/webp',
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+        photoData,
+        contentType: 'image/webp',
+      },
       { householdId },
     )
 
@@ -293,10 +311,12 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     const originalUpdatedAt = item.updatedAt
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      photoData,
-      contentType,
+      {
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+        photoData,
+        contentType,
+      },
       { householdId },
     )
 

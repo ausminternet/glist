@@ -86,7 +86,7 @@ shoppingListsRouter.delete('/:id', async (c) => {
   const repository = new DrizzleShoppingListRepository(db)
   const command = new DeleteShoppingListCommandHandler(repository)
 
-  const result = await command.execute(id, { householdId })
+  const result = await command.execute({ shoppingListId: id }, { householdId })
 
   if (!result.ok) {
     switch (result.error.type) {
@@ -276,7 +276,10 @@ shoppingListsRouter.post('/:listId/items/clear-checked', async (c) => {
   const repository = new DrizzleShoppingListRepository(db)
   const command = new ClearCheckedItemsCommandHandler(repository)
 
-  const result = await command.execute(listId, { householdId })
+  const result = await command.execute(
+    { shoppingListId: listId },
+    { householdId },
+  )
 
   if (!result.ok) {
     switch (result.error.type) {
@@ -358,7 +361,13 @@ shoppingListsRouter.delete('/:listId/items/:itemId', async (c) => {
   const repository = new DrizzleShoppingListRepository(db)
   const command = new RemoveShoppingListItemCommandHandler(repository)
 
-  const result = await command.execute(listId, itemId, { householdId })
+  const result = await command.execute(
+    {
+      shoppingListId: listId,
+      itemId,
+    },
+    { householdId },
+  )
 
   if (!result.ok) {
     switch (result.error.type) {
@@ -407,20 +416,21 @@ shoppingListsRouter.post('/:listId/items/:itemId/photo', async (c) => {
     photoStorage,
   )
 
-  const result = await command.execute(listId, itemId, photoData, contentType, {
-    householdId,
-  })
+  const result = await command.execute(
+    {
+      shoppingListId: listId,
+      itemId,
+      photoData,
+      contentType,
+    },
+    {
+      householdId,
+    },
+  )
 
   if (!result.ok) {
     switch (result.error.type) {
       case 'SHOPPING_LIST_NOT_FOUND':
-        console.error('Failed to upload shopping list item photo', {
-          listId,
-          itemId,
-          householdId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to upload shopping list item photo', {
           listId,
@@ -461,7 +471,13 @@ shoppingListsRouter.delete('/:listId/items/:itemId/photo', async (c) => {
     photoStorage,
   )
 
-  const result = await command.execute(listId, itemId, { householdId })
+  const result = await command.execute(
+    {
+      shoppingListId: listId,
+      itemId,
+    },
+    { householdId },
+  )
 
   if (!result.ok) {
     switch (result.error.type) {

@@ -54,7 +54,10 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(item.id, { householdId })
+    const result = await handler.execute(
+      { inventoryItemId: item.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(photoStorage.delete).toHaveBeenCalledTimes(1)
@@ -71,7 +74,10 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute('non-existent-id', { householdId })
+    const result = await handler.execute(
+      { inventoryItemId: 'non-existent-id' },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -95,7 +101,10 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(item.id, { householdId })
+    const result = await handler.execute(
+      { inventoryItemId: item.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -113,7 +122,10 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(item.id, { householdId })
+    const result = await handler.execute(
+      { inventoryItemId: item.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -133,7 +145,10 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
 
     const originalUpdatedAt = item.updatedAt
 
-    const result = await handler.execute(item.id, { householdId })
+    const result = await handler.execute(
+      { inventoryItemId: item.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).not.toBe(originalUpdatedAt)

@@ -7,22 +7,31 @@ export type DeleteInventoryItemError = {
   id: string
 }
 
+export type DeleteInventoryItemCommand = {
+  inventoryItemId: string
+}
+
 export class DeleteInventoryItemCommandHandler {
   constructor(private repository: InventoryItemRepository) {}
 
   async execute(
-    inventoryItemId: string,
+    command: DeleteInventoryItemCommand,
     context: RequestContext,
   ): Promise<Result<void, DeleteInventoryItemError>> {
     const { householdId } = context
 
-    const inventoryItem = await this.repository.findById(inventoryItemId)
+    const inventoryItem = await this.repository.findById(
+      command.inventoryItemId,
+    )
 
     if (!inventoryItem || inventoryItem.householdId !== householdId) {
-      return err({ type: 'INVENTORY_ITEM_NOT_FOUND', id: inventoryItemId })
+      return err({
+        type: 'INVENTORY_ITEM_NOT_FOUND',
+        id: command.inventoryItemId,
+      })
     }
 
-    await this.repository.delete(inventoryItemId)
+    await this.repository.delete(command.inventoryItemId)
 
     return ok(undefined)
   }
