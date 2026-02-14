@@ -1,16 +1,13 @@
-import { parseHouseholdId } from '@/domain/shared/household-id';
-import { CreateShopError, Shop } from '@/domain/shop/shop';
-import { generateShopId } from '@/domain/shop/shop-id';
-import { ShopRepository } from '@/domain/shop/shop-repository';
-import { err, ok, Result } from '@glist/shared';
-import z from 'zod';
-import { RequestContext } from '../shared/request-context';
+import { parseHouseholdId } from '@/domain/shared/household-id'
+import { CreateShopError, Shop } from '@/domain/shop/shop'
+import { generateShopId } from '@/domain/shop/shop-id'
+import { ShopRepository } from '@/domain/shop/shop-repository'
+import { err, ok, Result } from '@glist/shared'
+import { RequestContext } from '../shared/request-context'
 
-export const CreateShopCommandSchema = z.object({
-  name: z.string().trim().min(1, 'Name cannot be empty'),
-})
-
-export type CreateShopCommand = z.infer<typeof CreateShopCommandSchema>
+export type CreateShopCommand = {
+  name: string
+}
 
 export class CreateShopCommandHandler {
   constructor(private repository: ShopRepository) {}

@@ -2,16 +2,12 @@ import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import { err, ok, Result } from '@glist/shared'
-import z from 'zod'
 import { RequestContext } from '../shared/request-context'
 
-export const AddShoppingListItemFromInventoryCommandSchema = z.object({
-  inventoryItemId: z.uuid(),
-})
-
-export type AddShoppingListItemFromInventoryCommand = z.infer<
-  typeof AddShoppingListItemFromInventoryCommandSchema
->
+export type AddShoppingListItemFromInventoryCommand = {
+  inventoryItemId: string
+  shoppingListId: string
+}
 
 export type AddShoppingListItemFromInventoryError =
   | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
@@ -24,16 +20,20 @@ export class AddShoppingListItemFromInventoryCommandHandler {
   ) {}
 
   async execute(
-    shoppingListId: string,
     command: AddShoppingListItemFromInventoryCommand,
     context: RequestContext,
   ): Promise<Result<string, AddShoppingListItemFromInventoryError>> {
     const { householdId } = context
 
-    const shoppingList = await this.shoppingListRepository.findById(shoppingListId)
+    const shoppingList = await this.shoppingListRepository.findById(
+      command.shoppingListId,
+    )
 
     if (!shoppingList || shoppingList.householdId !== householdId) {
-      return err({ type: 'SHOPPING_LIST_NOT_FOUND', id: shoppingListId })
+      return err({
+        type: 'SHOPPING_LIST_NOT_FOUND',
+        id: command.shoppingListId,
+      })
     }
 
     const inventoryItem = await this.inventoryItemRepository.findById(
@@ -41,7 +41,10 @@ export class AddShoppingListItemFromInventoryCommandHandler {
     )
 
     if (!inventoryItem || inventoryItem.householdId !== householdId) {
-      return err({ type: 'INVENTORY_ITEM_NOT_FOUND', id: command.inventoryItemId })
+      return err({
+        type: 'INVENTORY_ITEM_NOT_FOUND',
+        id: command.inventoryItemId,
+      })
     }
 
     const shoppingListItem = shoppingList.addItemFromInventory({

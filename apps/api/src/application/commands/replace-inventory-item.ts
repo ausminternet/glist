@@ -7,24 +7,20 @@ import {
 } from '@/domain/inventory-item/inventory-item'
 import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import { err, ok, Result, unitTypes } from '@glist/shared'
-import z from 'zod'
+import { err, ok, Result } from '@glist/shared'
 import { RequestContext } from '../shared/request-context'
 
-export const ReplaceInventoryItemCommandSchema = z.object({
-  name: z.string().trim().min(1, 'Name cannot be empty'),
-  description: z.string().trim().nullable(),
-  categoryId: z.uuid().nullable(),
-  targetStock: z.number().positive().nullable(),
-  targetStockUnit: z.enum(unitTypes).nullable(),
-  basePriceCents: z.number().int().positive().nullable(),
-  basePriceUnit: z.enum(unitTypes).nullable(),
-  shopIds: z.array(z.uuid()),
-})
-
-export type ReplaceInventoryItemCommand = z.infer<
-  typeof ReplaceInventoryItemCommandSchema
->
+export type ReplaceInventoryItemCommand = {
+  inventoryItemId: string
+  name: string
+  description: string | null
+  categoryId: string | null
+  targetStock: number | null
+  targetStockUnit: string | null
+  basePriceCents: number | null
+  basePriceUnit: string | null
+  shopIds: string[]
+}
 
 export type ReplaceInventoryItemError =
   | InventoryItemNotFoundError
@@ -36,16 +32,18 @@ export class ReplaceInventoryItemCommandHandler {
   constructor(private repository: InventoryItemRepository) {}
 
   async execute(
-    inventoryItemId: string,
     command: ReplaceInventoryItemCommand,
     context: RequestContext,
   ): Promise<Result<void, ReplaceInventoryItemError>> {
     const { householdId } = context
 
-    const item = await this.repository.findById(inventoryItemId)
+    const item = await this.repository.findById(command.inventoryItemId)
 
     if (!item || item.householdId !== householdId) {
-      return err({ type: 'INVENTORY_ITEM_NOT_FOUND', id: inventoryItemId })
+      return err({
+        type: 'INVENTORY_ITEM_NOT_FOUND',
+        id: command.inventoryItemId,
+      })
     }
 
     const nameResult = item.changeName(command.name)

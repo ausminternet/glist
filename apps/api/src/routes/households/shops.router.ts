@@ -1,23 +1,14 @@
-import {
-  CreateShopCommandHandler,
-  CreateShopCommandSchema,
-} from '@/application/commands/create-shop'
+import { CreateShopCommandHandler } from '@/application/commands/create-shop'
 import { DeleteShopCommandHandler } from '@/application/commands/delete-shop'
-import {
-  ReorderShopsCommandHandler,
-  ReorderShopsCommandSchema,
-} from '@/application/commands/reorder-shops'
-import {
-  ReplaceShopCommandHandler,
-  ReplaceShopCommandSchema,
-} from '@/application/commands/replace-shop'
+import { ReorderShopsCommandHandler } from '@/application/commands/reorder-shops'
+import { ReplaceShopCommandHandler } from '@/application/commands/replace-shop'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleShopQueryRepository } from '@/infrastructure/repositories/drizzle-shop-query-repository'
 import { DrizzleShopRepository } from '@/infrastructure/repositories/drizzle-shop-repository'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
+import { z } from 'zod'
 import { HouseholdContext } from './context'
-
 const shopsRouter = new Hono<HouseholdContext>()
 
 shopsRouter.get('/', async (c) => {
@@ -28,6 +19,10 @@ shopsRouter.get('/', async (c) => {
   const shops = await repository.findAllByHouseholdId(householdId)
 
   return c.json({ success: true, data: shops })
+})
+
+const CreateShopCommandSchema = z.object({
+  name: z.string().trim().min(1, 'Name cannot be empty'),
 })
 
 shopsRouter.post(
@@ -58,6 +53,10 @@ shopsRouter.post(
     return c.json({ success: true, data: { id: result.value } }, 201)
   },
 )
+
+const ReorderShopsCommandSchema = z.object({
+  ids: z.array(z.uuid()).min(1, 'At least one shop id is required'),
+})
 
 shopsRouter.put(
   '/reorder',
@@ -95,6 +94,10 @@ shopsRouter.put(
   },
 )
 
+const ReplaceShopCommandSchema = z.object({
+  name: z.string().trim().min(1, 'Name cannot be empty'),
+})
+
 shopsRouter.put(
   '/:id',
   zValidator('json', ReplaceShopCommandSchema),
@@ -107,7 +110,10 @@ shopsRouter.put(
     const repository = new DrizzleShopRepository(db)
     const command = new ReplaceShopCommandHandler(repository)
 
-    const result = await command.execute(id, input, { householdId })
+    const result = await command.execute(
+      { shopId: id, ...input },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {

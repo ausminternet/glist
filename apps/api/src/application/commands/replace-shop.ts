@@ -1,15 +1,13 @@
-import { ShopNotFoundError } from '@/domain/shop/errors';
-import { ChangeNameError } from '@/domain/shop/shop';
-import { ShopRepository } from '@/domain/shop/shop-repository';
-import { err, ok, Result } from '@glist/shared';
-import z from 'zod';
-import { RequestContext } from '../shared/request-context';
+import { ShopNotFoundError } from '@/domain/shop/errors'
+import { ChangeNameError } from '@/domain/shop/shop'
+import { ShopRepository } from '@/domain/shop/shop-repository'
+import { err, ok, Result } from '@glist/shared'
+import { RequestContext } from '../shared/request-context'
 
-export const ReplaceShopCommandSchema = z.object({
-  name: z.string().trim().min(1, 'Name cannot be empty'),
-})
-
-export type ReplaceShopCommand = z.infer<typeof ReplaceShopCommandSchema>
+export type ReplaceShopCommand = {
+  name: string
+  shopId: string
+}
 
 export type ReplaceShopError = ShopNotFoundError | ChangeNameError
 
@@ -17,16 +15,15 @@ export class ReplaceShopCommandHandler {
   constructor(private repository: ShopRepository) {}
 
   async execute(
-    shopId: string,
     command: ReplaceShopCommand,
     context: RequestContext,
   ): Promise<Result<void, ReplaceShopError>> {
     const { householdId } = context
 
-    const shop = await this.repository.findById(shopId)
+    const shop = await this.repository.findById(command.shopId)
 
     if (!shop || shop.householdId !== householdId) {
-      return err({ type: 'SHOP_NOT_FOUND', id: shopId })
+      return err({ type: 'SHOP_NOT_FOUND', id: command.shopId })
     }
 
     const nameResult = shop.changeName(command.name)

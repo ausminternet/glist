@@ -1,24 +1,12 @@
-import {
-  AddShoppingListItemCommandHandler,
-  AddShoppingListItemCommandSchema,
-} from '@/application/commands/add-shopping-list-item'
-import {
-  AddShoppingListItemFromInventoryCommandHandler,
-  AddShoppingListItemFromInventoryCommandSchema,
-} from '@/application/commands/add-shopping-list-item-from-inventory'
+import { AddShoppingListItemCommandHandler } from '@/application/commands/add-shopping-list-item'
+import { AddShoppingListItemFromInventoryCommandHandler } from '@/application/commands/add-shopping-list-item-from-inventory'
 import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
 import { ClearCheckedItemsCommandHandler } from '@/application/commands/clear-checked-items'
-import {
-  CreateShoppingListCommandHandler,
-  CreateShoppingListCommandSchema,
-} from '@/application/commands/create-shopping-list'
+import { CreateShoppingListCommandHandler } from '@/application/commands/create-shopping-list'
 import { DeleteShoppingListCommandHandler } from '@/application/commands/delete-shopping-list'
 import { DeleteShoppingListItemPhotoCommandHandler } from '@/application/commands/delete-shopping-list-item-photo'
 import { RemoveShoppingListItemCommandHandler } from '@/application/commands/remove-shopping-list-item'
-import {
-  ReplaceShoppingListItemCommandHandler,
-  ReplaceShoppingListItemCommandSchema,
-} from '@/application/commands/replace-shopping-list-item'
+import { ReplaceShoppingListItemCommandHandler } from '@/application/commands/replace-shopping-list-item'
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
 import { UploadShoppingListItemPhotoCommandHandler } from '@/application/commands/upload-shopping-list-item-photo'
 import { GetShoppingListQueryHandler } from '@/application/queries/get-shopping-list'
@@ -27,8 +15,10 @@ import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/dr
 import { DrizzleShoppingListQueryRepository } from '@/infrastructure/repositories/drizzle-shopping-list-query-repository'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
+import { unitTypes } from '@glist/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
+import { z } from 'zod'
 import { HouseholdContext } from './context'
 
 const shoppingListsRouter = new Hono<HouseholdContext>()
@@ -54,6 +44,10 @@ shoppingListsRouter.get('/:id', async (c) => {
   }
 
   return c.json({ success: true, data: result.value })
+})
+
+const CreateShoppingListCommandSchema = z.object({
+  name: z.string().trim().nonempty('Name cannot be empty'),
 })
 
 shoppingListsRouter.post(
@@ -116,6 +110,15 @@ shoppingListsRouter.delete('/:id', async (c) => {
   return c.json({ success: true })
 })
 
+const AddShoppingListItemCommandSchema = z.object({
+  name: z.string().trim().min(1, 'Name cannot be empty'),
+  description: z.string().trim().optional(),
+  categoryId: z.uuid().optional(),
+  quantity: z.number().positive().optional(),
+  quantityUnit: z.enum(unitTypes).optional(),
+  shopIds: z.array(z.uuid()).optional(),
+})
+
 shoppingListsRouter.post(
   '/:listId/items',
   zValidator('json', AddShoppingListItemCommandSchema),
@@ -128,7 +131,10 @@ shoppingListsRouter.post(
     const repository = new DrizzleShoppingListRepository(db)
     const command = new AddShoppingListItemCommandHandler(repository)
 
-    const result = await command.execute(listId, input, { householdId })
+    const result = await command.execute(
+      { ...input, shoppingListId: listId },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -157,6 +163,10 @@ shoppingListsRouter.post(
   },
 )
 
+const AddShoppingListItemFromInventoryCommandSchema = z.object({
+  inventoryItemId: z.uuid(),
+})
+
 shoppingListsRouter.post(
   '/:listId/items/from-inventory',
   zValidator('json', AddShoppingListItemFromInventoryCommandSchema),
@@ -173,7 +183,13 @@ shoppingListsRouter.post(
       inventoryItemRepository,
     )
 
-    const result = await command.execute(listId, input, { householdId })
+    const result = await command.execute(
+      {
+        inventoryItemId: input.inventoryItemId,
+        shoppingListId: listId,
+      },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -277,6 +293,15 @@ shoppingListsRouter.post('/:listId/items/clear-checked', async (c) => {
   return c.json({ success: true })
 })
 
+const ReplaceShoppingListItemCommandSchema = z.object({
+  name: z.string().trim().min(1, 'Name cannot be empty'),
+  description: z.string().trim().nullable(),
+  categoryId: z.uuid().nullable(),
+  quantity: z.number().positive().nullable(),
+  quantityUnit: z.enum(unitTypes).nullable(),
+  shopIds: z.array(z.uuid()),
+})
+
 shoppingListsRouter.put(
   '/:listId/items/:itemId',
   zValidator('json', ReplaceShoppingListItemCommandSchema),
@@ -290,7 +315,10 @@ shoppingListsRouter.put(
     const repository = new DrizzleShoppingListRepository(db)
     const command = new ReplaceShoppingListItemCommandHandler(repository)
 
-    const result = await command.execute(listId, itemId, input, { householdId })
+    const result = await command.execute(
+      { ...input, shoppingListId: listId, itemId },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {

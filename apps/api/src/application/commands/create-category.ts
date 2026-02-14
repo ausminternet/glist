@@ -3,14 +3,11 @@ import { generateCategoryId } from '@/domain/category/category-id'
 import { CategoryRepository } from '@/domain/category/category-repository'
 import { parseHouseholdId } from '@/domain/shared/household-id'
 import { err, ok, Result } from '@glist/shared'
-import z from 'zod'
 import { RequestContext } from '../shared/request-context'
 
-export const CreateCategoryCommandSchema = z.object({
-  name: z.string().trim().min(1, 'Name cannot be empty'),
-})
-
-export type CreateCategoryCommand = z.infer<typeof CreateCategoryCommandSchema>
+export type CreateCategoryCommand = {
+  name: string
+}
 
 export class CreateCategoryCommandHandler {
   constructor(private repository: CategoryRepository) {}

@@ -9,22 +9,19 @@ import {
   ChangeQuantityError,
 } from '@/domain/shopping-list/shopping-list-item'
 import { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
-import { err, ok, Result, unitTypes } from '@glist/shared'
-import z from 'zod'
+import { err, ok, Result } from '@glist/shared'
 import { RequestContext } from '../shared/request-context'
 
-export const ReplaceShoppingListItemCommandSchema = z.object({
-  name: z.string().trim().min(1, 'Name cannot be empty'),
-  description: z.string().trim().nullable(),
-  categoryId: z.uuid().nullable(),
-  quantity: z.number().positive().nullable(),
-  quantityUnit: z.enum(unitTypes).nullable(),
-  shopIds: z.array(z.uuid()),
-})
-
-export type ReplaceShoppingListItemCommand = z.infer<
-  typeof ReplaceShoppingListItemCommandSchema
->
+export type ReplaceShoppingListItemCommand = {
+  itemId: string
+  shoppingListId: string
+  name: string
+  description: string | null
+  categoryId: string | null
+  quantity: number | null
+  quantityUnit: string | null
+  shopIds: string[]
+}
 
 export type ReplaceShoppingListItemError =
   | ShoppingListNotFoundError
@@ -36,23 +33,24 @@ export class ReplaceShoppingListItemCommandHandler {
   constructor(private repository: ShoppingListRepository) {}
 
   async execute(
-    shoppingListId: string,
-    itemId: string,
     command: ReplaceShoppingListItemCommand,
     context: RequestContext,
   ): Promise<Result<void, ReplaceShoppingListItemError>> {
     const { householdId } = context
 
-    const shoppingList = await this.repository.findById(shoppingListId)
+    const shoppingList = await this.repository.findById(command.shoppingListId)
 
     if (!shoppingList || shoppingList.householdId !== householdId) {
-      return err({ type: 'SHOPPING_LIST_NOT_FOUND', id: shoppingListId })
+      return err({
+        type: 'SHOPPING_LIST_NOT_FOUND',
+        id: command.shoppingListId,
+      })
     }
 
-    const item = shoppingList.findItem(itemId)
+    const item = shoppingList.findItem(command.itemId)
 
     if (!item) {
-      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
+      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })
     }
 
     const nameResult = item.changeName(command.name)

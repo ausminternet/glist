@@ -1,21 +1,13 @@
-import {
-  CreateCategoryCommandHandler,
-  CreateCategoryCommandSchema,
-} from '@/application/commands/create-category'
+import { CreateCategoryCommandHandler } from '@/application/commands/create-category'
 import { DeleteCategoryCommandHandler } from '@/application/commands/delete-category'
-import {
-  ReorderCategoriesCommandHandler,
-  ReorderCategoriesCommandSchema,
-} from '@/application/commands/reorder-categories'
-import {
-  ReplaceCategoryCommandHandler,
-  ReplaceCategoryCommandSchema,
-} from '@/application/commands/replace-category'
+import { ReorderCategoriesCommandHandler } from '@/application/commands/reorder-categories'
+import { ReplaceCategoryCommandHandler } from '@/application/commands/replace-category'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleCategoryQueryRepository } from '@/infrastructure/repositories/drizzle-category-query-repository'
 import { DrizzleCategoryRepository } from '@/infrastructure/repositories/drizzle-category-repository'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
+import { z } from 'zod'
 import { HouseholdContext } from './context'
 
 const categoriesRouter = new Hono<HouseholdContext>()
@@ -28,6 +20,10 @@ categoriesRouter.get('/', async (c) => {
   const categories = await repository.findAllByHouseholdId(householdId)
 
   return c.json({ success: true, data: categories })
+})
+
+const CreateCategoryCommandSchema = z.object({
+  name: z.string().trim().min(1, 'Name cannot be empty'),
 })
 
 categoriesRouter.post(
@@ -58,6 +54,10 @@ categoriesRouter.post(
     return c.json({ success: true, data: { id: result.value } }, 201)
   },
 )
+
+const ReorderCategoriesCommandSchema = z.object({
+  ids: z.array(z.uuid()).min(1, 'At least one category id is required'),
+})
 
 categoriesRouter.put(
   '/reorder',
@@ -95,6 +95,10 @@ categoriesRouter.put(
   },
 )
 
+const ReplaceCategoryCommandSchema = z.object({
+  name: z.string().trim().min(1, 'Name cannot be empty'),
+})
+
 categoriesRouter.put(
   '/:id',
   zValidator('json', ReplaceCategoryCommandSchema),
@@ -107,7 +111,13 @@ categoriesRouter.put(
     const repository = new DrizzleCategoryRepository(db)
     const command = new ReplaceCategoryCommandHandler(repository)
 
-    const result = await command.execute(id, input, { householdId })
+    const result = await command.execute(
+      {
+        ...input,
+        categoryId: id,
+      },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {

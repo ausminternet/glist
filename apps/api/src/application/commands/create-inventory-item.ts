@@ -7,24 +7,19 @@ import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-
 import { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import { parseHouseholdId } from '@/domain/shared/household-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import { err, ok, Result, unitTypes } from '@glist/shared'
-import z from 'zod'
+import { err, ok, Result } from '@glist/shared'
 import { RequestContext } from '../shared/request-context'
 
-export const CreateInventoryItemCommandSchema = z.object({
-  name: z.string().trim().min(1, 'Name cannot be empty'),
-  description: z.string().trim().optional(),
-  categoryId: z.uuid().optional(),
-  targetStock: z.number().positive().optional(),
-  targetStockUnit: z.enum(unitTypes).optional(),
-  basePriceCents: z.number().int().positive().optional(),
-  basePriceUnit: z.enum(unitTypes).optional(),
-  shopIds: z.array(z.uuid()).optional(),
-})
-
-export type CreateInventoryItemCommand = z.infer<
-  typeof CreateInventoryItemCommandSchema
->
+export type CreateInventoryItemCommand = {
+  name: string
+  description?: string
+  categoryId?: string
+  targetStock?: number
+  targetStockUnit?: string
+  basePriceCents?: number
+  basePriceUnit?: string
+  shopIds?: string[]
+}
 
 export class CreateInventoryItemCommandHandler {
   constructor(private repository: InventoryItemRepository) {}

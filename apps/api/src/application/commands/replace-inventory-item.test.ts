@@ -34,7 +34,7 @@ function createMockRepository(
   }
 }
 
-const validCommand: ReplaceInventoryItemCommand = {
+const validCommand: Omit<ReplaceInventoryItemCommand, 'inventoryItemId'> = {
   name: 'Updated Milk',
   description: 'Updated description',
   categoryId: null,
@@ -53,7 +53,13 @@ describe('ReplaceInventoryItemCommandHandler', () => {
     const repository = createMockRepository(item)
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
-    const result = await handler.execute(item.id, validCommand, { householdId })
+    const result = await handler.execute(
+      {
+        ...validCommand,
+        inventoryItemId: item.id,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(repository.save).toHaveBeenCalledTimes(1)
@@ -67,9 +73,15 @@ describe('ReplaceInventoryItemCommandHandler', () => {
     const repository = createMockRepository(null)
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
-    const result = await handler.execute('non-existent-id', validCommand, {
-      householdId,
-    })
+    const result = await handler.execute(
+      {
+        ...validCommand,
+        inventoryItemId: 'non-existent-id',
+      },
+      {
+        householdId,
+      },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -85,7 +97,13 @@ describe('ReplaceInventoryItemCommandHandler', () => {
     const repository = createMockRepository(item)
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
-    const result = await handler.execute(item.id, validCommand, { householdId })
+    const result = await handler.execute(
+      {
+        ...validCommand,
+        inventoryItemId: item.id,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -99,6 +117,7 @@ describe('ReplaceInventoryItemCommandHandler', () => {
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
     const command: ReplaceInventoryItemCommand = {
+      inventoryItemId: item.id,
       name: 'Simple Item',
       description: null,
       categoryId: null,
@@ -109,7 +128,7 @@ describe('ReplaceInventoryItemCommandHandler', () => {
       shopIds: [],
     }
 
-    const result = await handler.execute(item.id, command, { householdId })
+    const result = await handler.execute(command, { householdId })
 
     expect(result.ok).toBe(true)
     expect(item.description).toBeNull()
@@ -126,7 +145,13 @@ describe('ReplaceInventoryItemCommandHandler', () => {
 
     expect(item.updatedAt).toBeNull()
 
-    const result = await handler.execute(item.id, validCommand, { householdId })
+    const result = await handler.execute(
+      {
+        ...validCommand,
+        inventoryItemId: item.id,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).toBeInstanceOf(Date)

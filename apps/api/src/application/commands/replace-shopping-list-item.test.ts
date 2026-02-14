@@ -29,7 +29,10 @@ function createMockRepository(
   }
 }
 
-const validCommand: ReplaceShoppingListItemCommand = {
+const validCommand: Omit<
+  ReplaceShoppingListItemCommand,
+  'shoppingListId' | 'itemId'
+> = {
   name: 'Updated Milk',
   description: 'Updated description',
   categoryId: null,
@@ -50,9 +53,11 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      validCommand,
+      {
+        ...validCommand,
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+      },
       { householdId },
     )
 
@@ -69,9 +74,11 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute(
-      'non-existent-list',
-      'some-item-id',
-      validCommand,
+      {
+        ...validCommand,
+        shoppingListId: 'non-existent-list',
+        itemId: 'some-item-id',
+      },
       { householdId },
     )
 
@@ -95,9 +102,11 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      validCommand,
+      {
+        ...validCommand,
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+      },
       { householdId },
     )
 
@@ -113,9 +122,11 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute(
-      shoppingList.id,
-      'non-existent-item',
-      validCommand,
+      {
+        ...validCommand,
+        shoppingListId: shoppingList.id,
+        itemId: 'non-existent-item',
+      },
       { householdId },
     )
 
@@ -142,6 +153,8 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const command: ReplaceShoppingListItemCommand = {
+      shoppingListId: shoppingList.id,
+      itemId: item.id,
       name: 'Simple Item',
       description: null,
       categoryId: null,
@@ -150,7 +163,7 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
       shopIds: [],
     }
 
-    const result = await handler.execute(shoppingList.id, item.id, command, {
+    const result = await handler.execute(command, {
       householdId,
     })
 
@@ -169,9 +182,11 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute(
-      shoppingList.id,
-      item.id,
-      validCommand,
+      {
+        ...validCommand,
+        shoppingListId: shoppingList.id,
+        itemId: item.id,
+      },
       { householdId },
     )
 

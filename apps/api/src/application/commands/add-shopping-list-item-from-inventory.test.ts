@@ -86,8 +86,7 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      { inventoryItemId: inventoryItem.id },
+      { inventoryItemId: inventoryItem.id, shoppingListId: shoppingList.id },
       { householdId },
     )
 
@@ -124,8 +123,7 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      { inventoryItemId: inventoryItem.id },
+      { inventoryItemId: inventoryItem.id, shoppingListId: shoppingList.id },
       { householdId },
     )
 
@@ -148,8 +146,10 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      'non-existent-list',
-      { inventoryItemId: inventoryItem.id },
+      {
+        inventoryItemId: inventoryItem.id,
+        shoppingListId: 'non-existent-list',
+      },
       { householdId },
     )
 
@@ -175,8 +175,10 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      { inventoryItemId: inventoryItem.id },
+      {
+        inventoryItemId: inventoryItem.id,
+        shoppingListId: shoppingList.id,
+      },
       { householdId },
     )
 
@@ -197,8 +199,10 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      { inventoryItemId: 'non-existent-item' },
+      {
+        inventoryItemId: 'non-existent-item',
+        shoppingListId: shoppingList.id,
+      },
       { householdId },
     )
 
@@ -224,8 +228,10 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      { inventoryItemId: inventoryItem.id },
+      {
+        inventoryItemId: inventoryItem.id,
+        shoppingListId: shoppingList.id,
+      },
       { householdId },
     )
 
@@ -248,8 +254,10 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     )
 
     const result = await handler.execute(
-      shoppingList.id,
-      { inventoryItemId: inventoryItem.id },
+      {
+        inventoryItemId: inventoryItem.id,
+        shoppingListId: shoppingList.id,
+      },
       { householdId },
     )
 

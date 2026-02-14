@@ -1,13 +1,10 @@
-import { ShopRepository } from '@/domain/shop/shop-repository';
-import { err, ok, Result } from '@glist/shared';
-import z from 'zod';
-import { RequestContext } from '../shared/request-context';
+import { ShopRepository } from '@/domain/shop/shop-repository'
+import { err, ok, Result } from '@glist/shared'
+import { RequestContext } from '../shared/request-context'
 
-export const ReorderShopsCommandSchema = z.object({
-  ids: z.array(z.uuid()).min(1, 'At least one shop id is required'),
-})
-
-export type ReorderShopsCommand = z.infer<typeof ReorderShopsCommandSchema>
+export type ReorderShopsCommand = {
+  ids: string[]
+}
 
 export type ReorderShopsError =
   | { type: 'SHOP_NOT_FOUND'; id: string }

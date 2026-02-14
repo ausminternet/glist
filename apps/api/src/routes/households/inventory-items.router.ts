@@ -1,21 +1,17 @@
-import {
-  CreateInventoryItemCommandHandler,
-  CreateInventoryItemCommandSchema,
-} from '@/application/commands/create-inventory-item'
+import { CreateInventoryItemCommandHandler } from '@/application/commands/create-inventory-item'
 import { DeleteInventoryItemCommandHandler } from '@/application/commands/delete-inventory-item'
 import { DeleteInventoryItemPhotoCommandHandler } from '@/application/commands/delete-inventory-item-photo'
-import {
-  ReplaceInventoryItemCommandHandler,
-  ReplaceInventoryItemCommandSchema,
-} from '@/application/commands/replace-inventory-item'
+import { ReplaceInventoryItemCommandHandler } from '@/application/commands/replace-inventory-item'
 import { UploadInventoryItemPhotoCommandHandler } from '@/application/commands/upload-inventory-item-photo'
 import { GetInventoryItemsQueryHandler } from '@/application/queries/get-inventory-items'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemQueryRepository } from '@/infrastructure/repositories/drizzle-inventory-item-query-repository'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
+import { unitTypes } from '@glist/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
+import { z } from 'zod'
 import { HouseholdContext } from './context'
 
 const inventoryItemsRouter = new Hono<HouseholdContext>()
@@ -29,6 +25,17 @@ inventoryItemsRouter.get('/', async (c) => {
   const items = await query.execute({ householdId })
 
   return c.json({ success: true, data: items })
+})
+
+const CreateInventoryItemCommandSchema = z.object({
+  name: z.string().trim().min(1, 'Name cannot be empty'),
+  description: z.string().trim().optional(),
+  categoryId: z.uuid().optional(),
+  targetStock: z.number().positive().optional(),
+  targetStockUnit: z.enum(unitTypes).optional(),
+  basePriceCents: z.number().int().positive().optional(),
+  basePriceUnit: z.enum(unitTypes).optional(),
+  shopIds: z.array(z.uuid()).optional(),
 })
 
 inventoryItemsRouter.post(
@@ -65,6 +72,17 @@ inventoryItemsRouter.post(
   },
 )
 
+const ReplaceInventoryItemCommandSchema = z.object({
+  name: z.string().trim().min(1, 'Name cannot be empty'),
+  description: z.string().trim().nullable(),
+  categoryId: z.uuid().nullable(),
+  targetStock: z.number().positive().nullable(),
+  targetStockUnit: z.enum(unitTypes).nullable(),
+  basePriceCents: z.number().int().positive().nullable(),
+  basePriceUnit: z.enum(unitTypes).nullable(),
+  shopIds: z.array(z.uuid()),
+})
+
 inventoryItemsRouter.put(
   '/:id',
   zValidator('json', ReplaceInventoryItemCommandSchema),
@@ -77,7 +95,10 @@ inventoryItemsRouter.put(
     const repository = new DrizzleInventoryItemRepository(db)
     const command = new ReplaceInventoryItemCommandHandler(repository)
 
-    const result = await command.execute(id, input, { householdId })
+    const result = await command.execute(
+      { ...input, inventoryItemId: id },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -133,7 +154,6 @@ inventoryItemsRouter.delete('/:id', async (c) => {
   return c.json({ success: true })
 })
 
-// Photo upload endpoint
 inventoryItemsRouter.post('/:id/photo', async (c) => {
   const householdId = c.get('householdId')
   const id = c.req.param('id')
@@ -189,7 +209,6 @@ inventoryItemsRouter.post('/:id/photo', async (c) => {
   return c.json({ success: true, data: { photoUrl: result.value } }, 201)
 })
 
-// Photo delete endpoint
 inventoryItemsRouter.delete('/:id/photo', async (c) => {
   const householdId = c.get('householdId')
   const id = c.req.param('id')

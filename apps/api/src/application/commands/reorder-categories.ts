@@ -1,15 +1,10 @@
 import { CategoryRepository } from '@/domain/category/category-repository'
 import { err, ok, Result } from '@glist/shared'
-import z from 'zod'
 import { RequestContext } from '../shared/request-context'
 
-export const ReorderCategoriesCommandSchema = z.object({
-  ids: z.array(z.uuid()).min(1, 'At least one category id is required'),
-})
-
-export type ReorderCategoriesCommand = z.infer<
-  typeof ReorderCategoriesCommandSchema
->
+export type ReorderCategoriesCommand = {
+  ids: string[]
+}
 
 export type ReorderCategoriesError =
   | { type: 'CATEGORY_NOT_FOUND'; id: string }
