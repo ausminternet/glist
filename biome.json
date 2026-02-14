@@ -24,10 +24,14 @@
     "includes": [
       "**",
       "!**/dist",
+      "!**/node_modules",
       "!**/.wrangler",
+      "!**/.expo",
       "!apps/api/scripts",
       "!apps/api/drizzle.config.ts",
-      "!apps/api/worker-configuration.d.ts"
+      "!apps/api/worker-configuration.d.ts",
+      "!apps/mobile/ios",
+      "!apps/mobile/assets"
     ]
   }
 }
