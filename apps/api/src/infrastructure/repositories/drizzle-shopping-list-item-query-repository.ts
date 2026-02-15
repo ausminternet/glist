@@ -82,4 +82,34 @@ export class DrizzleShoppingListItemQueryRepository
       shoppingListItemToView(row, shopsByItemId.get(row.id) ?? []),
     )
   }
+
+  async findAllByShoppingListIds(
+    shoppingListIds: string[],
+  ): Promise<ShoppingListItemView[]> {
+    const rows = await this.db
+      .select()
+      .from(shoppingListItems)
+      .where(inArray(shoppingListItems.shoppingListId, shoppingListIds))
+
+    if (rows.length === 0) {
+      return []
+    }
+
+    const itemIds = rows.map((row) => row.id)
+    const shopRows = await this.db
+      .select()
+      .from(shoppingListItemShops)
+      .where(inArray(shoppingListItemShops.shoppingListItemId, itemIds))
+
+    const shopsByItemId = new Map<string, string[]>()
+    for (const row of shopRows) {
+      const shops = shopsByItemId.get(row.shoppingListItemId) ?? []
+      shops.push(row.shopId)
+      shopsByItemId.set(row.shoppingListItemId, shops)
+    }
+
+    return rows.map((row) =>
+      shoppingListItemToView(row, shopsByItemId.get(row.id) ?? []),
+    )
+  }
 }

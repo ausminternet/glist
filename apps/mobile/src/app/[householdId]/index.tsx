@@ -1,16 +1,33 @@
 import { Link } from 'expo-router'
-import { Text, View } from 'react-native'
-import { usePrefetchCategories } from '@/api/categories'
+import { ActivityIndicator, Text, View } from 'react-native'
+import { useBootstrap } from '@/api/bootstrap'
 import { useShoppingLists } from '@/api/shopping-lists'
-import { usePrefetchShops } from '@/api/shops'
 import { useHouseholdId } from '@/utils/use-household-id'
 
 export default function Index() {
   const householdId = useHouseholdId()
-  const { shoppingLists } = useShoppingLists(householdId)
+  const { isSuccess: isBootstrapComplete, isError } = useBootstrap(householdId)
+  const { shoppingLists } = useShoppingLists(householdId, {
+    enabled: isBootstrapComplete,
+  })
 
-  usePrefetchCategories(householdId)
-  usePrefetchShops(householdId)
+  if (!isBootstrapComplete) {
+    if (isError) {
+      return (
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Text>Fehler beim Laden</Text>
+        </View>
+      )
+    }
+
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    )
+  }
 
   return (
     <View

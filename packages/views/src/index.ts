@@ -1,3 +1,4 @@
+export * from './bootstrap.view'
 export * from './category.view'
 export * from './inventory-item.view'
 export * from './shop.view'

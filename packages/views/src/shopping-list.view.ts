@@ -23,3 +23,7 @@ export type ShoppingListView = {
   createdAt: string
   updatedAt: string | null
 }
+
+export type ShoppingListWithItemsView = ShoppingListView & {
+  items: ShoppingListItemView[]
+}

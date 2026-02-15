@@ -6,8 +6,8 @@ export function useInventoryItems(householdId: string) {
   const { data = [], ...rest } = useQuery({
     queryKey: queryKeys.inventoryItems(householdId),
     queryFn: () => getInventoryItems(householdId),
-    staleTime: 5 * 60,
-    gcTime: 10 * 60,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   })
 
   return { inventoryItems: data, ...rest }

@@ -97,6 +97,7 @@ export function useShoppingListEvents(householdId: string, listId: string) {
       es.removeAllEventListeners()
       es.close()
       appStateSubscription.remove()
+      console.log('[SSE] Disconnected')
     }
   }, [householdId, listId, queryClient])
 

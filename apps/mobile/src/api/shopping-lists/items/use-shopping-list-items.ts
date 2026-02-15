@@ -7,6 +7,8 @@ export function useShoppingListItems(householdId: string, listId: string) {
   const { data: items = [], ...rest } = useQuery<ShoppingListItemView[]>({
     queryKey: queryKeys.shoppingListItems(householdId, listId),
     queryFn: () => getShoppingListItems(householdId, listId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   })
 
   return { items, ...rest }

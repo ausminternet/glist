@@ -5,4 +5,7 @@ export interface ShoppingListItemQueryRepository {
   findAllByShoppingListId(
     shoppingListId: string,
   ): Promise<ShoppingListItemView[]>
+  findAllByShoppingListIds(
+    shoppingListIds: string[],
+  ): Promise<ShoppingListItemView[]>
 }
