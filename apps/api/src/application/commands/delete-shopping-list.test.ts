@@ -35,10 +35,7 @@ describe('DeleteShoppingListCommandHandler', () => {
     const repository = createMockRepository(shoppingList, 3)
     const handler = new DeleteShoppingListCommandHandler(repository)
 
-    const result = await handler.execute(
-      { shoppingListId: shoppingList.id },
-      { householdId },
-    )
+    const result = await handler.execute({ shoppingListId: shoppingList.id })
 
     expect(result.ok).toBe(true)
     expect(repository.delete).toHaveBeenCalledTimes(1)
@@ -48,10 +45,7 @@ describe('DeleteShoppingListCommandHandler', () => {
     const repository = createMockRepository(null, 3)
     const handler = new DeleteShoppingListCommandHandler(repository)
 
-    const result = await handler.execute(
-      { shoppingListId: 'non-existent-id' },
-      { householdId },
-    )
+    const result = await handler.execute({ shoppingListId: 'non-existent-id' })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -62,33 +56,12 @@ describe('DeleteShoppingListCommandHandler', () => {
     expect(repository.delete).not.toHaveBeenCalled()
   })
 
-  test('returns SHOPPING_LIST_NOT_FOUND when list belongs to different household', async () => {
-    const shoppingList = createTestShoppingList(
-      '00000000-0000-0000-0000-000000000002',
-    )
-    const repository = createMockRepository(shoppingList, 3)
-    const handler = new DeleteShoppingListCommandHandler(repository)
-
-    const result = await handler.execute(
-      { shoppingListId: shoppingList.id },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.type).toBe('SHOPPING_LIST_NOT_FOUND')
-    expect(repository.delete).not.toHaveBeenCalled()
-  })
-
   test('returns CANNOT_DELETE_LAST_SHOPPING_LIST when only one list exists', async () => {
     const shoppingList = createTestShoppingList(householdId)
     const repository = createMockRepository(shoppingList, 1)
     const handler = new DeleteShoppingListCommandHandler(repository)
 
-    const result = await handler.execute(
-      { shoppingListId: shoppingList.id },
-      { householdId },
-    )
+    const result = await handler.execute({ shoppingListId: shoppingList.id })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -101,10 +74,7 @@ describe('DeleteShoppingListCommandHandler', () => {
     const repository = createMockRepository(shoppingList, 2)
     const handler = new DeleteShoppingListCommandHandler(repository)
 
-    const result = await handler.execute(
-      { shoppingListId: shoppingList.id },
-      { householdId },
-    )
+    const result = await handler.execute({ shoppingListId: shoppingList.id })
 
     expect(result.ok).toBe(true)
     expect(repository.delete).toHaveBeenCalledTimes(1)

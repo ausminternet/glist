@@ -55,7 +55,6 @@ function createMockPhotoStorage(): PhotoStorage {
 }
 
 describe('DeleteShoppingListItemPhotoCommandHandler', () => {
-  const householdId = '00000000-0000-0000-0000-000000000001'
   const shoppingListId = '00000000-0000-0000-0000-000000000010'
   const photoKey = 'shopping-list-item/test-id/12345.jpg'
 
@@ -69,15 +68,7 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({ itemId: item.id })
 
     expect(result.ok).toBe(true)
     expect(photoStorage.delete).toHaveBeenCalledTimes(1)
@@ -94,15 +85,7 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: 'non-existent-item',
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({ itemId: 'non-existent-item' })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -110,36 +93,6 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
     if (result.error.type === 'SHOPPING_LIST_ITEM_NOT_FOUND') {
       expect(result.error.id).toBe('non-existent-item')
     }
-    expect(photoStorage.delete).not.toHaveBeenCalled()
-    expect(repository.save).not.toHaveBeenCalled()
-  })
-
-  test('returns SHOPPING_LIST_ITEM_NOT_FOUND when item belongs to different shopping list', async () => {
-    const differentShoppingListId = '00000000-0000-0000-0000-000000000020'
-    const item = createTestShoppingListItem(differentShoppingListId, {
-      photoKey,
-    })
-
-    const repository = createMockRepository(item)
-    const photoStorage = createMockPhotoStorage()
-    const handler = new DeleteShoppingListItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-      },
-      {
-        householdId,
-      },
-    )
-
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.type).toBe('SHOPPING_LIST_ITEM_NOT_FOUND')
     expect(photoStorage.delete).not.toHaveBeenCalled()
     expect(repository.save).not.toHaveBeenCalled()
   })
@@ -155,15 +108,7 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({ itemId: item.id })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -183,15 +128,7 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({ itemId: item.id })
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).not.toBe(originalUpdatedAt)

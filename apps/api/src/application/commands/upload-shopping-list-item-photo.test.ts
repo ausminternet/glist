@@ -55,7 +55,6 @@ function createMockPhotoStorage(): PhotoStorage {
 }
 
 describe('UploadShoppingListItemPhotoCommandHandler', () => {
-  const householdId = '00000000-0000-0000-0000-000000000001'
   const shoppingListId = '00000000-0000-0000-0000-000000000010'
   const photoData = new ArrayBuffer(100)
   const contentType = 'image/jpeg'
@@ -70,15 +69,11 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-        photoData,
-        contentType,
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      itemId: item.id,
+      photoData,
+      contentType,
+    })
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
@@ -101,15 +96,11 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-        photoData,
-        contentType,
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      itemId: item.id,
+      photoData,
+      contentType,
+    })
 
     expect(result.ok).toBe(true)
     expect(photoStorage.delete).toHaveBeenCalledTimes(1)
@@ -125,15 +116,11 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: 'non-existent-item',
-        photoData,
-        contentType,
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      itemId: 'non-existent-item',
+      photoData,
+      contentType,
+    })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -141,34 +128,6 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
     if (result.error.type === 'SHOPPING_LIST_ITEM_NOT_FOUND') {
       expect(result.error.id).toBe('non-existent-item')
     }
-    expect(photoStorage.upload).not.toHaveBeenCalled()
-    expect(repository.save).not.toHaveBeenCalled()
-  })
-
-  test('returns SHOPPING_LIST_ITEM_NOT_FOUND when item belongs to different shopping list', async () => {
-    const differentShoppingListId = '00000000-0000-0000-0000-000000000020'
-    const item = createTestShoppingListItem(differentShoppingListId)
-
-    const repository = createMockRepository(item)
-    const photoStorage = createMockPhotoStorage()
-    const handler = new UploadShoppingListItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-        photoData,
-        contentType,
-      },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.type).toBe('SHOPPING_LIST_ITEM_NOT_FOUND')
     expect(photoStorage.upload).not.toHaveBeenCalled()
     expect(repository.save).not.toHaveBeenCalled()
   })
@@ -183,15 +142,11 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-        photoData,
-        contentType: 'image/gif',
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      itemId: item.id,
+      photoData,
+      contentType: 'image/gif',
+    })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -213,15 +168,11 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-        photoData,
-        contentType: 'image/jpeg',
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      itemId: item.id,
+      photoData,
+      contentType: 'image/jpeg',
+    })
 
     expect(result.ok).toBe(true)
   })
@@ -236,15 +187,11 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-        photoData,
-        contentType: 'image/png',
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      itemId: item.id,
+      photoData,
+      contentType: 'image/png',
+    })
 
     expect(result.ok).toBe(true)
   })
@@ -259,15 +206,11 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-        photoData,
-        contentType: 'image/webp',
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      itemId: item.id,
+      photoData,
+      contentType: 'image/webp',
+    })
 
     expect(result.ok).toBe(true)
   })
@@ -283,15 +226,11 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        shoppingListId,
-        itemId: item.id,
-        photoData,
-        contentType,
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      itemId: item.id,
+      photoData,
+      contentType,
+    })
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).not.toBe(originalUpdatedAt)

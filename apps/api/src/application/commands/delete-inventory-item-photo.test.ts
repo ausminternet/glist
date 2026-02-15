@@ -54,10 +54,7 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      { inventoryItemId: item.id },
-      { householdId },
-    )
+    const result = await handler.execute({ inventoryItemId: item.id })
 
     expect(result.ok).toBe(true)
     expect(photoStorage.delete).toHaveBeenCalledTimes(1)
@@ -74,10 +71,7 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      { inventoryItemId: 'non-existent-id' },
-      { householdId },
-    )
+    const result = await handler.execute({ inventoryItemId: 'non-existent-id' })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -85,30 +79,6 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
     if (result.error.type === 'INVENTORY_ITEM_NOT_FOUND') {
       expect(result.error.id).toBe('non-existent-id')
     }
-    expect(photoStorage.delete).not.toHaveBeenCalled()
-    expect(repository.save).not.toHaveBeenCalled()
-  })
-
-  test('returns INVENTORY_ITEM_NOT_FOUND when item belongs to different household', async () => {
-    const item = createTestInventoryItem(
-      '00000000-0000-0000-0000-000000000002',
-      photoKey,
-    )
-    const repository = createMockRepository(item)
-    const photoStorage = createMockPhotoStorage()
-    const handler = new DeleteInventoryItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
-    const result = await handler.execute(
-      { inventoryItemId: item.id },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.type).toBe('INVENTORY_ITEM_NOT_FOUND')
     expect(photoStorage.delete).not.toHaveBeenCalled()
     expect(repository.save).not.toHaveBeenCalled()
   })
@@ -122,10 +92,7 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      { inventoryItemId: item.id },
-      { householdId },
-    )
+    const result = await handler.execute({ inventoryItemId: item.id })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -145,10 +112,7 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
 
     const originalUpdatedAt = item.updatedAt
 
-    const result = await handler.execute(
-      { inventoryItemId: item.id },
-      { householdId },
-    )
+    const result = await handler.execute({ inventoryItemId: item.id })
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).not.toBe(originalUpdatedAt)

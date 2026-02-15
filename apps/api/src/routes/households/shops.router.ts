@@ -111,10 +111,7 @@ shopsRouter.put(
     const repository = new DrizzleShopRepository(db)
     const command = new ReplaceShopCommandHandler(repository)
 
-    const result = await command.execute(
-      { shopId: id, ...input },
-      { householdId },
-    )
+    const result = await command.execute({ shopId: id, ...input })
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -148,7 +145,7 @@ shopsRouter.delete('/:id', async (c) => {
   const repository = new DrizzleShopRepository(db)
   const command = new DeleteShopCommandHandler(repository)
 
-  const result = await command.execute({ shopId: id }, { householdId })
+  const result = await command.execute({ shopId: id })
 
   if (!result.ok) {
     switch (result.error.type) {

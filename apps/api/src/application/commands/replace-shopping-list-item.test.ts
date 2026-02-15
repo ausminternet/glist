@@ -48,10 +48,7 @@ function createMockRepository(
   }
 }
 
-const validCommand: Omit<
-  ReplaceShoppingListItemCommand,
-  'shoppingListId' | 'itemId'
-> = {
+const validCommand: Omit<ReplaceShoppingListItemCommand, 'itemId'> = {
   name: 'Updated Milk',
   description: 'Updated description',
   categoryId: null,
@@ -61,7 +58,6 @@ const validCommand: Omit<
 }
 
 describe('ReplaceShoppingListItemCommandHandler', () => {
-  const householdId = '00000000-0000-0000-0000-000000000001'
   const shoppingListId = '00000000-0000-0000-0000-000000000010'
 
   test('replaces item successfully', async () => {
@@ -73,14 +69,7 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const repository = createMockRepository(item)
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        shoppingListId,
-        itemId: item.id,
-      },
-      { householdId },
-    )
+    const result = await handler.execute({ ...validCommand, itemId: item.id })
 
     expect(result.ok).toBe(true)
     expect(repository.save).toHaveBeenCalledTimes(1)
@@ -94,14 +83,10 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const repository = createMockRepository(null)
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        shoppingListId,
-        itemId: 'non-existent-item',
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      ...validCommand,
+      itemId: 'non-existent-item',
+    })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -109,28 +94,6 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     if (result.error.type === 'SHOPPING_LIST_ITEM_NOT_FOUND') {
       expect(result.error.id).toBe('non-existent-item')
     }
-    expect(repository.save).not.toHaveBeenCalled()
-  })
-
-  test('returns SHOPPING_LIST_ITEM_NOT_FOUND when item belongs to different shopping list', async () => {
-    const differentShoppingListId = '00000000-0000-0000-0000-000000000020'
-    const item = createTestShoppingListItem(differentShoppingListId)
-
-    const repository = createMockRepository(item)
-    const handler = new ReplaceShoppingListItemCommandHandler(repository)
-
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        shoppingListId,
-        itemId: item.id,
-      },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.type).toBe('SHOPPING_LIST_ITEM_NOT_FOUND')
     expect(repository.save).not.toHaveBeenCalled()
   })
 
@@ -157,8 +120,7 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const repository = createMockRepository(item)
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
-    const command: ReplaceShoppingListItemCommand = {
-      shoppingListId,
+    const result = await handler.execute({
       itemId: item.id,
       name: 'Simple Item',
       description: null,
@@ -166,10 +128,6 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
       quantity: null,
       quantityUnit: null,
       shopIds: [],
-    }
-
-    const result = await handler.execute(command, {
-      householdId,
     })
 
     expect(result.ok).toBe(true)
@@ -184,14 +142,7 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const repository = createMockRepository(item)
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        shoppingListId,
-        itemId: item.id,
-      },
-      { householdId },
-    )
+    const result = await handler.execute({ ...validCommand, itemId: item.id })
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).toBeInstanceOf(Date)

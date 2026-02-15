@@ -7,10 +7,6 @@ import photosRouter from './routes/households/photos.router'
 
 const router = new Hono<{ Bindings: CloudflareBindings }>()
 
-router.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
-
 router.get('/households', async (c) => {
   const db = createDb(c.env.glist_db)
   const allHouseholds = await db
@@ -20,8 +16,9 @@ router.get('/households', async (c) => {
   return c.json({ success: true, data: allHouseholds })
 })
 
+router.route('/households/:householdId', householdRouter)
+
 router.route('/photos', photosRouter)
 router.route('/admin', adminRouter)
-router.route('/households/:householdId', householdRouter)
 
 export default router

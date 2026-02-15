@@ -53,13 +53,10 @@ describe('ReplaceInventoryItemCommandHandler', () => {
     const repository = createMockRepository(item)
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        inventoryItemId: item.id,
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      ...validCommand,
+      inventoryItemId: item.id,
+    })
 
     expect(result.ok).toBe(true)
     expect(repository.save).toHaveBeenCalledTimes(1)
@@ -73,15 +70,10 @@ describe('ReplaceInventoryItemCommandHandler', () => {
     const repository = createMockRepository(null)
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        inventoryItemId: 'non-existent-id',
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({
+      ...validCommand,
+      inventoryItemId: 'non-existent-id',
+    })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -89,25 +81,6 @@ describe('ReplaceInventoryItemCommandHandler', () => {
     if (result.error.type === 'INVENTORY_ITEM_NOT_FOUND') {
       expect(result.error.id).toBe('non-existent-id')
     }
-    expect(repository.save).not.toHaveBeenCalled()
-  })
-
-  test('returns INVENTORY_ITEM_NOT_FOUND when item belongs to different household', async () => {
-    const item = createTestInventoryItem('00000000-0000-0000-0000-000000000002')
-    const repository = createMockRepository(item)
-    const handler = new ReplaceInventoryItemCommandHandler(repository)
-
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        inventoryItemId: item.id,
-      },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.type).toBe('INVENTORY_ITEM_NOT_FOUND')
     expect(repository.save).not.toHaveBeenCalled()
   })
 
@@ -128,7 +101,7 @@ describe('ReplaceInventoryItemCommandHandler', () => {
       shopIds: [],
     }
 
-    const result = await handler.execute(command, { householdId })
+    const result = await handler.execute(command)
 
     expect(result.ok).toBe(true)
     expect(item.description).toBeNull()
@@ -145,13 +118,10 @@ describe('ReplaceInventoryItemCommandHandler', () => {
 
     expect(item.updatedAt).toBeNull()
 
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        inventoryItemId: item.id,
-      },
-      { householdId },
-    )
+    const result = await handler.execute({
+      ...validCommand,
+      inventoryItemId: item.id,
+    })
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).toBeInstanceOf(Date)

@@ -111,13 +111,10 @@ categoriesRouter.put(
     const repository = new DrizzleCategoryRepository(db)
     const command = new ReplaceCategoryCommandHandler(repository)
 
-    const result = await command.execute(
-      {
-        ...input,
-        categoryId: id,
-      },
-      { householdId },
-    )
+    const result = await command.execute({
+      ...input,
+      categoryId: id,
+    })
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -151,7 +148,7 @@ categoriesRouter.delete('/:id', async (c) => {
   const repository = new DrizzleCategoryRepository(db)
   const command = new DeleteCategoryCommandHandler(repository)
 
-  const result = await command.execute({ categoryId: id }, { householdId })
+  const result = await command.execute({ categoryId: id })
 
   if (!result.ok) {
     switch (result.error.type) {

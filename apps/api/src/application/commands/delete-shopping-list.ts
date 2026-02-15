@@ -4,7 +4,6 @@ import type {
   ShoppingListNotFoundError,
 } from '@/domain/shopping-list/errors'
 import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
-import type { RequestContext } from '../shared/request-context'
 
 export type DeleteShoppingListError =
   | ShoppingListNotFoundError
@@ -19,20 +18,19 @@ export class DeleteShoppingListCommandHandler {
 
   async execute(
     command: DeleteShoppingListCommand,
-    context: RequestContext,
   ): Promise<Result<void, DeleteShoppingListError>> {
-    const { householdId } = context
-
     const shoppingList = await this.repository.findById(command.shoppingListId)
 
-    if (!shoppingList || shoppingList.householdId !== householdId) {
+    if (!shoppingList) {
       return err({
         type: 'SHOPPING_LIST_NOT_FOUND',
         id: command.shoppingListId,
       })
     }
 
-    const count = await this.repository.countByHouseholdId(householdId)
+    const count = await this.repository.countByHouseholdId(
+      shoppingList.householdId,
+    )
 
     if (count <= 1) {
       return err({ type: 'CANNOT_DELETE_LAST_SHOPPING_LIST' })

@@ -10,7 +10,6 @@ import {
 } from '@/domain/shopping-list-item/shopping-list-item'
 import { generateShoppingListItemId } from '@/domain/shopping-list-item/shopping-list-item-id'
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
-import type { RequestContext } from '../shared/request-context'
 
 export type AddShoppingListItemCommand = {
   shoppingListId: string
@@ -39,15 +38,12 @@ export class AddShoppingListItemCommandHandler {
 
   async execute(
     command: AddShoppingListItemCommand,
-    context: RequestContext,
   ): Promise<AddShoppingListItemResult> {
-    const { householdId } = context
-
     const shoppingList = await this.shoppingListRepository.findById(
       command.shoppingListId,
     )
 
-    if (!shoppingList || shoppingList.householdId !== householdId) {
+    if (!shoppingList) {
       return err({
         type: 'SHOPPING_LIST_NOT_FOUND',
         id: command.shoppingListId,

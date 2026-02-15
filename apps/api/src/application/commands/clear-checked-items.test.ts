@@ -49,10 +49,7 @@ describe('ClearCheckedItemsCommandHandler', () => {
       shoppingListItemRepository,
     )
 
-    const result = await handler.execute(
-      { shoppingListId: shoppingList.id },
-      { householdId },
-    )
+    const result = await handler.execute({ shoppingListId: shoppingList.id })
 
     expect(result.ok).toBe(true)
     expect(
@@ -73,10 +70,7 @@ describe('ClearCheckedItemsCommandHandler', () => {
       shoppingListItemRepository,
     )
 
-    const result = await handler.execute(
-      { shoppingListId: shoppingList.id },
-      { householdId },
-    )
+    const result = await handler.execute({ shoppingListId: shoppingList.id })
 
     expect(result.ok).toBe(true)
     expect(
@@ -92,40 +86,12 @@ describe('ClearCheckedItemsCommandHandler', () => {
       shoppingListItemRepository,
     )
 
-    const result = await handler.execute(
-      { shoppingListId: 'non-existent-id' },
-      { householdId },
-    )
+    const result = await handler.execute({ shoppingListId: 'non-existent-id' })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error.type).toBe('SHOPPING_LIST_NOT_FOUND')
     expect(result.error.id).toBe('non-existent-id')
-    expect(
-      shoppingListItemRepository.deleteCheckedByShoppingListId,
-    ).not.toHaveBeenCalled()
-  })
-
-  test('returns SHOPPING_LIST_NOT_FOUND when list belongs to different household', async () => {
-    const shoppingList = createTestShoppingList(
-      '00000000-0000-0000-0000-000000000002',
-    )
-    const shoppingListRepository =
-      createMockShoppingListRepository(shoppingList)
-    const shoppingListItemRepository = createMockShoppingListItemRepository()
-    const handler = new ClearCheckedItemsCommandHandler(
-      shoppingListRepository,
-      shoppingListItemRepository,
-    )
-
-    const result = await handler.execute(
-      { shoppingListId: shoppingList.id },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.type).toBe('SHOPPING_LIST_NOT_FOUND')
     expect(
       shoppingListItemRepository.deleteCheckedByShoppingListId,
     ).not.toHaveBeenCalled()

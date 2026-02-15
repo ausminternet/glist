@@ -1,7 +1,6 @@
 import { err, ok, type Result } from '@glist/shared'
 import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
-import type { RequestContext } from '../shared/request-context'
 
 export type DeleteInventoryItemPhotoError =
   | { type: 'INVENTORY_ITEM_NOT_FOUND'; id: string }
@@ -19,13 +18,10 @@ export class DeleteInventoryItemPhotoCommandHandler {
 
   async execute(
     command: DeleteInventoryItemPhotoCommand,
-    context: RequestContext,
   ): Promise<Result<void, DeleteInventoryItemPhotoError>> {
-    const { householdId } = context
-
     const item = await this.repository.findById(command.inventoryItemId)
 
-    if (!item || item.householdId !== householdId) {
+    if (!item) {
       return err({
         type: 'INVENTORY_ITEM_NOT_FOUND',
         id: command.inventoryItemId,

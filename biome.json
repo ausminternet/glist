@@ -27,11 +27,14 @@
       "!**/node_modules",
       "!**/.wrangler",
       "!**/.expo",
+      "!**/.zed",
       "!apps/api/scripts",
       "!apps/api/drizzle.config.ts",
+      "!apps/api/wrangler.jsonc",
       "!apps/api/worker-configuration.d.ts",
       "!apps/mobile/ios",
-      "!apps/mobile/assets"
+      "!apps/mobile/assets",
+      "!apps/mobile/expo-env.d.ts"
     ]
   }
 }

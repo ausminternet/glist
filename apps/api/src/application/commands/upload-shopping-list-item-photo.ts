@@ -5,7 +5,6 @@ import {
   generatePhotoKey,
   type PhotoStorage,
 } from '@/infrastructure/storage/photo-storage'
-import type { RequestContext } from '../shared/request-context'
 
 export type UploadShoppingListItemPhotoError =
   | ShoppingListItemNotFoundError
@@ -14,7 +13,6 @@ export type UploadShoppingListItemPhotoError =
 const ALLOWED_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 export type UploadShoppingListItemPhotoCommandInput = {
-  shoppingListId: string
   itemId: string
   photoData: ArrayBuffer
   contentType: string
@@ -32,7 +30,6 @@ export class UploadShoppingListItemPhotoCommandHandler {
 
   async execute(
     command: UploadShoppingListItemPhotoCommandInput,
-    _context: RequestContext,
   ): Promise<Result<string, UploadShoppingListItemPhotoError>> {
     if (!ALLOWED_CONTENT_TYPES.includes(command.contentType)) {
       return err({
@@ -43,7 +40,7 @@ export class UploadShoppingListItemPhotoCommandHandler {
 
     const item = await this.shoppingListItemRepository.findById(command.itemId)
 
-    if (!item || item.shoppingListId !== command.shoppingListId) {
+    if (!item) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })
     }
 

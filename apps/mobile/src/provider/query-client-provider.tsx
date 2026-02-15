@@ -18,7 +18,6 @@ export const client = new QueryClient({
       retry: 2,
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
-      
     },
   },
 })

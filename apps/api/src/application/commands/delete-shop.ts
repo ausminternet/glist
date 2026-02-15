@@ -1,6 +1,5 @@
 import { err, ok, type Result } from '@glist/shared'
 import type { ShopRepository } from '@/domain/shop/shop-repository'
-import type { RequestContext } from '../shared/request-context'
 
 export type DeleteShopError = { type: 'SHOP_NOT_FOUND'; id: string }
 
@@ -13,13 +12,10 @@ export class DeleteShopCommandHandler {
 
   async execute(
     command: DeleteShopCommand,
-    context: RequestContext,
   ): Promise<Result<void, DeleteShopError>> {
-    const { householdId } = context
-
     const shop = await this.repository.findById(command.shopId)
 
-    if (!shop || shop.householdId !== householdId) {
+    if (!shop) {
       return err({ type: 'SHOP_NOT_FOUND', id: command.shopId })
     }
 

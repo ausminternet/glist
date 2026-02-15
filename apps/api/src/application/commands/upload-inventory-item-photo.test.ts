@@ -55,16 +55,11 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        inventoryItemId: item.id,
-        photoData,
-        contentType,
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({
+      inventoryItemId: item.id,
+      photoData,
+      contentType,
+    })
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
@@ -84,16 +79,11 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        inventoryItemId: item.id,
-        photoData,
-        contentType,
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({
+      inventoryItemId: item.id,
+      photoData,
+      contentType,
+    })
 
     expect(result.ok).toBe(true)
     expect(photoStorage.delete).toHaveBeenCalledTimes(1)
@@ -109,16 +99,11 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        inventoryItemId: 'non-existent-id',
-        photoData,
-        contentType,
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({
+      inventoryItemId: 'non-existent-id',
+      photoData,
+      contentType,
+    })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -126,33 +111,6 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
     if (result.error.type === 'INVENTORY_ITEM_NOT_FOUND') {
       expect(result.error.id).toBe('non-existent-id')
     }
-    expect(photoStorage.upload).not.toHaveBeenCalled()
-    expect(repository.save).not.toHaveBeenCalled()
-  })
-
-  test('returns INVENTORY_ITEM_NOT_FOUND when item belongs to different household', async () => {
-    const item = createTestInventoryItem('00000000-0000-0000-0000-000000000002')
-    const repository = createMockRepository(item)
-    const photoStorage = createMockPhotoStorage()
-    const handler = new UploadInventoryItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
-    const result = await handler.execute(
-      {
-        inventoryItemId: item.id,
-        photoData,
-        contentType,
-      },
-      {
-        householdId,
-      },
-    )
-
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.type).toBe('INVENTORY_ITEM_NOT_FOUND')
     expect(photoStorage.upload).not.toHaveBeenCalled()
     expect(repository.save).not.toHaveBeenCalled()
   })
@@ -166,16 +124,11 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        inventoryItemId: item.id,
-        photoData,
-        contentType: 'image/gif',
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({
+      inventoryItemId: item.id,
+      photoData,
+      contentType: 'image/gif',
+    })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -196,16 +149,11 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        inventoryItemId: item.id,
-        photoData,
-        contentType: 'image/jpeg',
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({
+      inventoryItemId: item.id,
+      photoData,
+      contentType: 'image/jpeg',
+    })
 
     expect(result.ok).toBe(true)
   })
@@ -219,16 +167,11 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        inventoryItemId: item.id,
-        photoData,
-        contentType: 'image/png',
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({
+      inventoryItemId: item.id,
+      photoData,
+      contentType: 'image/png',
+    })
 
     expect(result.ok).toBe(true)
   })
@@ -242,16 +185,11 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute(
-      {
-        inventoryItemId: item.id,
-        photoData,
-        contentType: 'image/webp',
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({
+      inventoryItemId: item.id,
+      photoData,
+      contentType: 'image/webp',
+    })
 
     expect(result.ok).toBe(true)
   })
@@ -267,16 +205,11 @@ describe('UploadInventoryItemPhotoCommandHandler', () => {
 
     const originalUpdatedAt = item.updatedAt
 
-    const result = await handler.execute(
-      {
-        inventoryItemId: item.id,
-        photoData,
-        contentType: 'image/webp',
-      },
-      {
-        householdId,
-      },
-    )
+    const result = await handler.execute({
+      inventoryItemId: item.id,
+      photoData,
+      contentType: 'image/webp',
+    })
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).not.toBe(originalUpdatedAt)

@@ -8,7 +8,6 @@ import type {
 } from '@/domain/inventory-item/inventory-item'
 import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import type { RequestContext } from '../shared/request-context'
 
 export type ReplaceInventoryItemCommand = {
   inventoryItemId: string
@@ -33,13 +32,10 @@ export class ReplaceInventoryItemCommandHandler {
 
   async execute(
     command: ReplaceInventoryItemCommand,
-    context: RequestContext,
   ): Promise<Result<void, ReplaceInventoryItemError>> {
-    const { householdId } = context
-
     const item = await this.repository.findById(command.inventoryItemId)
 
-    if (!item || item.householdId !== householdId) {
+    if (!item) {
       return err({
         type: 'INVENTORY_ITEM_NOT_FOUND',
         id: command.inventoryItemId,

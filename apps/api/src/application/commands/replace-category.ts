@@ -2,7 +2,6 @@ import { err, ok, type Result } from '@glist/shared'
 import type { ChangeNameError } from '@/domain/category/category'
 import type { CategoryRepository } from '@/domain/category/category-repository'
 import type { CategoryNotFoundError } from '@/domain/category/errors'
-import type { RequestContext } from '../shared/request-context'
 
 export type ReplaceCategoryCommand = {
   categoryId: string
@@ -16,13 +15,10 @@ export class ReplaceCategoryCommandHandler {
 
   async execute(
     command: ReplaceCategoryCommand,
-    context: RequestContext,
   ): Promise<Result<void, ReplaceCategoryError>> {
-    const { householdId } = context
-
     const category = await this.repository.findById(command.categoryId)
 
-    if (!category || category.householdId !== householdId) {
+    if (!category) {
       return err({ type: 'CATEGORY_NOT_FOUND', id: command.categoryId })
     }
 

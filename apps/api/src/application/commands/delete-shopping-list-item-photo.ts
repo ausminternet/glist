@@ -2,14 +2,12 @@ import { err, ok, type Result } from '@glist/shared'
 import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
-import type { RequestContext } from '../shared/request-context'
 
 export type DeleteShoppingListItemPhotoError =
   | ShoppingListItemNotFoundError
   | { type: 'NO_PHOTO_EXISTS' }
 
 type DeleteShoppingListItemPhotoCommand = {
-  shoppingListId: string
   itemId: string
 }
 
@@ -21,11 +19,10 @@ export class DeleteShoppingListItemPhotoCommandHandler {
 
   async execute(
     command: DeleteShoppingListItemPhotoCommand,
-    _context: RequestContext,
   ): Promise<Result<void, DeleteShoppingListItemPhotoError>> {
     const item = await this.shoppingListItemRepository.findById(command.itemId)
 
-    if (!item || item.shoppingListId !== command.shoppingListId) {
+    if (!item) {
       return err({
         type: 'SHOPPING_LIST_ITEM_NOT_FOUND',
         id: command.itemId,

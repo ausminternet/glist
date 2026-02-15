@@ -1,6 +1,5 @@
 import { err, ok, type Result } from '@glist/shared'
 import type { CategoryRepository } from '@/domain/category/category-repository'
-import type { RequestContext } from '../shared/request-context'
 
 export type DeleteCategoryError = { type: 'CATEGORY_NOT_FOUND'; id: string }
 
@@ -13,13 +12,10 @@ export class DeleteCategoryCommandHandler {
 
   async execute(
     command: DeleteCategoryCommand,
-    context: RequestContext,
   ): Promise<Result<void, DeleteCategoryError>> {
-    const { householdId } = context
-
     const category = await this.repository.findById(command.categoryId)
 
-    if (!category || category.householdId !== householdId) {
+    if (!category) {
       return err({ type: 'CATEGORY_NOT_FOUND', id: command.categoryId })
     }
 

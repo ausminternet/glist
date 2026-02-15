@@ -95,10 +95,7 @@ inventoryItemsRouter.put(
     const repository = new DrizzleInventoryItemRepository(db)
     const command = new ReplaceInventoryItemCommandHandler(repository)
 
-    const result = await command.execute(
-      { ...input, inventoryItemId: id },
-      { householdId },
-    )
+    const result = await command.execute({ ...input, inventoryItemId: id })
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -137,7 +134,7 @@ inventoryItemsRouter.delete('/:id', async (c) => {
   const repository = new DrizzleInventoryItemRepository(db)
   const command = new DeleteInventoryItemCommandHandler(repository)
 
-  const result = await command.execute({ inventoryItemId: id }, { householdId })
+  const result = await command.execute({ inventoryItemId: id })
 
   if (!result.ok) {
     switch (result.error.type) {
@@ -182,16 +179,11 @@ inventoryItemsRouter.post('/:id/photo', async (c) => {
     photoStorage,
   )
 
-  const result = await command.execute(
-    {
-      inventoryItemId: id,
-      photoData,
-      contentType,
-    },
-    {
-      householdId,
-    },
-  )
+  const result = await command.execute({
+    inventoryItemId: id,
+    photoData,
+    contentType,
+  })
 
   if (!result.ok) {
     switch (result.error.type) {
@@ -231,7 +223,7 @@ inventoryItemsRouter.delete('/:id/photo', async (c) => {
     photoStorage,
   )
 
-  const result = await command.execute({ inventoryItemId: id }, { householdId })
+  const result = await command.execute({ inventoryItemId: id })
 
   if (!result.ok) {
     switch (result.error.type) {
