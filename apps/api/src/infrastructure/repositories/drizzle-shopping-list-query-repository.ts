@@ -122,10 +122,16 @@ export class DrizzleShoppingListQueryRepository
       shopsByItemId.set(row.shoppingListItemId, shops)
     }
 
-    const items = itemRows.map((row) =>
-      shoppingListItemToView(row, shopsByItemId.get(row.id) ?? []),
-    )
+    const itemsByListId = new Map<string, ShoppingListItemView[]>()
+    for (const row of itemRows) {
+      const item = shoppingListItemToView(row, shopsByItemId.get(row.id) ?? [])
+      const listItems = itemsByListId.get(row.shoppingListId) ?? []
+      listItems.push(item)
+      itemsByListId.set(row.shoppingListId, listItems)
+    }
 
-    return listRows.map((row) => shoppingListToView(row, items))
+    return listRows.map((row) =>
+      shoppingListToView(row, itemsByListId.get(row.id) ?? []),
+    )
   }
 }
