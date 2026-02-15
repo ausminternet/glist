@@ -1,24 +1,13 @@
 import { err, ok, type Result } from '@glist/shared'
 import { isBlank } from '@/utils/is-blank'
-import type { CategoryId } from '../category/category-id'
-import type { InventoryItemId } from '../inventory-item/inventory-item-id'
 import type { InvalidNameError } from '../shared/errors'
 import type { HouseholdId } from '../shared/household-id'
-import type { ShopId } from '../shop/shop-id'
-import type { ShoppingListItemNotFoundError } from './errors'
 import type { ShoppingListId } from './shopping-list-id'
-import {
-  type CreateShoppingListItemError,
-  type NewShoppingListItemInput,
-  ShoppingListItem,
-} from './shopping-list-item'
-import { generateShoppingListItemId } from './shopping-list-item-id'
 
 export type ShoppingListProps = {
   id: ShoppingListId
   householdId: HouseholdId
   name: string
-  items: ShoppingListItem[]
   createdAt: Date
   updatedAt: Date | null
 }
@@ -26,12 +15,6 @@ export type ShoppingListProps = {
 export type CreateShoppingListError = InvalidNameError
 
 export type ChangeNameError = InvalidNameError
-
-export type AddItemError = CreateShoppingListItemError
-
-export type RemoveItemError = ShoppingListItemNotFoundError
-
-export type GetItemError = ShoppingListItemNotFoundError
 
 export class ShoppingList {
   constructor(private props: ShoppingListProps) {}
@@ -50,7 +33,6 @@ export class ShoppingList {
         id,
         householdId,
         name,
-        items: [],
         createdAt: new Date(),
         updatedAt: null,
       }),
@@ -65,9 +47,6 @@ export class ShoppingList {
   }
   get name(): string {
     return this.props.name
-  }
-  get items(): readonly ShoppingListItem[] {
-    return this.props.items
   }
   get createdAt(): Date {
     return this.props.createdAt
@@ -85,69 +64,5 @@ export class ShoppingList {
     this.props.updatedAt = new Date()
 
     return ok(undefined)
-  }
-
-  clearChecked(): void {
-    this.props.items = this.props.items.filter((item) => !item.checked)
-    this.props.updatedAt = new Date()
-  }
-
-  addItem(
-    input: NewShoppingListItemInput,
-  ): Result<ShoppingListItem, AddItemError> {
-    const itemResult = ShoppingListItem.create(
-      generateShoppingListItemId(),
-      this.props.id,
-      input,
-    )
-    if (!itemResult.ok) {
-      return itemResult
-    }
-
-    this.props.items.push(itemResult.value)
-    this.props.updatedAt = new Date()
-    return itemResult
-  }
-
-  addItemFromInventory(item: {
-    inventoryItemId: InventoryItemId
-    name: string
-    description: string | null
-    categoryId: CategoryId | null
-    shopIds: readonly ShopId[]
-  }): ShoppingListItem {
-    const shoppingListItem = ShoppingListItem.createFromInventoryItem(
-      generateShoppingListItemId(),
-      this.props.id,
-      item,
-    )
-    this.props.items.push(shoppingListItem)
-    this.props.updatedAt = new Date()
-    return shoppingListItem
-  }
-
-  removeItem(itemId: string): Result<void, RemoveItemError> {
-    const index = this.props.items.findIndex((item) => item.id === itemId)
-    if (index === -1) {
-      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
-    }
-
-    this.props.items.splice(index, 1)
-    this.props.updatedAt = new Date()
-
-    return ok(undefined)
-  }
-
-  getItem(itemId: string): Result<ShoppingListItem, GetItemError> {
-    const item = this.props.items.find((item) => item.id === itemId)
-    if (!item) {
-      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
-    }
-
-    return ok(item)
-  }
-
-  findItem(itemId: string): ShoppingListItem | undefined {
-    return this.props.items.find((item) => item.id === itemId)
   }
 }

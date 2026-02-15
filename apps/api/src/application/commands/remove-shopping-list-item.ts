@@ -1,11 +1,10 @@
 import { err, okWithEvent, type Result } from '@glist/shared'
 import type { ItemRemovedEvent } from '@/domain/shopping-list/events'
-import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import type { RequestContext } from '../shared/request-context'
 
-export type RemoveShoppingListItemError =
-  | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
-  | { type: 'SHOPPING_LIST_ITEM_NOT_FOUND'; id: string }
+export type RemoveShoppingListItemError = ShoppingListItemNotFoundError
 
 type RemoveShoppingListItemCommandInput = {
   shoppingListId: string
@@ -18,30 +17,22 @@ type RemoveShoppingListItemResult = Result<
 >
 
 export class RemoveShoppingListItemCommandHandler {
-  constructor(private repository: ShoppingListRepository) {}
+  constructor(private shoppingListItemRepository: ShoppingListItemRepository) {}
 
   async execute(
     command: RemoveShoppingListItemCommandInput,
-    context: RequestContext,
+    _context: RequestContext,
   ): Promise<RemoveShoppingListItemResult> {
-    const { householdId } = context
+    const item = await this.shoppingListItemRepository.findById(command.itemId)
 
-    const shoppingList = await this.repository.findById(command.shoppingListId)
-
-    if (!shoppingList || shoppingList.householdId !== householdId) {
+    if (!item || item.shoppingListId !== command.shoppingListId) {
       return err({
-        type: 'SHOPPING_LIST_NOT_FOUND',
-        id: command.shoppingListId,
+        type: 'SHOPPING_LIST_ITEM_NOT_FOUND',
+        id: command.itemId,
       })
     }
 
-    const removeResult = shoppingList.removeItem(command.itemId)
-
-    if (!removeResult.ok) {
-      return err(removeResult.error)
-    }
-
-    await this.repository.save(shoppingList)
+    await this.shoppingListItemRepository.delete(command.itemId)
 
     return okWithEvent(undefined, {
       type: 'item-removed',

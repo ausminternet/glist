@@ -1,16 +1,13 @@
 import { err, okWithEvent, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import type {
-  ShoppingListItemNotFoundError,
-  ShoppingListNotFoundError,
-} from '@/domain/shopping-list/errors'
 import type { ItemUpdatedEvent } from '@/domain/shopping-list/events'
+import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
 import type {
   ChangeNameError,
   ChangeQuantityError,
-} from '@/domain/shopping-list/shopping-list-item'
-import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+} from '@/domain/shopping-list-item/shopping-list-item'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import type { RequestContext } from '../shared/request-context'
 
 export type ReplaceShoppingListItemCommand = {
@@ -25,7 +22,6 @@ export type ReplaceShoppingListItemCommand = {
 }
 
 export type ReplaceShoppingListItemError =
-  | ShoppingListNotFoundError
   | ShoppingListItemNotFoundError
   | ChangeNameError
   | ChangeQuantityError
@@ -36,26 +32,15 @@ type ReplaceShoppingListItemResult = Result<
 >
 
 export class ReplaceShoppingListItemCommandHandler {
-  constructor(private repository: ShoppingListRepository) {}
+  constructor(private shoppingListItemRepository: ShoppingListItemRepository) {}
 
   async execute(
     command: ReplaceShoppingListItemCommand,
-    context: RequestContext,
+    _context: RequestContext,
   ): Promise<ReplaceShoppingListItemResult> {
-    const { householdId } = context
+    const item = await this.shoppingListItemRepository.findById(command.itemId)
 
-    const shoppingList = await this.repository.findById(command.shoppingListId)
-
-    if (!shoppingList || shoppingList.householdId !== householdId) {
-      return err({
-        type: 'SHOPPING_LIST_NOT_FOUND',
-        id: command.shoppingListId,
-      })
-    }
-
-    const item = shoppingList.findItem(command.itemId)
-
-    if (!item) {
+    if (!item || item.shoppingListId !== command.shoppingListId) {
       return err({
         type: 'SHOPPING_LIST_ITEM_NOT_FOUND',
         id: command.itemId,
@@ -83,7 +68,7 @@ export class ReplaceShoppingListItemCommandHandler {
 
     item.changeShops(parseShopIds(command.shopIds))
 
-    await this.repository.save(shoppingList)
+    await this.shoppingListItemRepository.save(item)
 
     return okWithEvent(undefined, {
       type: 'item-updated',

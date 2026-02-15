@@ -1,22 +1,18 @@
 import { Text, View } from 'react-native'
-import { useCategories } from '@/api/categories/use-categories'
+import { useCategories } from '@/api/categories'
 import { useShoppingListEvents } from '@/api/events'
-import { useShoppingListItems } from '@/api/shopping-lists'
-import { useShoppingLists } from '@/api/shopping-lists/use-shopping-lists'
-import { useShops } from '@/api/shops/use-shops'
+import { useShoppingListItems } from '@/api/shopping-lists/items/use-shopping-list-items'
+import { useShoppingList } from '@/api/shopping-lists/use-shopping-list'
+import { useShops } from '@/api/shops'
 import { useHouseholdId } from '@/utils/use-household-id'
 import { useShoppingListId } from '@/utils/use-shopping-list-id'
-
 export default function Index() {
   const householdId = useHouseholdId()
   const shoppingListId = useShoppingListId()
-  const { getShoppingList } = useShoppingLists(householdId)
+  const { shoppingList } = useShoppingList(householdId, shoppingListId)
+  const { items } = useShoppingListItems(householdId, shoppingListId)
   const { getShopName } = useShops(householdId)
   const { getCategoryName } = useCategories(householdId)
-  const { shoppingListItems } = useShoppingListItems(
-    householdId,
-    shoppingListId,
-  )
 
   useShoppingListEvents(householdId, shoppingListId)
 
@@ -28,8 +24,8 @@ export default function Index() {
         alignItems: 'center',
       }}
     >
-      <Text>Shopping List : {getShoppingList(shoppingListId)?.name}</Text>
-      {shoppingListItems.map((item) => (
+      <Text>Shopping List : {shoppingList.name}</Text>
+      {items.map((item) => (
         <Text key={item.id}>
           {item.name}, checked: {item.checked ? 'Yes' : 'No'}, Shops:{' '}
           {item.shopIds.map((shopId) => getShopName(shopId)).join(', ')}

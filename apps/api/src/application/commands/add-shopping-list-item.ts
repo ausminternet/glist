@@ -2,8 +2,14 @@ import { err, okWithEvent, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
 import type { ItemAddedEvent } from '@/domain/shopping-list/events'
-import type { CreateShoppingListItemError } from '@/domain/shopping-list/shopping-list-item'
+import { parseShoppingListId } from '@/domain/shopping-list/shopping-list-id'
 import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import {
+  type CreateShoppingListItemError,
+  ShoppingListItem,
+} from '@/domain/shopping-list-item/shopping-list-item'
+import { generateShoppingListItemId } from '@/domain/shopping-list-item/shopping-list-item-id'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import type { RequestContext } from '../shared/request-context'
 
 export type AddShoppingListItemCommand = {
@@ -26,7 +32,10 @@ type AddShoppingListItemResult = Result<
 >
 
 export class AddShoppingListItemCommandHandler {
-  constructor(private repository: ShoppingListRepository) {}
+  constructor(
+    private shoppingListRepository: ShoppingListRepository,
+    private shoppingListItemRepository: ShoppingListItemRepository,
+  ) {}
 
   async execute(
     command: AddShoppingListItemCommand,
@@ -34,7 +43,9 @@ export class AddShoppingListItemCommandHandler {
   ): Promise<AddShoppingListItemResult> {
     const { householdId } = context
 
-    const shoppingList = await this.repository.findById(command.shoppingListId)
+    const shoppingList = await this.shoppingListRepository.findById(
+      command.shoppingListId,
+    )
 
     if (!shoppingList || shoppingList.householdId !== householdId) {
       return err({
@@ -43,27 +54,31 @@ export class AddShoppingListItemCommandHandler {
       })
     }
 
-    const result = shoppingList.addItem({
-      name: command.name,
-      description: command.description,
-      categoryId: command.categoryId
-        ? parseCategoryId(command.categoryId)
-        : undefined,
-      quantity: command.quantity,
-      quantityUnit: command.quantityUnit,
-      shopIds: command.shopIds ? parseShopIds(command.shopIds) : undefined,
-    })
+    const itemResult = ShoppingListItem.create(
+      generateShoppingListItemId(),
+      parseShoppingListId(command.shoppingListId),
+      {
+        name: command.name,
+        description: command.description,
+        categoryId: command.categoryId
+          ? parseCategoryId(command.categoryId)
+          : undefined,
+        quantity: command.quantity,
+        quantityUnit: command.quantityUnit,
+        shopIds: command.shopIds ? parseShopIds(command.shopIds) : undefined,
+      },
+    )
 
-    if (!result.ok) {
-      return err(result.error)
+    if (!itemResult.ok) {
+      return err(itemResult.error)
     }
 
-    await this.repository.save(shoppingList)
+    await this.shoppingListItemRepository.save(itemResult.value)
 
-    return okWithEvent(result.value.id, {
+    return okWithEvent(itemResult.value.id, {
       type: 'item-added',
       listId: command.shoppingListId,
-      itemId: result.value.id,
+      itemId: itemResult.value.id,
     })
   }
 }

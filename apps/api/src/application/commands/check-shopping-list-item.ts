@@ -1,11 +1,10 @@
 import { err, okWithEvent, type Result } from '@glist/shared'
 import type { ItemCheckedEvent } from '@/domain/shopping-list/events'
-import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import type { RequestContext } from '../shared/request-context'
 
-type CheckShoppingListItemError =
-  | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
-  | { type: 'SHOPPING_LIST_ITEM_NOT_FOUND'; id: string }
+type CheckShoppingListItemError = ShoppingListItemNotFoundError
 
 export interface CheckShoppingListItemCommand {
   shoppingListId: string
@@ -18,29 +17,22 @@ type CheckShoppingListItemResult = Result<
 >
 
 export class CheckShoppingListItemCommandHandler {
-  constructor(private repository: ShoppingListRepository) {}
+  constructor(private shoppingListItemRepository: ShoppingListItemRepository) {}
 
   async execute(
     command: CheckShoppingListItemCommand,
-    context: RequestContext,
+    _context: RequestContext,
   ): Promise<CheckShoppingListItemResult> {
     const { shoppingListId, itemId } = command
-    const { householdId } = context
 
-    const shoppingList = await this.repository.findById(shoppingListId)
+    const item = await this.shoppingListItemRepository.findById(itemId)
 
-    if (!shoppingList || shoppingList.householdId !== householdId) {
-      return err({ type: 'SHOPPING_LIST_NOT_FOUND', id: shoppingListId })
-    }
-
-    const item = shoppingList.items.find((i) => i.id === itemId)
-
-    if (!item) {
+    if (!item || item.shoppingListId !== shoppingListId) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
     }
 
     item.check()
-    await this.repository.save(shoppingList)
+    await this.shoppingListItemRepository.save(item)
 
     return okWithEvent(undefined, {
       type: 'item-checked',

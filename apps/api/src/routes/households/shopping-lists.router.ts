@@ -14,10 +14,13 @@ import { ReplaceShoppingListItemCommandHandler } from '@/application/commands/re
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
 import { UploadShoppingListItemPhotoCommandHandler } from '@/application/commands/upload-shopping-list-item-photo'
 import { GetShoppingListQueryHandler } from '@/application/queries/get-shopping-list'
+import { GetShoppingListItemsQueryHandler } from '@/application/queries/get-shopping-list-items'
 import { GetShoppingListsQueryHandler } from '@/application/queries/get-shopping-lists'
 import { broadcastShoppingListEvent } from '@/infrastructure/events/event-broadcaster'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
+import { DrizzleShoppingListItemQueryRepository } from '@/infrastructure/repositories/drizzle-shopping-list-item-query-repository'
+import { DrizzleShoppingListItemRepository } from '@/infrastructure/repositories/drizzle-shopping-list-item-repository'
 import { DrizzleShoppingListQueryRepository } from '@/infrastructure/repositories/drizzle-shopping-list-query-repository'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
@@ -38,25 +41,30 @@ shoppingListsRouter.get('/', async (c) => {
 
 shoppingListsRouter.get('/:id', async (c) => {
   const householdId = c.get('householdId')
-  const id = c.req.param('id')
+  const listId = c.req.param('id')
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleShoppingListQueryRepository(db)
   const query = new GetShoppingListQueryHandler(repository)
 
-  const result = await query.execute({ id }, { householdId })
-  if (!result.ok) {
-    switch (result.error.type) {
-      case 'SHOPPING_LIST_NOT_FOUND':
-        console.error('Failed to get shopping list', {
-          id,
-          householdId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
-    }
-  }
+  const result = await query.execute({ id: listId }, { householdId })
 
-  return c.json({ success: true, data: result.value })
+  return c.json({ success: true, data: result })
+})
+
+shoppingListsRouter.get('/:id/items', async (c) => {
+  const householdId = c.get('householdId')
+  const listId = c.req.param('id')
+  const db = createDb(c.env.glist_db)
+  const shoppingListRepository = new DrizzleShoppingListRepository(db)
+  const queryRepository = new DrizzleShoppingListItemQueryRepository(db)
+  const query = new GetShoppingListItemsQueryHandler(
+    shoppingListRepository,
+    queryRepository,
+  )
+
+  const result = await query.execute({ listId }, { householdId })
+
+  return c.json({ success: true, data: result })
 })
 
 const CreateShoppingListCommandSchema = z.object({
@@ -141,8 +149,12 @@ shoppingListsRouter.post(
     const input = c.req.valid('json')
 
     const db = createDb(c.env.glist_db)
-    const repository = new DrizzleShoppingListRepository(db)
-    const command = new AddShoppingListItemCommandHandler(repository)
+    const shoppingListRepository = new DrizzleShoppingListRepository(db)
+    const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
+    const command = new AddShoppingListItemCommandHandler(
+      shoppingListRepository,
+      shoppingListItemRepository,
+    )
 
     const result = await command.execute(
       { ...input, shoppingListId: listId },
@@ -192,9 +204,11 @@ shoppingListsRouter.post(
 
     const db = createDb(c.env.glist_db)
     const shoppingListRepository = new DrizzleShoppingListRepository(db)
+    const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
     const inventoryItemRepository = new DrizzleInventoryItemRepository(db)
     const command = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListRepository,
+      shoppingListItemRepository,
       inventoryItemRepository,
     )
 
@@ -231,8 +245,10 @@ shoppingListsRouter.post('/:listId/items/:itemId/check', async (c) => {
   const listId = c.req.param('listId')
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleShoppingListRepository(db)
-  const command = new CheckShoppingListItemCommandHandler(repository)
+  const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
+  const command = new CheckShoppingListItemCommandHandler(
+    shoppingListItemRepository,
+  )
 
   const result = await command.execute(
     { shoppingListId: listId, itemId },
@@ -241,7 +257,6 @@ shoppingListsRouter.post('/:listId/items/:itemId/check', async (c) => {
 
   if (!result.ok) {
     switch (result.error.type) {
-      case 'SHOPPING_LIST_NOT_FOUND':
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to check shopping list item', {
           listId,
@@ -263,8 +278,10 @@ shoppingListsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
   const listId = c.req.param('listId')
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleShoppingListRepository(db)
-  const command = new UncheckShoppingListItemCommandHandler(repository)
+  const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
+  const command = new UncheckShoppingListItemCommandHandler(
+    shoppingListItemRepository,
+  )
 
   const result = await command.execute(
     { shoppingListId: listId, itemId },
@@ -273,7 +290,6 @@ shoppingListsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
 
   if (!result.ok) {
     switch (result.error.type) {
-      case 'SHOPPING_LIST_NOT_FOUND':
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to uncheck shopping list item', {
           listId,
@@ -294,8 +310,12 @@ shoppingListsRouter.post('/:listId/items/clear-checked', async (c) => {
   const householdId = c.get('householdId')
   const listId = c.req.param('listId')
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleShoppingListRepository(db)
-  const command = new ClearCheckedItemsCommandHandler(repository)
+  const shoppingListRepository = new DrizzleShoppingListRepository(db)
+  const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
+  const command = new ClearCheckedItemsCommandHandler(
+    shoppingListRepository,
+    shoppingListItemRepository,
+  )
 
   const result = await command.execute(
     { shoppingListId: listId },
@@ -336,8 +356,10 @@ shoppingListsRouter.put(
     const input = c.req.valid('json')
 
     const db = createDb(c.env.glist_db)
-    const repository = new DrizzleShoppingListRepository(db)
-    const command = new ReplaceShoppingListItemCommandHandler(repository)
+    const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
+    const command = new ReplaceShoppingListItemCommandHandler(
+      shoppingListItemRepository,
+    )
 
     const result = await command.execute(
       { ...input, shoppingListId: listId, itemId },
@@ -346,7 +368,6 @@ shoppingListsRouter.put(
 
     if (!result.ok) {
       switch (result.error.type) {
-        case 'SHOPPING_LIST_NOT_FOUND':
         case 'SHOPPING_LIST_ITEM_NOT_FOUND':
           console.error('Failed to replace shopping list item', {
             listId,
@@ -381,8 +402,10 @@ shoppingListsRouter.delete('/:listId/items/:itemId', async (c) => {
   const listId = c.req.param('listId')
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleShoppingListRepository(db)
-  const command = new RemoveShoppingListItemCommandHandler(repository)
+  const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
+  const command = new RemoveShoppingListItemCommandHandler(
+    shoppingListItemRepository,
+  )
 
   const result = await command.execute(
     {
@@ -394,7 +417,6 @@ shoppingListsRouter.delete('/:listId/items/:itemId', async (c) => {
 
   if (!result.ok) {
     switch (result.error.type) {
-      case 'SHOPPING_LIST_NOT_FOUND':
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to remove shopping list item', {
           listId,
@@ -431,13 +453,13 @@ shoppingListsRouter.post('/:listId/items/:itemId/photo', async (c) => {
   }
 
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleShoppingListRepository(db)
+  const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
   const photoStorage = new R2PhotoStorage(
     c.env.glist_photos,
     c.env.PHOTO_URL_BASE,
   )
   const command = new UploadShoppingListItemPhotoCommandHandler(
-    repository,
+    shoppingListItemRepository,
     photoStorage,
   )
 
@@ -455,7 +477,6 @@ shoppingListsRouter.post('/:listId/items/:itemId/photo', async (c) => {
 
   if (!result.ok) {
     switch (result.error.type) {
-      case 'SHOPPING_LIST_NOT_FOUND':
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to upload shopping list item photo', {
           listId,
@@ -486,13 +507,13 @@ shoppingListsRouter.delete('/:listId/items/:itemId/photo', async (c) => {
   const itemId = c.req.param('itemId')
 
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleShoppingListRepository(db)
+  const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
   const photoStorage = new R2PhotoStorage(
     c.env.glist_photos,
     c.env.PHOTO_URL_BASE,
   )
   const command = new DeleteShoppingListItemPhotoCommandHandler(
-    repository,
+    shoppingListItemRepository,
     photoStorage,
   )
 
@@ -506,7 +527,6 @@ shoppingListsRouter.delete('/:listId/items/:itemId/photo', async (c) => {
 
   if (!result.ok) {
     switch (result.error.type) {
-      case 'SHOPPING_LIST_NOT_FOUND':
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to delete shopping list item photo', {
           listId,

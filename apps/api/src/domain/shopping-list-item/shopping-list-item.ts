@@ -5,7 +5,7 @@ import type { InventoryItemId } from '../inventory-item/inventory-item-id'
 import type { InvalidNameError } from '../shared/errors'
 import { Quantity, type QuantityError } from '../shared/quantity'
 import type { ShopId } from '../shop/shop-id'
-import type { ShoppingListId } from './shopping-list-id'
+import type { ShoppingListId } from '../shopping-list/shopping-list-id'
 import type { ShoppingListItemId } from './shopping-list-item-id'
 
 export type NewShoppingListItemInput = {

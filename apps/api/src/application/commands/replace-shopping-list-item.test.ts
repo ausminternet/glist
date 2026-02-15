@@ -1,31 +1,50 @@
 import { describe, expect, mock, test } from 'bun:test'
-import { parseHouseholdId } from '@/domain/shared/household-id'
-import { ShoppingList } from '@/domain/shopping-list/shopping-list'
-import { generateShoppingListId } from '@/domain/shopping-list/shopping-list-id'
-import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import { Quantity } from '@/domain/shared/quantity'
+import { parseShoppingListId } from '@/domain/shopping-list/shopping-list-id'
+import {
+  ShoppingListItem,
+  type ShoppingListItemProps,
+} from '@/domain/shopping-list-item/shopping-list-item'
+import { generateShoppingListItemId } from '@/domain/shopping-list-item/shopping-list-item-id'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import {
   type ReplaceShoppingListItemCommand,
   ReplaceShoppingListItemCommandHandler,
 } from './replace-shopping-list-item'
 
-function createTestShoppingList(householdId: string) {
-  const result = ShoppingList.create(
-    generateShoppingListId(),
-    parseHouseholdId(householdId),
-    'Test Shopping List',
-  )
-  if (!result.ok) throw new Error('Failed to create test shopping list')
-  return result.value
+function createTestShoppingListItem(
+  shoppingListId: string,
+  options?: { name?: string; description?: string },
+) {
+  const quantityResult = Quantity.create(null, null)
+  if (!quantityResult.ok) throw new Error('Failed to create quantity')
+
+  const props: ShoppingListItemProps = {
+    id: generateShoppingListItemId(),
+    shoppingListId: parseShoppingListId(shoppingListId),
+    inventoryItemId: null,
+    name: options?.name ?? 'Milk',
+    description: options?.description ?? null,
+    categoryId: null,
+    quantity: quantityResult.value,
+    checked: false,
+    shopIds: [],
+    photoKey: null,
+    createdAt: new Date(),
+    updatedAt: null,
+  }
+
+  return new ShoppingListItem(props)
 }
 
 function createMockRepository(
-  list: ShoppingList | null,
-): ShoppingListRepository {
+  item: ShoppingListItem | null,
+): ShoppingListItemRepository {
   return {
-    findById: mock(() => Promise.resolve(list)),
+    findById: mock(() => Promise.resolve(item)),
     save: mock(() => Promise.resolve()),
     delete: mock(() => Promise.resolve()),
-    countByHouseholdId: mock(() => Promise.resolve(1)),
+    deleteCheckedByShoppingListId: mock(() => Promise.resolve()),
   }
 }
 
@@ -43,19 +62,21 @@ const validCommand: Omit<
 
 describe('ReplaceShoppingListItemCommandHandler', () => {
   const householdId = '00000000-0000-0000-0000-000000000001'
+  const shoppingListId = '00000000-0000-0000-0000-000000000010'
 
   test('replaces item successfully', async () => {
-    const shoppingList = createTestShoppingList(householdId)
-    shoppingList.addItem({ name: 'Milk', description: 'Original' })
-    const item = shoppingList.items[0]
+    const item = createTestShoppingListItem(shoppingListId, {
+      name: 'Milk',
+      description: 'Original',
+    })
 
-    const repository = createMockRepository(shoppingList)
+    const repository = createMockRepository(item)
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute(
       {
         ...validCommand,
-        shoppingListId: shoppingList.id,
+        shoppingListId,
         itemId: item.id,
       },
       { householdId },
@@ -69,62 +90,14 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     expect(item.quantityUnit).toBe('l')
   })
 
-  test('returns SHOPPING_LIST_NOT_FOUND when list does not exist', async () => {
+  test('returns SHOPPING_LIST_ITEM_NOT_FOUND when item does not exist', async () => {
     const repository = createMockRepository(null)
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute(
       {
         ...validCommand,
-        shoppingListId: 'non-existent-list',
-        itemId: 'some-item-id',
-      },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.type).toBe('SHOPPING_LIST_NOT_FOUND')
-    if (result.error.type === 'SHOPPING_LIST_NOT_FOUND') {
-      expect(result.error.id).toBe('non-existent-list')
-    }
-    expect(repository.save).not.toHaveBeenCalled()
-  })
-
-  test('returns SHOPPING_LIST_NOT_FOUND when list belongs to different household', async () => {
-    const shoppingList = createTestShoppingList(
-      '00000000-0000-0000-0000-000000000002',
-    )
-    shoppingList.addItem({ name: 'Milk' })
-    const item = shoppingList.items[0]
-
-    const repository = createMockRepository(shoppingList)
-    const handler = new ReplaceShoppingListItemCommandHandler(repository)
-
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        shoppingListId: shoppingList.id,
-        itemId: item.id,
-      },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.type).toBe('SHOPPING_LIST_NOT_FOUND')
-    expect(repository.save).not.toHaveBeenCalled()
-  })
-
-  test('returns SHOPPING_LIST_ITEM_NOT_FOUND when item does not exist', async () => {
-    const shoppingList = createTestShoppingList(householdId)
-    const repository = createMockRepository(shoppingList)
-    const handler = new ReplaceShoppingListItemCommandHandler(repository)
-
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        shoppingListId: shoppingList.id,
+        shoppingListId,
         itemId: 'non-existent-item',
       },
       { householdId },
@@ -139,21 +112,53 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     expect(repository.save).not.toHaveBeenCalled()
   })
 
+  test('returns SHOPPING_LIST_ITEM_NOT_FOUND when item belongs to different shopping list', async () => {
+    const differentShoppingListId = '00000000-0000-0000-0000-000000000020'
+    const item = createTestShoppingListItem(differentShoppingListId)
+
+    const repository = createMockRepository(item)
+    const handler = new ReplaceShoppingListItemCommandHandler(repository)
+
+    const result = await handler.execute(
+      {
+        ...validCommand,
+        shoppingListId,
+        itemId: item.id,
+      },
+      { householdId },
+    )
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.type).toBe('SHOPPING_LIST_ITEM_NOT_FOUND')
+    expect(repository.save).not.toHaveBeenCalled()
+  })
+
   test('clears optional fields when set to null', async () => {
-    const shoppingList = createTestShoppingList(householdId)
-    shoppingList.addItem({
+    const quantityResult = Quantity.create(5, 'l')
+    if (!quantityResult.ok) throw new Error('Failed to create quantity')
+
+    const props: ShoppingListItemProps = {
+      id: generateShoppingListItemId(),
+      shoppingListId: parseShoppingListId(shoppingListId),
+      inventoryItemId: null,
       name: 'Milk',
       description: 'Some description',
-      quantity: 5,
-      quantityUnit: 'l',
-    })
-    const item = shoppingList.items[0]
+      categoryId: null,
+      quantity: quantityResult.value,
+      checked: false,
+      shopIds: [],
+      photoKey: null,
+      createdAt: new Date(),
+      updatedAt: null,
+    }
+    const item = new ShoppingListItem(props)
 
-    const repository = createMockRepository(shoppingList)
+    const repository = createMockRepository(item)
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const command: ReplaceShoppingListItemCommand = {
-      shoppingListId: shoppingList.id,
+      shoppingListId,
       itemId: item.id,
       name: 'Simple Item',
       description: null,
@@ -174,17 +179,15 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
   })
 
   test('updates updatedAt timestamp', async () => {
-    const shoppingList = createTestShoppingList(householdId)
-    shoppingList.addItem({ name: 'Milk' })
-    const item = shoppingList.items[0]
+    const item = createTestShoppingListItem(shoppingListId)
 
-    const repository = createMockRepository(shoppingList)
+    const repository = createMockRepository(item)
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute(
       {
         ...validCommand,
-        shoppingListId: shoppingList.id,
+        shoppingListId,
         itemId: item.id,
       },
       { householdId },

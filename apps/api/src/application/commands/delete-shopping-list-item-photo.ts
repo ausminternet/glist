@@ -1,11 +1,11 @@
 import { err, ok, type Result } from '@glist/shared'
-import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import type { RequestContext } from '../shared/request-context'
 
 export type DeleteShoppingListItemPhotoError =
-  | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
-  | { type: 'SHOPPING_LIST_ITEM_NOT_FOUND'; id: string }
+  | ShoppingListItemNotFoundError
   | { type: 'NO_PHOTO_EXISTS' }
 
 type DeleteShoppingListItemPhotoCommand = {
@@ -15,29 +15,21 @@ type DeleteShoppingListItemPhotoCommand = {
 
 export class DeleteShoppingListItemPhotoCommandHandler {
   constructor(
-    private repository: ShoppingListRepository,
+    private shoppingListItemRepository: ShoppingListItemRepository,
     private photoStorage: PhotoStorage,
   ) {}
 
   async execute(
     command: DeleteShoppingListItemPhotoCommand,
-    context: RequestContext,
+    _context: RequestContext,
   ): Promise<Result<void, DeleteShoppingListItemPhotoError>> {
-    const { householdId } = context
+    const item = await this.shoppingListItemRepository.findById(command.itemId)
 
-    const shoppingList = await this.repository.findById(command.shoppingListId)
-
-    if (!shoppingList || shoppingList.householdId !== householdId) {
+    if (!item || item.shoppingListId !== command.shoppingListId) {
       return err({
-        type: 'SHOPPING_LIST_NOT_FOUND',
-        id: command.shoppingListId,
+        type: 'SHOPPING_LIST_ITEM_NOT_FOUND',
+        id: command.itemId,
       })
-    }
-
-    const item = shoppingList.findItem(command.itemId)
-
-    if (!item) {
-      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })
     }
 
     if (!item.photoKey) {
@@ -47,7 +39,7 @@ export class DeleteShoppingListItemPhotoCommandHandler {
     await this.photoStorage.delete(item.photoKey)
 
     item.setPhotoKey(null)
-    await this.repository.save(shoppingList)
+    await this.shoppingListItemRepository.save(item)
 
     return ok(undefined)
   }

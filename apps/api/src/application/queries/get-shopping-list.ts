@@ -19,7 +19,7 @@ export class GetShoppingListQueryHandler {
     const { id } = command
     const { householdId } = context
 
-    const shoppingList = await this.repository.findById(id)
+    const shoppingList = await this.repository.find(id)
 
     if (!shoppingList || shoppingList.householdId !== householdId) {
       return err({ type: 'SHOPPING_LIST_NOT_FOUND', id })

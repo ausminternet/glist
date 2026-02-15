@@ -2,7 +2,11 @@ import { err, okWithEvent, type Result } from '@glist/shared'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import type { ItemAddedEvent } from '@/domain/shopping-list/events'
+import { parseShoppingListId } from '@/domain/shopping-list/shopping-list-id'
 import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import { ShoppingListItem } from '@/domain/shopping-list-item/shopping-list-item'
+import { generateShoppingListItemId } from '@/domain/shopping-list-item/shopping-list-item-id'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import type { RequestContext } from '../shared/request-context'
 
 export type AddShoppingListItemFromInventoryCommand = {
@@ -22,6 +26,7 @@ type AddShoppingListItemFromInventoryResult = Result<
 export class AddShoppingListItemFromInventoryCommandHandler {
   constructor(
     private shoppingListRepository: ShoppingListRepository,
+    private shoppingListItemRepository: ShoppingListItemRepository,
     private inventoryItemRepository: InventoryItemRepository,
   ) {}
 
@@ -53,15 +58,19 @@ export class AddShoppingListItemFromInventoryCommandHandler {
       })
     }
 
-    const shoppingListItem = shoppingList.addItemFromInventory({
-      inventoryItemId: parseInventoryItemId(inventoryItem.id),
-      name: inventoryItem.name,
-      description: inventoryItem.description,
-      categoryId: inventoryItem.categoryId,
-      shopIds: inventoryItem.shopIds,
-    })
+    const shoppingListItem = ShoppingListItem.createFromInventoryItem(
+      generateShoppingListItemId(),
+      parseShoppingListId(command.shoppingListId),
+      {
+        inventoryItemId: parseInventoryItemId(inventoryItem.id),
+        name: inventoryItem.name,
+        description: inventoryItem.description,
+        categoryId: inventoryItem.categoryId,
+        shopIds: inventoryItem.shopIds,
+      },
+    )
 
-    await this.shoppingListRepository.save(shoppingList)
+    await this.shoppingListItemRepository.save(shoppingListItem)
 
     return okWithEvent(shoppingListItem.id, {
       type: 'item-added',

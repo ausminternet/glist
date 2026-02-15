@@ -20,7 +20,6 @@ export type ShoppingListView = {
   id: string
   householdId: string
   name: string
-  items: ShoppingListItemView[]
   createdAt: string
   updatedAt: string | null
 }

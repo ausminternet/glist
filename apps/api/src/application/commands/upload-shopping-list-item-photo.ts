@@ -1,5 +1,6 @@
 import { err, ok, type Result } from '@glist/shared'
-import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import {
   generatePhotoKey,
   type PhotoStorage,
@@ -7,8 +8,7 @@ import {
 import type { RequestContext } from '../shared/request-context'
 
 export type UploadShoppingListItemPhotoError =
-  | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
-  | { type: 'SHOPPING_LIST_ITEM_NOT_FOUND'; id: string }
+  | ShoppingListItemNotFoundError
   | { type: 'INVALID_CONTENT_TYPE'; contentType: string }
 
 const ALLOWED_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -26,16 +26,14 @@ export type UploadShoppingListItemPhotoCommandOutput = {
 
 export class UploadShoppingListItemPhotoCommandHandler {
   constructor(
-    private repository: ShoppingListRepository,
+    private shoppingListItemRepository: ShoppingListItemRepository,
     private photoStorage: PhotoStorage,
   ) {}
 
   async execute(
     command: UploadShoppingListItemPhotoCommandInput,
-    context: RequestContext,
+    _context: RequestContext,
   ): Promise<Result<string, UploadShoppingListItemPhotoError>> {
-    const { householdId } = context
-
     if (!ALLOWED_CONTENT_TYPES.includes(command.contentType)) {
       return err({
         type: 'INVALID_CONTENT_TYPE',
@@ -43,18 +41,9 @@ export class UploadShoppingListItemPhotoCommandHandler {
       })
     }
 
-    const shoppingList = await this.repository.findById(command.shoppingListId)
+    const item = await this.shoppingListItemRepository.findById(command.itemId)
 
-    if (!shoppingList || shoppingList.householdId !== householdId) {
-      return err({
-        type: 'SHOPPING_LIST_NOT_FOUND',
-        id: command.shoppingListId,
-      })
-    }
-
-    const item = shoppingList.findItem(command.itemId)
-
-    if (!item) {
+    if (!item || item.shoppingListId !== command.shoppingListId) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })
     }
 
@@ -70,7 +59,7 @@ export class UploadShoppingListItemPhotoCommandHandler {
     )
 
     item.setPhotoKey(photoKey)
-    await this.repository.save(shoppingList)
+    await this.shoppingListItemRepository.save(item)
 
     const photoUrl = this.photoStorage.getPublicUrl(photoKey)
 

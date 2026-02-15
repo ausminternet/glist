@@ -1,6 +1,6 @@
 import type { ShoppingListView } from '@glist/views'
 
 export interface ShoppingListQueryRepository {
-  findById(id: string): Promise<ShoppingListView | null>
-  findByHouseholdId(householdId: string): Promise<ShoppingListView[]>
+  findAllByHouseholdId(householdId: string): Promise<ShoppingListView[]>
+  find(listId: string): Promise<ShoppingListView>
 }

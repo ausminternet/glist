@@ -8,6 +8,8 @@ import { parseShopIds } from '@/domain/shop/shop-id'
 import { ShoppingList } from '@/domain/shopping-list/shopping-list'
 import { generateShoppingListId } from '@/domain/shopping-list/shopping-list-id'
 import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
+import type { ShoppingListItem } from '@/domain/shopping-list-item/shopping-list-item'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import { AddShoppingListItemFromInventoryCommandHandler } from './add-shopping-list-item-from-inventory'
 
 function createTestShoppingList(householdId: string) {
@@ -56,6 +58,23 @@ function createMockShoppingListRepository(
   }
 }
 
+function createMockShoppingListItemRepository(): ShoppingListItemRepository & {
+  savedItem: ShoppingListItem | null
+} {
+  const repository = {
+    savedItem: null as ShoppingListItem | null,
+    findById: mock(() => Promise.resolve(null)),
+    findByShoppingListId: mock(() => Promise.resolve([])),
+    save: mock((item: ShoppingListItem) => {
+      repository.savedItem = item
+      return Promise.resolve()
+    }),
+    delete: mock(() => Promise.resolve()),
+    deleteCheckedByShoppingListId: mock(() => Promise.resolve()),
+  }
+  return repository
+}
+
 function createMockInventoryItemRepository(
   item: InventoryItem | null,
 ): InventoryItemRepository {
@@ -78,10 +97,12 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     })
     const shoppingListRepository =
       createMockShoppingListRepository(shoppingList)
+    const shoppingListItemRepository = createMockShoppingListItemRepository()
     const inventoryItemRepository =
       createMockInventoryItemRepository(inventoryItem)
     const handler = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListRepository,
+      shoppingListItemRepository,
       inventoryItemRepository,
     )
 
@@ -93,10 +114,10 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
-    expect(shoppingListRepository.save).toHaveBeenCalledTimes(1)
-    expect(shoppingList.items).toHaveLength(1)
+    expect(shoppingListItemRepository.save).toHaveBeenCalledTimes(1)
+    expect(shoppingListItemRepository.savedItem).not.toBeNull()
 
-    const addedItem = shoppingList.items[0]
+    const addedItem = shoppingListItemRepository.savedItem!
     expect(addedItem.name).toBe('Milk')
     expect(addedItem.description).toBe('Organic whole milk')
     expect(addedItem.inventoryItemId).toBe(inventoryItem.id)
@@ -115,10 +136,12 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     })
     const shoppingListRepository =
       createMockShoppingListRepository(shoppingList)
+    const shoppingListItemRepository = createMockShoppingListItemRepository()
     const inventoryItemRepository =
       createMockInventoryItemRepository(inventoryItem)
     const handler = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListRepository,
+      shoppingListItemRepository,
       inventoryItemRepository,
     )
 
@@ -130,7 +153,7 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
-    const addedItem = shoppingList.items[0]
+    const addedItem = shoppingListItemRepository.savedItem!
     expect(addedItem.categoryId).toBe(parseCategoryId(categoryId))
     expect(addedItem.shopIds).toEqual(parseShopIds(shopIds))
   })
@@ -138,10 +161,12 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
   test('returns SHOPPING_LIST_NOT_FOUND when list does not exist', async () => {
     const inventoryItem = createTestInventoryItem(householdId)
     const shoppingListRepository = createMockShoppingListRepository(null)
+    const shoppingListItemRepository = createMockShoppingListItemRepository()
     const inventoryItemRepository =
       createMockInventoryItemRepository(inventoryItem)
     const handler = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListRepository,
+      shoppingListItemRepository,
       inventoryItemRepository,
     )
 
@@ -157,7 +182,7 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     if (result.ok) return
     expect(result.error.type).toBe('SHOPPING_LIST_NOT_FOUND')
     expect(result.error.id).toBe('non-existent-list')
-    expect(shoppingListRepository.save).not.toHaveBeenCalled()
+    expect(shoppingListItemRepository.save).not.toHaveBeenCalled()
   })
 
   test('returns SHOPPING_LIST_NOT_FOUND when list belongs to different household', async () => {
@@ -167,10 +192,12 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     const inventoryItem = createTestInventoryItem(householdId)
     const shoppingListRepository =
       createMockShoppingListRepository(shoppingList)
+    const shoppingListItemRepository = createMockShoppingListItemRepository()
     const inventoryItemRepository =
       createMockInventoryItemRepository(inventoryItem)
     const handler = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListRepository,
+      shoppingListItemRepository,
       inventoryItemRepository,
     )
 
@@ -185,16 +212,18 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error.type).toBe('SHOPPING_LIST_NOT_FOUND')
-    expect(shoppingListRepository.save).not.toHaveBeenCalled()
+    expect(shoppingListItemRepository.save).not.toHaveBeenCalled()
   })
 
   test('returns INVENTORY_ITEM_NOT_FOUND when item does not exist', async () => {
     const shoppingList = createTestShoppingList(householdId)
     const shoppingListRepository =
       createMockShoppingListRepository(shoppingList)
+    const shoppingListItemRepository = createMockShoppingListItemRepository()
     const inventoryItemRepository = createMockInventoryItemRepository(null)
     const handler = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListRepository,
+      shoppingListItemRepository,
       inventoryItemRepository,
     )
 
@@ -210,7 +239,7 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     if (result.ok) return
     expect(result.error.type).toBe('INVENTORY_ITEM_NOT_FOUND')
     expect(result.error.id).toBe('non-existent-item')
-    expect(shoppingListRepository.save).not.toHaveBeenCalled()
+    expect(shoppingListItemRepository.save).not.toHaveBeenCalled()
   })
 
   test('returns INVENTORY_ITEM_NOT_FOUND when item belongs to different household', async () => {
@@ -220,10 +249,12 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     )
     const shoppingListRepository =
       createMockShoppingListRepository(shoppingList)
+    const shoppingListItemRepository = createMockShoppingListItemRepository()
     const inventoryItemRepository =
       createMockInventoryItemRepository(inventoryItem)
     const handler = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListRepository,
+      shoppingListItemRepository,
       inventoryItemRepository,
     )
 
@@ -238,7 +269,7 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error.type).toBe('INVENTORY_ITEM_NOT_FOUND')
-    expect(shoppingListRepository.save).not.toHaveBeenCalled()
+    expect(shoppingListItemRepository.save).not.toHaveBeenCalled()
   })
 
   test('returns the id of the newly created shopping list item', async () => {
@@ -246,10 +277,12 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     const inventoryItem = createTestInventoryItem(householdId)
     const shoppingListRepository =
       createMockShoppingListRepository(shoppingList)
+    const shoppingListItemRepository = createMockShoppingListItemRepository()
     const inventoryItemRepository =
       createMockInventoryItemRepository(inventoryItem)
     const handler = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListRepository,
+      shoppingListItemRepository,
       inventoryItemRepository,
     )
 
@@ -264,11 +297,12 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
-    expect(result.value.value).toBe(shoppingList.items[0].id)
+    const savedItem = shoppingListItemRepository.savedItem!
+    expect(result.value.value).toBe(savedItem.id)
     expect(result.value.event).toEqual({
       type: 'item-added',
       listId: shoppingList.id,
-      itemId: shoppingList.items[0].id,
+      itemId: savedItem.id,
     })
   })
 })

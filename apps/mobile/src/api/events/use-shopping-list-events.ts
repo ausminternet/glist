@@ -35,6 +35,8 @@ export function useShoppingListEvents(householdId: string, listId: string) {
         const data = JSON.parse(event.data) as ShoppingListSSEEvent
         const queryKey = queryKeys.shoppingListItems(householdId, listId)
 
+        console.log(`[SSE] Received event: ${data.type}`)
+
         switch (data.type) {
           case 'connected':
             console.log('[SSE] Connected to shopping list events')
@@ -63,7 +65,6 @@ export function useShoppingListEvents(householdId: string, listId: string) {
           case 'item-added':
           case 'item-removed':
           case 'item-updated':
-          case 'list-updated':
             queryClient.invalidateQueries({ queryKey })
             break
         }
