@@ -11,9 +11,11 @@
     "platforms": ["ios"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.glist"
+      "bundleIdentifier": "com.anonymous.glist",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
-
     "plugins": [
       "expo-router",
       [
@@ -32,6 +34,7 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "owner": "ausminternets-organization"
   }
 }

@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "test": "bun test",
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --ip 0.0.0.0 --port 8787",
     "deploy": "wrangler deploy --minify",
     "typecheck": "tsc --noEmit",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
