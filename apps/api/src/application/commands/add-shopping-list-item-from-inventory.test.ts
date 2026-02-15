@@ -264,6 +264,11 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
-    expect(result.value).toBe(shoppingList.items[0].id)
+    expect(result.value.value).toBe(shoppingList.items[0].id)
+    expect(result.value.event).toEqual({
+      type: 'item-added',
+      listId: shoppingList.id,
+      itemId: shoppingList.items[0].id,
+    })
   })
 })

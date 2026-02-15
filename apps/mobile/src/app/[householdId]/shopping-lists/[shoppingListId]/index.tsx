@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native'
 import { useCategories } from '@/api/categories/use-categories'
+import { useShoppingListEvents } from '@/api/events'
 import { useShoppingListItems } from '@/api/shopping-lists'
 import { useShoppingLists } from '@/api/shopping-lists/use-shopping-lists'
 import { useShops } from '@/api/shops/use-shops'
@@ -17,6 +18,8 @@ export default function Index() {
     shoppingListId,
   )
 
+  useShoppingListEvents(householdId, shoppingListId)
+
   return (
     <View
       style={{
@@ -28,7 +31,7 @@ export default function Index() {
       <Text>Shopping List : {getShoppingList(shoppingListId)?.name}</Text>
       {shoppingListItems.map((item) => (
         <Text key={item.id}>
-          {item.name}, Shops:{' '}
+          {item.name}, checked: {item.checked ? 'Yes' : 'No'}, Shops:{' '}
           {item.shopIds.map((shopId) => getShopName(shopId)).join(', ')}
           Category: {item.categoryId ? getCategoryName(item.categoryId) : 'N/A'}
         </Text>

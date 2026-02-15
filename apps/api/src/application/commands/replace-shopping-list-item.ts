@@ -1,10 +1,11 @@
-import { err, ok, type Result } from '@glist/shared'
+import { err, okWithEvent, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
 import type {
   ShoppingListItemNotFoundError,
   ShoppingListNotFoundError,
 } from '@/domain/shopping-list/errors'
+import type { ItemUpdatedEvent } from '@/domain/shopping-list/events'
 import type {
   ChangeNameError,
   ChangeQuantityError,
@@ -29,13 +30,18 @@ export type ReplaceShoppingListItemError =
   | ChangeNameError
   | ChangeQuantityError
 
+type ReplaceShoppingListItemResult = Result<
+  { value: undefined; event: ItemUpdatedEvent },
+  ReplaceShoppingListItemError
+>
+
 export class ReplaceShoppingListItemCommandHandler {
   constructor(private repository: ShoppingListRepository) {}
 
   async execute(
     command: ReplaceShoppingListItemCommand,
     context: RequestContext,
-  ): Promise<Result<void, ReplaceShoppingListItemError>> {
+  ): Promise<ReplaceShoppingListItemResult> {
     const { householdId } = context
 
     const shoppingList = await this.repository.findById(command.shoppingListId)
@@ -50,7 +56,10 @@ export class ReplaceShoppingListItemCommandHandler {
     const item = shoppingList.findItem(command.itemId)
 
     if (!item) {
-      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })
+      return err({
+        type: 'SHOPPING_LIST_ITEM_NOT_FOUND',
+        id: command.itemId,
+      })
     }
 
     const nameResult = item.changeName(command.name)
@@ -76,6 +85,10 @@ export class ReplaceShoppingListItemCommandHandler {
 
     await this.repository.save(shoppingList)
 
-    return ok(undefined)
+    return okWithEvent(undefined, {
+      type: 'item-updated',
+      listId: command.shoppingListId,
+      itemId: command.itemId,
+    })
   }
 }

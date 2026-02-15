@@ -1,6 +1,7 @@
-import { err, ok, type Result } from '@glist/shared'
+import { err, okWithEvent, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
+import type { ItemAddedEvent } from '@/domain/shopping-list/events'
 import type { CreateShoppingListItemError } from '@/domain/shopping-list/shopping-list-item'
 import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import type { RequestContext } from '../shared/request-context'
@@ -19,13 +20,18 @@ export type AddShoppingListItemError =
   | { type: 'SHOPPING_LIST_NOT_FOUND'; id: string }
   | CreateShoppingListItemError
 
+type AddShoppingListItemResult = Result<
+  { value: string; event: ItemAddedEvent },
+  AddShoppingListItemError
+>
+
 export class AddShoppingListItemCommandHandler {
   constructor(private repository: ShoppingListRepository) {}
 
   async execute(
     command: AddShoppingListItemCommand,
     context: RequestContext,
-  ): Promise<Result<string, AddShoppingListItemError>> {
+  ): Promise<AddShoppingListItemResult> {
     const { householdId } = context
 
     const shoppingList = await this.repository.findById(command.shoppingListId)
@@ -54,6 +60,10 @@ export class AddShoppingListItemCommandHandler {
 
     await this.repository.save(shoppingList)
 
-    return ok(result.value.id)
+    return okWithEvent(result.value.id, {
+      type: 'item-added',
+      listId: command.shoppingListId,
+      itemId: result.value.id,
+    })
   }
 }

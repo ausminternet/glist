@@ -1,4 +1,5 @@
-import { err, ok, type Result } from '@glist/shared'
+import { err, okWithEvent, type Result } from '@glist/shared'
+import type { ItemRemovedEvent } from '@/domain/shopping-list/events'
 import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import type { RequestContext } from '../shared/request-context'
 
@@ -11,13 +12,18 @@ type RemoveShoppingListItemCommandInput = {
   itemId: string
 }
 
+type RemoveShoppingListItemResult = Result<
+  { value: undefined; event: ItemRemovedEvent },
+  RemoveShoppingListItemError
+>
+
 export class RemoveShoppingListItemCommandHandler {
   constructor(private repository: ShoppingListRepository) {}
 
   async execute(
     command: RemoveShoppingListItemCommandInput,
     context: RequestContext,
-  ): Promise<Result<void, RemoveShoppingListItemError>> {
+  ): Promise<RemoveShoppingListItemResult> {
     const { householdId } = context
 
     const shoppingList = await this.repository.findById(command.shoppingListId)
@@ -37,6 +43,10 @@ export class RemoveShoppingListItemCommandHandler {
 
     await this.repository.save(shoppingList)
 
-    return ok(undefined)
+    return okWithEvent(undefined, {
+      type: 'item-removed',
+      listId: command.shoppingListId,
+      itemId: command.itemId,
+    })
   }
 }

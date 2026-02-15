@@ -3,6 +3,20 @@
   "name": "api",
   "main": "src/index.ts",
   "compatibility_date": "2026-02-11",
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "SHOPPING_LIST_EVENTS",
+        "class_name": "ShoppingListEventsDO",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["ShoppingListEventsDO"],
+    },
+  ],
   "d1_databases": [
     {
       "binding": "glist_db",

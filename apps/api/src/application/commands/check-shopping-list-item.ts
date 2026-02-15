@@ -1,4 +1,5 @@
-import { err, ok, type Result } from '@glist/shared'
+import { err, okWithEvent, type Result } from '@glist/shared'
+import type { ItemCheckedEvent } from '@/domain/shopping-list/events'
 import type { ShoppingListRepository } from '@/domain/shopping-list/shopping-list-repository'
 import type { RequestContext } from '../shared/request-context'
 
@@ -11,13 +12,18 @@ export interface CheckShoppingListItemCommand {
   itemId: string
 }
 
+type CheckShoppingListItemResult = Result<
+  { value: undefined; event: ItemCheckedEvent },
+  CheckShoppingListItemError
+>
+
 export class CheckShoppingListItemCommandHandler {
   constructor(private repository: ShoppingListRepository) {}
 
   async execute(
     command: CheckShoppingListItemCommand,
     context: RequestContext,
-  ): Promise<Result<void, CheckShoppingListItemError>> {
+  ): Promise<CheckShoppingListItemResult> {
     const { shoppingListId, itemId } = command
     const { householdId } = context
 
@@ -36,6 +42,10 @@ export class CheckShoppingListItemCommandHandler {
     item.check()
     await this.repository.save(shoppingList)
 
-    return ok(undefined)
+    return okWithEvent(undefined, {
+      type: 'item-checked',
+      listId: shoppingListId,
+      itemId,
+    })
   }
 }

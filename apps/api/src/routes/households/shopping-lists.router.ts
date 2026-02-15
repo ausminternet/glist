@@ -1,3 +1,7 @@
+import { unitTypes } from '@glist/shared'
+import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import z from 'zod'
 import { AddShoppingListItemCommandHandler } from '@/application/commands/add-shopping-list-item'
 import { AddShoppingListItemFromInventoryCommandHandler } from '@/application/commands/add-shopping-list-item-from-inventory'
 import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
@@ -11,15 +15,12 @@ import { UncheckShoppingListItemCommandHandler } from '@/application/commands/un
 import { UploadShoppingListItemPhotoCommandHandler } from '@/application/commands/upload-shopping-list-item-photo'
 import { GetShoppingListQueryHandler } from '@/application/queries/get-shopping-list'
 import { GetShoppingListsQueryHandler } from '@/application/queries/get-shopping-lists'
+import { broadcastShoppingListEvent } from '@/infrastructure/events/event-broadcaster'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { DrizzleShoppingListQueryRepository } from '@/infrastructure/repositories/drizzle-shopping-list-query-repository'
 import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
-import { unitTypes } from '@glist/shared'
-import { zValidator } from '@hono/zod-validator'
-import { Hono } from 'hono'
-import { z } from 'zod'
 import type { HouseholdContext } from './context'
 
 const shoppingListsRouter = new Hono<HouseholdContext>()
@@ -171,7 +172,9 @@ shoppingListsRouter.post(
       }
     }
 
-    return c.json({ success: true, data: { id: result.value } }, 201)
+    await broadcastShoppingListEvent(c.env, result.value.event)
+
+    return c.json({ success: true, data: { id: result.value.value } }, 201)
   },
 )
 
@@ -217,7 +220,9 @@ shoppingListsRouter.post(
       }
     }
 
-    return c.json({ success: true, data: { id: result.value } }, 201)
+    await broadcastShoppingListEvent(c.env, result.value.event)
+
+    return c.json({ success: true, data: { id: result.value.value } }, 201)
   },
 )
 
@@ -248,6 +253,8 @@ shoppingListsRouter.post('/:listId/items/:itemId/check', async (c) => {
     }
   }
 
+  await broadcastShoppingListEvent(c.env, result.value.event)
+
   return c.json({ success: true })
 })
 
@@ -277,6 +284,8 @@ shoppingListsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
         return c.json({ success: false, error: result.error }, 404)
     }
   }
+
+  await broadcastShoppingListEvent(c.env, result.value.event)
 
   return c.json({ success: true })
 })
@@ -361,6 +370,8 @@ shoppingListsRouter.put(
       }
     }
 
+    await broadcastShoppingListEvent(c.env, result.value.event)
+
     return c.json({ success: true })
   },
 )
@@ -394,6 +405,8 @@ shoppingListsRouter.delete('/:listId/items/:itemId', async (c) => {
         return c.json({ success: false, error: result.error }, 404)
     }
   }
+
+  await broadcastShoppingListEvent(c.env, result.value.event)
 
   return c.json({ success: true })
 })

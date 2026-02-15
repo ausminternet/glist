@@ -13,3 +13,5 @@ app.onError((err, c) => {
 app.route('/', router)
 
 export default app
+
+export { ShoppingListEventsDO } from './infrastructure/events/shopping-list-events-do.js'
