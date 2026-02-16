@@ -3,10 +3,9 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-    "web": "expo start --web",
+    "start": "dotenv -e .env.local -- expo start",
+    "ios": "dotenv -e .env.local -- expo run:ios --device",
+    "build": "dotenv -e .env.production -- expo run:ios --configuration Release --device",
     "lint": "biome check .",
     "lint:fix": "biome check --write ."
   },
@@ -47,6 +46,7 @@
   "devDependencies": {
     "@glist/views": "workspace:*",
     "@types/react": "~19.1.0",
+    "dotenv-cli": "^11.0.0",
     "typescript": "~5.9.2"
   },
   "private": true

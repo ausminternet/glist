@@ -1,13 +1,5 @@
-function getEnv(key: string): string {
-  const value = process.env[key]
-  if (!value) {
-    throw new Error(`Environment variable ${key} is not defined`)
-  }
-  return value
-}
-
-const API_URL = getEnv('EXPO_PUBLIC_API_URL')
-const API_KEY = getEnv('EXPO_PUBLIC_API_KEY')
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
+const API_KEY = process.env.EXPO_PUBLIC_API_KEY ?? ''
 
 export class ApiError extends Error {
   constructor(

@@ -4,7 +4,7 @@ import { seed } from '@/infrastructure/persistence/seed'
 const seedRouter = new Hono<{ Bindings: CloudflareBindings }>()
 
 seedRouter.post('/', async (c) => {
-  const environment = c.env.ENVIRONMENT || 'production'
+  const environment = c.env.ENV || 'production'
 
   if (environment === 'production') {
     return c.json(

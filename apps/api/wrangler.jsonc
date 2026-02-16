@@ -14,7 +14,7 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_classes": ["ShoppingListEventsDO"],
+      "new_sqlite_classes": ["ShoppingListEventsDO"],
     },
   ],
   "d1_databases": [
@@ -32,15 +32,7 @@
     },
   ],
   "vars": {
-    "ENVIRONMENT": "development",
-    // Set this to your R2 bucket's public URL
-    // For production, use your custom domain or Cloudflare R2 public URL
-    // Example: "https://photos.glist.app" or "https://pub-xxx.r2.dev"
-    "PHOTO_URL_BASE": "http://localhost:8787/photos",
+    "ENV": "production",
+    "PHOTO_URL_BASE": "http://api.jan-hofmann.workers.dev/photos",
   },
-  // For production deployment, set:
-  // "vars": {
-  //   "ENVIRONMENT": "production",
-  //   "PHOTO_URL_BASE": "https://your-r2-public-url.com"
-  // }
 }
