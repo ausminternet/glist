@@ -58,6 +58,7 @@ export class DrizzleShoppingListItemQueryRepository
       .select()
       .from(shoppingListItems)
       .where(eq(shoppingListItems.householdId, householdId))
+      .orderBy(shoppingListItems.createdAt)
 
     if (rows.length === 0) {
       return []

@@ -11,7 +11,7 @@ type UncheckShoppingListItemParams = {
 export function useUncheckShoppingListItem() {
   const queryClient = useQueryClient()
 
-  return useMutation({
+  const { mutate, ...rest } = useMutation({
     mutationFn: ({ householdId, itemId }: UncheckShoppingListItemParams) =>
       uncheckShoppingListItem(householdId, itemId),
 
@@ -44,4 +44,9 @@ export function useUncheckShoppingListItem() {
       })
     },
   })
+
+  return {
+    uncheckShoppingListItem: mutate,
+    ...rest,
+  }
 }

@@ -11,7 +11,7 @@ type CheckShoppingListItemParams = {
 export function useCheckShoppingListItem() {
   const queryClient = useQueryClient()
 
-  return useMutation({
+  const { mutate, ...rest } = useMutation({
     mutationFn: ({ householdId, itemId }: CheckShoppingListItemParams) =>
       checkShoppingListItem(householdId, itemId),
 
@@ -44,4 +44,6 @@ export function useCheckShoppingListItem() {
       })
     },
   })
+
+  return { checkShoppingListItem: mutate, ...rest }
 }
