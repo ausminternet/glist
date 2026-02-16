@@ -194,10 +194,6 @@ async function seed(d1: D1Database) {
         shopId: findShop('Supermarket')!.id,
       },
       {
-        shoppingListItemId: findShoppingListItem('Bread')!.id,
-        shopId: findShop('Bakery')!.id,
-      },
-      {
         shoppingListItemId: findShoppingListItem('Bananas')!.id,
         shopId: findShop('Supermarket')!.id,
       },
