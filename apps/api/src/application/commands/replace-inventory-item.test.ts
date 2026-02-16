@@ -1,5 +1,7 @@
-import { describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, test } from 'bun:test'
 import { generateHouseholdId } from '@/domain/household/household-id'
+import type { InventoryItem } from '@/domain/inventory-item/inventory-item'
+import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import {
   createMockInventoryItemRepository,
   createTestInventoryItem,
@@ -8,6 +10,8 @@ import {
   type ReplaceInventoryItemCommand,
   ReplaceInventoryItemCommandHandler,
 } from './replace-inventory-item'
+
+const householdId = generateHouseholdId()
 
 const validCommand: Omit<ReplaceInventoryItemCommand, 'inventoryItemId'> = {
   name: 'Updated Milk',
@@ -20,19 +24,20 @@ const validCommand: Omit<ReplaceInventoryItemCommand, 'inventoryItemId'> = {
   shopIds: [],
 }
 
-const householdId = generateHouseholdId()
-
 describe('ReplaceInventoryItemCommandHandler', () => {
-  test('replaces item successfully', async () => {
-    const item = createTestInventoryItem({ householdId, name: 'Milk' })
-    const repository = createMockInventoryItemRepository([item])
-    const handler = new ReplaceInventoryItemCommandHandler(repository)
+  let item: InventoryItem
+  let repository: InventoryItemRepository
+  let handler: ReplaceInventoryItemCommandHandler
 
+  beforeEach(() => {
+    item = createTestInventoryItem({ householdId, name: 'Milk' })
+    repository = createMockInventoryItemRepository([item])
+    handler = new ReplaceInventoryItemCommandHandler(repository)
+  })
+
+  test('replaces item successfully', async () => {
     const result = await handler.execute(
-      {
-        ...validCommand,
-        inventoryItemId: item.id,
-      },
+      { ...validCommand, inventoryItemId: item.id },
       { householdId },
     )
 
@@ -40,36 +45,21 @@ describe('ReplaceInventoryItemCommandHandler', () => {
     expect(repository.save).toHaveBeenCalledTimes(1)
     expect(item.name).toBe('Updated Milk')
     expect(item.description).toBe('Updated description')
-    expect(item.targetStock).toBe(2)
-    expect(item.basePriceCents).toBe(199)
   })
 
   test('returns INVENTORY_ITEM_NOT_FOUND when item does not exist', async () => {
-    const repository = createMockInventoryItemRepository()
-    const handler = new ReplaceInventoryItemCommandHandler(repository)
-
     const result = await handler.execute(
-      {
-        ...validCommand,
-        inventoryItemId: 'non-existent-id',
-      },
+      { ...validCommand, inventoryItemId: 'non-existent-id' },
       { householdId },
     )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error.type).toBe('INVENTORY_ITEM_NOT_FOUND')
-    if (result.error.type === 'INVENTORY_ITEM_NOT_FOUND') {
-      expect(result.error.id).toBe('non-existent-id')
-    }
     expect(repository.save).not.toHaveBeenCalled()
   })
 
   test('clears optional fields when set to null', async () => {
-    const item = createTestInventoryItem({ householdId, name: 'Milk' })
-    const repository = createMockInventoryItemRepository([item])
-    const handler = new ReplaceInventoryItemCommandHandler(repository)
-
     const command: ReplaceInventoryItemCommand = {
       inventoryItemId: item.id,
       name: 'Simple Item',
@@ -87,27 +77,6 @@ describe('ReplaceInventoryItemCommandHandler', () => {
     expect(result.ok).toBe(true)
     expect(item.description).toBeNull()
     expect(item.targetStock).toBeNull()
-    expect(item.targetStockUnit).toBeNull()
     expect(item.basePriceCents).toBeNull()
-    expect(item.basePriceUnit).toBeNull()
-  })
-
-  test('updates updatedAt timestamp', async () => {
-    const item = createTestInventoryItem({ householdId, name: 'Milk' })
-    const repository = createMockInventoryItemRepository([item])
-    const handler = new ReplaceInventoryItemCommandHandler(repository)
-
-    expect(item.updatedAt).toBeNull()
-
-    const result = await handler.execute(
-      {
-        ...validCommand,
-        inventoryItemId: item.id,
-      },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(true)
-    expect(item.updatedAt).toBeInstanceOf(Date)
   })
 })

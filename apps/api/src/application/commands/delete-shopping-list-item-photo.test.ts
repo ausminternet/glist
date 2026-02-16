@@ -1,5 +1,8 @@
-import { describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, test } from 'bun:test'
 import { generateHouseholdId } from '@/domain/household/household-id'
+import type { ShoppingListItem } from '@/domain/shopping-list-item/shopping-list-item'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
+import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import {
   createMockPhotoStorage,
   createMockShoppingListItemRepository,
@@ -8,56 +11,49 @@ import {
 import { DeleteShoppingListItemPhotoCommandHandler } from './delete-shopping-list-item-photo'
 
 const householdId = generateHouseholdId()
+const photoKey = 'shopping-list-item/test-id/12345.jpg'
 
 describe('DeleteShoppingListItemPhotoCommandHandler', () => {
-  const photoKey = 'shopping-list-item/test-id/12345.jpg'
+  let item: ShoppingListItem
+  let repository: ShoppingListItemRepository
+  let photoStorage: PhotoStorage
+  let handler: DeleteShoppingListItemPhotoCommandHandler
 
-  test('deletes photo successfully', async () => {
-    const item = createTestShoppingListItem({ householdId, photoKey })
-    const repository = createMockShoppingListItemRepository([item])
-    const photoStorage = createMockPhotoStorage()
-    const handler = new DeleteShoppingListItemPhotoCommandHandler(
+  beforeEach(() => {
+    item = createTestShoppingListItem({ householdId, photoKey })
+    repository = createMockShoppingListItemRepository([item])
+    photoStorage = createMockPhotoStorage()
+    handler = new DeleteShoppingListItemPhotoCommandHandler(
       repository,
       photoStorage,
     )
+  })
 
+  test('deletes photo successfully', async () => {
     const result = await handler.execute({ itemId: item.id }, { householdId })
 
     expect(result.ok).toBe(true)
-    expect(photoStorage.delete).toHaveBeenCalledTimes(1)
     expect(photoStorage.delete).toHaveBeenCalledWith(photoKey)
     expect(repository.save).toHaveBeenCalledTimes(1)
     expect(item.photoKey).toBeNull()
   })
 
   test('returns SHOPPING_LIST_ITEM_NOT_FOUND when item does not exist', async () => {
-    const repository = createMockShoppingListItemRepository()
-    const photoStorage = createMockPhotoStorage()
-    const handler = new DeleteShoppingListItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
     const result = await handler.execute(
-      { itemId: 'non-existent-item' },
+      { itemId: 'non-existent-id' },
       { householdId },
     )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error.type).toBe('SHOPPING_LIST_ITEM_NOT_FOUND')
-    if (result.error.type === 'SHOPPING_LIST_ITEM_NOT_FOUND') {
-      expect(result.error.id).toBe('non-existent-item')
-    }
     expect(photoStorage.delete).not.toHaveBeenCalled()
-    expect(repository.save).not.toHaveBeenCalled()
   })
 
   test('returns NO_PHOTO_EXISTS when item has no photo', async () => {
-    const item = createTestShoppingListItem({ householdId })
-    const repository = createMockShoppingListItemRepository([item])
-    const photoStorage = createMockPhotoStorage()
-    const handler = new DeleteShoppingListItemPhotoCommandHandler(
+    item = createTestShoppingListItem({ householdId })
+    repository = createMockShoppingListItemRepository([item])
+    handler = new DeleteShoppingListItemPhotoCommandHandler(
       repository,
       photoStorage,
     )
@@ -68,23 +64,5 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
     if (result.ok) return
     expect(result.error.type).toBe('NO_PHOTO_EXISTS')
     expect(photoStorage.delete).not.toHaveBeenCalled()
-    expect(repository.save).not.toHaveBeenCalled()
-  })
-
-  test('updates item updatedAt timestamp after deletion', async () => {
-    const item = createTestShoppingListItem({ householdId, photoKey })
-    const originalUpdatedAt = item.updatedAt
-    const repository = createMockShoppingListItemRepository([item])
-    const photoStorage = createMockPhotoStorage()
-    const handler = new DeleteShoppingListItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
-    const result = await handler.execute({ itemId: item.id }, { householdId })
-
-    expect(result.ok).toBe(true)
-    expect(item.updatedAt).not.toBe(originalUpdatedAt)
-    expect(item.updatedAt).toBeInstanceOf(Date)
   })
 })

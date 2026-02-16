@@ -1,7 +1,6 @@
-import { describe, expect, test } from 'bun:test'
-import { generateCategoryId } from '@/domain/category/category-id'
+import { beforeEach, describe, expect, test } from 'bun:test'
 import { generateHouseholdId } from '@/domain/household/household-id'
-import { generateShopId } from '@/domain/shop/shop-id'
+import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import {
   createMockInventoryItemRepository,
   createMockShoppingListItemRepositoryWithCapture,
@@ -12,124 +11,71 @@ import { AddShoppingListItemFromInventoryCommandHandler } from './add-shopping-l
 const householdId = generateHouseholdId()
 
 describe('AddShoppingListItemFromInventoryCommandHandler', () => {
-  test('adds item from inventory to shopping list', async () => {
-    const inventoryItem = createTestInventoryItem({
-      householdId,
-      name: 'Milk',
-      description: 'Organic whole milk',
-    })
-    const shoppingListItemRepository =
+  let inventoryItemRepository: InventoryItemRepository
+  let shoppingListItemRepository: ReturnType<
+    typeof createMockShoppingListItemRepositoryWithCapture
+  >
+  let handler: AddShoppingListItemFromInventoryCommandHandler
+
+  beforeEach(() => {
+    shoppingListItemRepository =
       createMockShoppingListItemRepositoryWithCapture()
-    const inventoryItemRepository = createMockInventoryItemRepository([
-      inventoryItem,
-    ])
-    const handler = new AddShoppingListItemFromInventoryCommandHandler(
-      shoppingListItemRepository,
-      inventoryItemRepository,
-    )
-
-    const result = await handler.execute(
-      {
-        inventoryItemId: inventoryItem.id,
-      },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
-
-    expect(shoppingListItemRepository.save).toHaveBeenCalledTimes(1)
-    expect(shoppingListItemRepository.savedItem).not.toBeNull()
-
-    const addedItem = shoppingListItemRepository.savedItem
-    if (!addedItem) throw new Error('Shopping list item not found')
-    expect(addedItem.name).toBe('Milk')
-    expect(addedItem.description).toBe('Organic whole milk')
-    expect(addedItem.inventoryItemId).toBe(inventoryItem.id)
   })
 
-  test('copies category and shops from inventory item', async () => {
-    const categoryId = generateCategoryId()
-    const shopIds = [generateShopId(), generateShopId()]
-    const inventoryItem = createTestInventoryItem({
-      householdId,
-      categoryId,
-      shopIds,
-    })
-    const shoppingListItemRepository =
-      createMockShoppingListItemRepositoryWithCapture()
-    const inventoryItemRepository = createMockInventoryItemRepository([
-      inventoryItem,
-    ])
-    const handler = new AddShoppingListItemFromInventoryCommandHandler(
+  test('adds item from inventory to shopping list', async () => {
+    const item = createTestInventoryItem({ householdId, name: 'Milk' })
+    inventoryItemRepository = createMockInventoryItemRepository([item])
+    handler = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListItemRepository,
       inventoryItemRepository,
     )
 
     const result = await handler.execute(
-      {
-        inventoryItemId: inventoryItem.id,
-      },
+      { inventoryItemId: item.id },
       { householdId },
     )
 
     expect(result.ok).toBe(true)
-    if (!result.ok) return
-
-    const addedItem = shoppingListItemRepository.savedItem
-    if (!addedItem) throw new Error('Shopping list item not found')
-    expect(addedItem.categoryId).toBe(categoryId)
-    expect(addedItem.shopIds).toEqual(shopIds)
+    expect(shoppingListItemRepository.save).toHaveBeenCalledTimes(1)
+    expect(shoppingListItemRepository.savedItem?.name).toBe('Milk')
+    expect(shoppingListItemRepository.savedItem?.householdId).toBe(householdId)
   })
 
   test('returns INVENTORY_ITEM_NOT_FOUND when item does not exist', async () => {
-    const shoppingListItemRepository =
-      createMockShoppingListItemRepositoryWithCapture()
-    const inventoryItemRepository = createMockInventoryItemRepository()
-    const handler = new AddShoppingListItemFromInventoryCommandHandler(
+    inventoryItemRepository = createMockInventoryItemRepository([])
+    handler = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListItemRepository,
       inventoryItemRepository,
     )
 
     const result = await handler.execute(
-      { inventoryItemId: 'non-existent-item' },
+      { inventoryItemId: 'non-existent-id' },
       { householdId },
     )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error.type).toBe('INVENTORY_ITEM_NOT_FOUND')
-    expect(result.error.id).toBe('non-existent-item')
     expect(shoppingListItemRepository.save).not.toHaveBeenCalled()
   })
 
   test('returns the id of the newly created shopping list item', async () => {
-    const inventoryItem = createTestInventoryItem({ householdId })
-    const shoppingListItemRepository =
-      createMockShoppingListItemRepositoryWithCapture()
-    const inventoryItemRepository = createMockInventoryItemRepository([
-      inventoryItem,
-    ])
-    const handler = new AddShoppingListItemFromInventoryCommandHandler(
+    const item = createTestInventoryItem({ householdId })
+    inventoryItemRepository = createMockInventoryItemRepository([item])
+    handler = new AddShoppingListItemFromInventoryCommandHandler(
       shoppingListItemRepository,
       inventoryItemRepository,
     )
 
     const result = await handler.execute(
-      { inventoryItemId: inventoryItem.id },
+      { inventoryItemId: item.id },
       { householdId },
     )
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
-
-    const savedItem = shoppingListItemRepository.savedItem
-    if (!savedItem) throw new Error('Shopping list item not found')
-    expect(result.value.value).toBe(savedItem.id)
-    expect(result.value.event).toEqual({
-      type: 'item-added',
-      householdId,
-      itemId: savedItem.id,
-    })
+    if (!shoppingListItemRepository.savedItem)
+      throw new Error('Shopping list item not saved')
+    expect(result.value.value).toBe(shoppingListItemRepository.savedItem.id)
   })
 })

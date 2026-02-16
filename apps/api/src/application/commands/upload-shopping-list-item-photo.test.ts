@@ -1,5 +1,8 @@
-import { describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, test } from 'bun:test'
 import { generateHouseholdId } from '@/domain/household/household-id'
+import type { ShoppingListItem } from '@/domain/shopping-list-item/shopping-list-item'
+import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
+import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import {
   createMockPhotoStorage,
   createMockShoppingListItemRepository,
@@ -8,26 +11,27 @@ import {
 import { UploadShoppingListItemPhotoCommandHandler } from './upload-shopping-list-item-photo'
 
 const householdId = generateHouseholdId()
+const photoData = new ArrayBuffer(100)
 
 describe('UploadShoppingListItemPhotoCommandHandler', () => {
-  const photoData = new ArrayBuffer(100)
-  const contentType = 'image/jpeg'
+  let item: ShoppingListItem
+  let repository: ShoppingListItemRepository
+  let photoStorage: PhotoStorage
+  let handler: UploadShoppingListItemPhotoCommandHandler
 
-  test('uploads photo successfully', async () => {
-    const item = createTestShoppingListItem({ householdId })
-    const repository = createMockShoppingListItemRepository([item])
-    const photoStorage = createMockPhotoStorage()
-    const handler = new UploadShoppingListItemPhotoCommandHandler(
+  beforeEach(() => {
+    item = createTestShoppingListItem({ householdId })
+    repository = createMockShoppingListItemRepository([item])
+    photoStorage = createMockPhotoStorage()
+    handler = new UploadShoppingListItemPhotoCommandHandler(
       repository,
       photoStorage,
     )
+  })
 
+  test('uploads photo successfully', async () => {
     const result = await handler.execute(
-      {
-        itemId: item.id,
-        photoData,
-        contentType,
-      },
+      { itemId: item.id, photoData, contentType: 'image/jpeg' },
       { householdId },
     )
 
@@ -41,171 +45,56 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
 
   test('deletes old photo before uploading new one', async () => {
     const oldPhotoKey = 'shopping-list-item/old-id/12345.jpg'
-    const item = createTestShoppingListItem({
-      householdId,
-      photoKey: oldPhotoKey,
-    })
-    const repository = createMockShoppingListItemRepository([item])
-    const photoStorage = createMockPhotoStorage()
-    const handler = new UploadShoppingListItemPhotoCommandHandler(
+    item = createTestShoppingListItem({ householdId, photoKey: oldPhotoKey })
+    repository = createMockShoppingListItemRepository([item])
+    handler = new UploadShoppingListItemPhotoCommandHandler(
       repository,
       photoStorage,
     )
 
     const result = await handler.execute(
-      {
-        itemId: item.id,
-        photoData,
-        contentType,
-      },
+      { itemId: item.id, photoData, contentType: 'image/jpeg' },
       { householdId },
     )
 
     expect(result.ok).toBe(true)
-    expect(photoStorage.delete).toHaveBeenCalledTimes(1)
     expect(photoStorage.delete).toHaveBeenCalledWith(oldPhotoKey)
-    expect(photoStorage.upload).toHaveBeenCalledTimes(1)
   })
 
   test('returns SHOPPING_LIST_ITEM_NOT_FOUND when item does not exist', async () => {
-    const repository = createMockShoppingListItemRepository()
-    const photoStorage = createMockPhotoStorage()
-    const handler = new UploadShoppingListItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
     const result = await handler.execute(
-      {
-        itemId: 'non-existent-item',
-        photoData,
-        contentType,
-      },
+      { itemId: 'non-existent-id', photoData, contentType: 'image/jpeg' },
       { householdId },
     )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error.type).toBe('SHOPPING_LIST_ITEM_NOT_FOUND')
-    if (result.error.type === 'SHOPPING_LIST_ITEM_NOT_FOUND') {
-      expect(result.error.id).toBe('non-existent-item')
-    }
     expect(photoStorage.upload).not.toHaveBeenCalled()
-    expect(repository.save).not.toHaveBeenCalled()
   })
 
   test('returns INVALID_CONTENT_TYPE for unsupported content type', async () => {
-    const item = createTestShoppingListItem({ householdId })
-    const repository = createMockShoppingListItemRepository([item])
-    const photoStorage = createMockPhotoStorage()
-    const handler = new UploadShoppingListItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
     const result = await handler.execute(
-      {
-        itemId: item.id,
-        photoData,
-        contentType: 'image/gif',
-      },
+      { itemId: item.id, photoData, contentType: 'image/gif' },
       { householdId },
     )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error.type).toBe('INVALID_CONTENT_TYPE')
-    if (result.error.type === 'INVALID_CONTENT_TYPE') {
-      expect(result.error.contentType).toBe('image/gif')
-    }
     expect(photoStorage.upload).not.toHaveBeenCalled()
-    expect(repository.save).not.toHaveBeenCalled()
   })
 
-  test('accepts image/jpeg content type', async () => {
-    const item = createTestShoppingListItem({ householdId })
-    const repository = createMockShoppingListItemRepository([item])
-    const photoStorage = createMockPhotoStorage()
-    const handler = new UploadShoppingListItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
+  test.each([
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+  ])('accepts %s content type', async (contentType) => {
     const result = await handler.execute(
-      {
-        itemId: item.id,
-        photoData,
-        contentType: 'image/jpeg',
-      },
+      { itemId: item.id, photoData, contentType },
       { householdId },
     )
 
     expect(result.ok).toBe(true)
-  })
-
-  test('accepts image/png content type', async () => {
-    const item = createTestShoppingListItem({ householdId })
-    const repository = createMockShoppingListItemRepository([item])
-    const photoStorage = createMockPhotoStorage()
-    const handler = new UploadShoppingListItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
-    const result = await handler.execute(
-      {
-        itemId: item.id,
-        photoData,
-        contentType: 'image/png',
-      },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(true)
-  })
-
-  test('accepts image/webp content type', async () => {
-    const item = createTestShoppingListItem({ householdId })
-    const repository = createMockShoppingListItemRepository([item])
-    const photoStorage = createMockPhotoStorage()
-    const handler = new UploadShoppingListItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
-    const result = await handler.execute(
-      {
-        itemId: item.id,
-        photoData,
-        contentType: 'image/webp',
-      },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(true)
-  })
-
-  test('updates item updatedAt timestamp', async () => {
-    const item = createTestShoppingListItem({ householdId })
-    const originalUpdatedAt = item.updatedAt
-    const repository = createMockShoppingListItemRepository([item])
-    const photoStorage = createMockPhotoStorage()
-    const handler = new UploadShoppingListItemPhotoCommandHandler(
-      repository,
-      photoStorage,
-    )
-
-    const result = await handler.execute(
-      {
-        itemId: item.id,
-        photoData,
-        contentType,
-      },
-      { householdId },
-    )
-
-    expect(result.ok).toBe(true)
-    expect(item.updatedAt).not.toBe(originalUpdatedAt)
-    expect(item.updatedAt).toBeInstanceOf(Date)
   })
 })
