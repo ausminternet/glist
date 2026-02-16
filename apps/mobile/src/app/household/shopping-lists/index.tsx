@@ -3,7 +3,7 @@ import { useCategories } from '@/api/categories'
 import { useShoppingListEvents } from '@/api/events'
 import { useShoppingListItems } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
-import { useHouseholdId } from '@/utils/use-household-id'
+import { useHouseholdId } from '@/provider/household-provider'
 
 export default function Index() {
   const householdId = useHouseholdId()

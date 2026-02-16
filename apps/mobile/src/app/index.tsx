@@ -1,16 +1,14 @@
-import { Link } from 'expo-router'
-import { ActivityIndicator, Text, View } from 'react-native'
+import { Redirect } from 'expo-router'
+import { Pressable, Text, View } from 'react-native'
 import { useHouseholds } from '@/api/households/use-households'
+import { useHouseholdContext } from '@/provider/household-provider'
 
 export default function HouseholdsScreen() {
-  const { households, isLoading } = useHouseholds()
+  const { households } = useHouseholds()
+  const { selectHousehold, householdId } = useHouseholdContext()
 
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    )
+  if (householdId) {
+    return <Redirect href="/household" />
   }
 
   return (
@@ -21,15 +19,14 @@ export default function HouseholdsScreen() {
         alignItems: 'center',
       }}
     >
-      <Text style={{ fontSize: 20, marginBottom: 20 }}>Haushalt auswählen</Text>
       {households?.map((household) => (
-        <Link
+        <Pressable
           key={household.id}
-          href={`/${household.id}/`}
+          onPress={() => selectHousehold(household.id)}
           style={{ padding: 10 }}
         >
           <Text>{household.name}</Text>
-        </Link>
+        </Pressable>
       ))}
     </View>
   )

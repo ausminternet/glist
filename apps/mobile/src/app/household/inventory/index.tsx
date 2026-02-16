@@ -2,7 +2,7 @@ import { Text, View } from 'react-native'
 import { useCategories } from '@/api/categories/use-categories'
 import { useInventoryItems } from '@/api/inventory-items/use-inventory-items'
 import { useShops } from '@/api/shops/use-shops'
-import { useHouseholdId } from '@/utils/use-household-id'
+import { useHouseholdId } from '@/provider/household-provider'
 
 export default function Index() {
   const householdId = useHouseholdId()
