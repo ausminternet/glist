@@ -55,3 +55,13 @@ export function generatePhotoKey(
   const timestamp = Date.now()
   return `${type}/${itemId}/${timestamp}.jpg`
 }
+
+export function getPhotoUrl(
+  photoKey: string | null,
+  publicUrlBase: string,
+): string | null {
+  if (!photoKey) {
+    return null
+  }
+  return `${publicUrlBase}/${photoKey}`
+}

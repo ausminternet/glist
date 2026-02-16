@@ -1,5 +1,6 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Redirect } from 'expo-router'
-import { Pressable, Text, View } from 'react-native'
+import { Button, Pressable, Text, View } from 'react-native'
 import { useHouseholds } from '@/api/households/use-households'
 import { useHouseholdContext } from '@/provider/household-provider'
 
@@ -7,6 +8,11 @@ export default function HouseholdsScreen() {
   const { households } = useHouseholds()
   const { selectHousehold, householdId, householdNotFound } =
     useHouseholdContext()
+  const queryClient = useQueryClient()
+
+  const handleReload = () => {
+    queryClient.invalidateQueries()
+  }
 
   if (householdId) {
     return <Redirect href="/household" />
@@ -36,6 +42,8 @@ export default function HouseholdsScreen() {
       )}
 
       <Text style={{ fontSize: 20, marginBottom: 20 }}>Haushalt auswählen</Text>
+
+      <Button title="Reload" onPress={handleReload} />
 
       {households?.map((household) => (
         <Pressable

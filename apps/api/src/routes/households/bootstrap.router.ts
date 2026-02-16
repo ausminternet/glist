@@ -16,8 +16,8 @@ bootstrapRouter.get('/', async (c) => {
   const bootstrapHandler = new BootstrapQueryHandler(
     new DrizzleShopQueryRepository(db),
     new DrizzleCategoryQueryRepository(db),
-    new DrizzleInventoryItemQueryRepository(db),
-    new DrizzleShoppingListItemQueryRepository(db),
+    new DrizzleInventoryItemQueryRepository(db, c.env.PHOTO_URL_BASE),
+    new DrizzleShoppingListItemQueryRepository(db, c.env.PHOTO_URL_BASE),
   )
 
   const result = await bootstrapHandler.execute({ householdId })

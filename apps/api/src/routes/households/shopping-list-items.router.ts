@@ -25,7 +25,10 @@ const shoppingListItemsRouter = new Hono<HouseholdContext>()
 shoppingListItemsRouter.get('/', async (c) => {
   const householdId = c.get('householdId')
   const db = createDb(c.env.glist_db)
-  const queryRepository = new DrizzleShoppingListItemQueryRepository(db)
+  const queryRepository = new DrizzleShoppingListItemQueryRepository(
+    db,
+    c.env.PHOTO_URL_BASE,
+  )
 
   const items = await queryRepository.getAll(householdId)
 

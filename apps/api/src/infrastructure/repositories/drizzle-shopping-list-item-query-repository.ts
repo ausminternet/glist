@@ -3,12 +3,14 @@ import { eq, inArray } from 'drizzle-orm'
 import type { ShoppingListItemQueryRepository } from '@/domain/shopping-list-item/shopping-list-item-query-repository'
 import type { Database } from '../persistence'
 import { shoppingListItemShops, shoppingListItems } from '../persistence/schema'
+import { getPhotoUrl } from '../storage/photo-storage'
 
 type ShoppingListItemRow = typeof shoppingListItems.$inferSelect
 
 function shoppingListItemToView(
   itemRow: ShoppingListItemRow,
   shopIds: string[],
+  photoUrlBase: string,
 ): ShoppingListItemView {
   return {
     id: itemRow.id,
@@ -23,14 +25,17 @@ function shoppingListItemToView(
     updatedAt: itemRow.updatedAt?.toISOString() ?? null,
     inventoryItemId: itemRow.inventoryItemId,
     shopIds,
-    photoUrl: itemRow.photoKey,
+    photoUrl: getPhotoUrl(itemRow.photoKey, photoUrlBase),
   }
 }
 
 export class DrizzleShoppingListItemQueryRepository
   implements ShoppingListItemQueryRepository
 {
-  constructor(private db: Database) {}
+  constructor(
+    private db: Database,
+    private photoUrlBase: string,
+  ) {}
 
   async find(id: string): Promise<ShoppingListItemView | null> {
     const row = await this.db
@@ -50,7 +55,7 @@ export class DrizzleShoppingListItemQueryRepository
 
     const shopIds = shopRows.map((r) => r.shopId)
 
-    return shoppingListItemToView(row, shopIds)
+    return shoppingListItemToView(row, shopIds, this.photoUrlBase)
   }
 
   async getAll(householdId: string): Promise<ShoppingListItemView[]> {
@@ -78,7 +83,11 @@ export class DrizzleShoppingListItemQueryRepository
     }
 
     return rows.map((row) =>
-      shoppingListItemToView(row, shopsByItemId.get(row.id) ?? []),
+      shoppingListItemToView(
+        row,
+        shopsByItemId.get(row.id) ?? [],
+        this.photoUrlBase,
+      ),
     )
   }
 }

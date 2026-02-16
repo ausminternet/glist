@@ -3,12 +3,14 @@ import { asc, eq, inArray } from 'drizzle-orm'
 import type { InventoryItemQueryRepository } from '@/domain/inventory-item/inventory-item-query-repository'
 import type { Database } from '../persistence'
 import { inventoryItemShops, inventoryItems } from '../persistence/schema'
+import { getPhotoUrl } from '../storage/photo-storage'
 
 type InventoryItemRow = typeof inventoryItems.$inferSelect
 
 function inventoryItemRowToView(
   row: InventoryItemRow,
   shopIds: string[],
+  photoUrlBase: string,
 ): InventoryItemView {
   return {
     id: row.id,
@@ -23,14 +25,17 @@ function inventoryItemRowToView(
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt?.toISOString() ?? null,
     shopIds,
-    photoUrl: row.photoKey,
+    photoUrl: getPhotoUrl(row.photoKey, photoUrlBase),
   }
 }
 
 export class DrizzleInventoryItemQueryRepository
   implements InventoryItemQueryRepository
 {
-  constructor(private db: Database) {}
+  constructor(
+    private db: Database,
+    private photoUrlBase: string,
+  ) {}
 
   async getAll(householdId: string): Promise<InventoryItemView[]> {
     const rows = await this.db
@@ -58,7 +63,7 @@ export class DrizzleInventoryItemQueryRepository
 
     return rows.map((row) => {
       const shopIds = shopIdsByItemId.get(row.id) ?? []
-      return inventoryItemRowToView(row, shopIds)
+      return inventoryItemRowToView(row, shopIds, this.photoUrlBase)
     })
   }
 }

@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router'
 import { Stack } from 'expo-router/stack'
-import { Button, Text, View } from 'react-native'
+import { Button, Image, Text, View } from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useShoppingListEvents } from '@/api/events'
 import {
@@ -31,6 +31,8 @@ export default function Index() {
     ? getShoppingListItemsByShopId(shopId, withNoShop === 'true')
     : shoppingListItems
 
+  console.log(filteredShoppingListItems.map((item) => item.photoUrl))
+
   return (
     <>
       <Stack.Screen
@@ -48,6 +50,12 @@ export default function Index() {
         <Text>Einkaufsliste</Text>
         {filteredShoppingListItems.map((item) => (
           <View key={item.id}>
+            {item.photoUrl && (
+              <Image
+                source={{ uri: item.photoUrl }}
+                style={{ width: 100, height: 100 }}
+              />
+            )}
             <Text>{item.name}</Text>
             <Text>checked: {item.checked ? 'Yes' : 'No'}</Text>
             <Text>
