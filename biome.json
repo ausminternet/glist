@@ -29,6 +29,7 @@
       "!**/.expo",
       "!**/.zed",
       "!apps/api/scripts",
+      "!apps/api/src/infrastructure/persistence/migrations",
       "!apps/api/drizzle.config.ts",
       "!apps/api/wrangler.jsonc",
       "!apps/api/worker-configuration.d.ts",
