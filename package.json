@@ -8,9 +8,11 @@
   "scripts": {
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "typecheck": "bun --filter '*' typecheck"
+    "typecheck": "bun --filter '*' typecheck",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.0"
+    "@biomejs/biome": "^2.4.0",
+    "husky": "^9.1.7"
   }
 }
