@@ -1,7 +1,6 @@
-import { eq } from 'drizzle-orm'
 import type { MiddlewareHandler } from 'hono'
 import { createDb } from '@/infrastructure/persistence'
-import { households } from '@/infrastructure/persistence/schema'
+import { DrizzleHouseholdQueryRepository } from '@/infrastructure/repositories/drizzle-household-query-repository'
 
 export type HouseholdContext = {
   Bindings: CloudflareBindings
@@ -20,11 +19,8 @@ export const withHousehold: MiddlewareHandler<HouseholdContext> = async (
   }
 
   const db = createDb(c.env.glist_db)
-  const household = await db
-    .select({ id: households.id })
-    .from(households)
-    .where(eq(households.id, householdId))
-    .get()
+  const householdQueryRepository = new DrizzleHouseholdQueryRepository(db)
+  const household = await householdQueryRepository.find(householdId)
 
   if (!household) {
     return c.json({ success: false, error: 'Household not found' }, 404)

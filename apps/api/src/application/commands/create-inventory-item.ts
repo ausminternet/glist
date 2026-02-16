@@ -1,12 +1,12 @@
 import { err, ok, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
+import { parseHouseholdId } from '@/domain/household/household-id'
 import {
   type CreateInventoryItemError,
   InventoryItem,
 } from '@/domain/inventory-item/inventory-item'
 import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import { parseHouseholdId } from '@/domain/shared/household-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
 import type { RequestContext } from '../shared/request-context'
 

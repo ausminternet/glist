@@ -1,7 +1,7 @@
 import { err, ok, type Result } from '@glist/shared'
 import { isBlank } from '@/utils/is-blank'
+import type { HouseholdId } from '../household/household-id'
 import type { InvalidNameError } from '../shared/errors'
-import type { HouseholdId } from '../shared/household-id'
 import type { CategoryId } from './category-id'
 
 export type NewCategoryInput = {

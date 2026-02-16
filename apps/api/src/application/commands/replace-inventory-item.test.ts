@@ -1,8 +1,8 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { parseHouseholdId } from '@/domain/household/household-id'
 import { InventoryItem } from '@/domain/inventory-item/inventory-item'
 import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import { parseHouseholdId } from '@/domain/shared/household-id'
 import {
   type ReplaceInventoryItemCommand,
   ReplaceInventoryItemCommandHandler,

@@ -2,7 +2,7 @@ import { describe, expect, mock, test } from 'bun:test'
 import { Category } from '@/domain/category/category'
 import { generateCategoryId } from '@/domain/category/category-id'
 import type { CategoryRepository } from '@/domain/category/category-repository'
-import { parseHouseholdId } from '@/domain/shared/household-id'
+import { parseHouseholdId } from '@/domain/household/household-id'
 import { ReorderCategoriesCommandHandler } from './reorder-categories'
 
 const householdId = '00000000-0000-0000-0000-000000000001'
@@ -22,6 +22,7 @@ function createMockRepository(categories: Category[]): CategoryRepository {
     findById: mock(() => Promise.resolve(null)),
     findAllByHouseholdId: mock(() => Promise.resolve(categories)),
     save: mock(() => Promise.resolve()),
+    saveMany: mock(() => Promise.resolve()),
     delete: mock(() => Promise.resolve()),
   }
 }

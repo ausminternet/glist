@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm'
 import { parseCategoryId } from '@/domain/category/category-id'
+import { parseHouseholdId } from '@/domain/household/household-id'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
-import { parseHouseholdId } from '@/domain/shared/household-id'
 import { Quantity } from '@/domain/shared/quantity'
 import { parseShopIds } from '@/domain/shop/shop-id'
 import {

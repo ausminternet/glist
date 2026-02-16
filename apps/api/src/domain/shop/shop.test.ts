@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { parseHouseholdId } from '../shared/household-id'
+import { parseHouseholdId } from '../household/household-id'
 import { Shop } from './shop'
 import { generateShopId } from './shop-id'
 

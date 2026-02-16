@@ -1,5 +1,5 @@
 import { err, ok, type Result } from '@glist/shared'
-import { parseHouseholdId } from '@/domain/shared/household-id'
+import { parseHouseholdId } from '@/domain/household/household-id'
 import { type CreateShopError, Shop } from '@/domain/shop/shop'
 import { generateShopId } from '@/domain/shop/shop-id'
 import type { ShopRepository } from '@/domain/shop/shop-repository'

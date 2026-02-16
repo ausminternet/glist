@@ -1,12 +1,12 @@
 import { asc, eq, inArray } from 'drizzle-orm'
 import { parseCategoryId } from '@/domain/category/category-id'
+import { parseHouseholdId } from '@/domain/household/household-id'
 import {
   InventoryItem,
   type InventoryItemProps,
 } from '@/domain/inventory-item/inventory-item'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import { parseHouseholdId } from '@/domain/shared/household-id'
 import { Price } from '@/domain/shared/price'
 import { Quantity } from '@/domain/shared/quantity'
 import { parseShopIds } from '@/domain/shop/shop-id'

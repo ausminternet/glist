@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
-import { parseHouseholdId } from '@/domain/shared/household-id'
+import { parseHouseholdId } from '@/domain/household/household-id'
 import { Shop } from '@/domain/shop/shop'
 import { generateShopId } from '@/domain/shop/shop-id'
 import type { ShopRepository } from '@/domain/shop/shop-repository'
@@ -20,6 +20,7 @@ function createMockRepository(shops: Shop[]): ShopRepository {
     findById: mock(() => Promise.resolve(null)),
     findAllByHouseholdId: mock(() => Promise.resolve(shops)),
     save: mock(() => Promise.resolve()),
+    saveMany: mock(() => Promise.resolve()),
     delete: mock(() => Promise.resolve()),
   }
 }

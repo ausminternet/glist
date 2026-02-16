@@ -2,7 +2,7 @@ import { err, ok, type Result } from '@glist/shared'
 import { Category, type CreateCategoryError } from '@/domain/category/category'
 import { generateCategoryId } from '@/domain/category/category-id'
 import type { CategoryRepository } from '@/domain/category/category-repository'
-import { parseHouseholdId } from '@/domain/shared/household-id'
+import { parseHouseholdId } from '@/domain/household/household-id'
 import type { RequestContext } from '../shared/request-context'
 
 export type CreateCategoryCommand = {

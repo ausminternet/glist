@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { BootstrapQueryHandler } from '@/application/commands/bootstrap'
+import { BootstrapQueryHandler } from '@/application/queries/bootstrap'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleCategoryQueryRepository } from '@/infrastructure/repositories/drizzle-category-query-repository'
 import { DrizzleInventoryItemQueryRepository } from '@/infrastructure/repositories/drizzle-inventory-item-query-repository'

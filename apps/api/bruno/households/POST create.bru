@@ -1,0 +1,21 @@
+meta {
+  name: POST create
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/households
+  body: json
+  auth: inherit
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+body:json {
+  {
+    "name": "Neuer Haushalt"
+  }
+}

@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
-import { generateHouseholdId } from '@/domain/shared/household-id'
+import { generateHouseholdId } from '@/domain/household/household-id'
 import { Quantity } from '@/domain/shared/quantity'
 import {
   ShoppingListItem,

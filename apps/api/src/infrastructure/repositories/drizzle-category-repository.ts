@@ -2,7 +2,7 @@ import { asc, eq } from 'drizzle-orm'
 import { Category, type CategoryProps } from '@/domain/category/category'
 import { parseCategoryId } from '@/domain/category/category-id'
 import type { CategoryRepository } from '@/domain/category/category-repository'
-import { parseHouseholdId } from '@/domain/shared/household-id'
+import { parseHouseholdId } from '@/domain/household/household-id'
 import type { Database } from '@/infrastructure/persistence'
 import { categories } from '@/infrastructure/persistence/schema'
 
@@ -34,6 +34,13 @@ function toSchema(category: Category): typeof categories.$inferInsert {
 
 export class DrizzleCategoryRepository implements CategoryRepository {
   constructor(private db: Database) {}
+
+  async saveMany(categoryEntities: Category[]): Promise<void> {
+    if (categoryEntities.length === 0) return
+
+    const schemas = categoryEntities.map(toSchema)
+    await this.db.insert(categories).values(schemas)
+  }
 
   async save(category: Category): Promise<void> {
     const categorySchema = toSchema(category)

@@ -1,5 +1,5 @@
 import { asc, eq } from 'drizzle-orm'
-import { parseHouseholdId } from '@/domain/shared/household-id'
+import { parseHouseholdId } from '@/domain/household/household-id'
 import { Shop, type ShopProps } from '@/domain/shop/shop'
 import { parseShopId } from '@/domain/shop/shop-id'
 import type { ShopRepository } from '@/domain/shop/shop-repository'
@@ -34,6 +34,13 @@ function toSchema(shop: Shop): typeof shops.$inferInsert {
 
 export class DrizzleShopRepository implements ShopRepository {
   constructor(private db: Database) {}
+
+  async saveMany(shopEntities: Shop[]): Promise<void> {
+    if (shopEntities.length === 0) return
+
+    const schemas = shopEntities.map(toSchema)
+    await this.db.insert(shops).values(schemas)
+  }
 
   async save(shop: Shop): Promise<void> {
     const shopSchema = toSchema(shop)

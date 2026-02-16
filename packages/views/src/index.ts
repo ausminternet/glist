@@ -1,5 +1,6 @@
 export * from './bootstrap.view'
 export * from './category.view'
+export * from './household.view'
 export * from './inventory-item.view'
 export * from './shop.view'
 export * from './shopping-list-item.view'
