@@ -1,3 +1,4 @@
+import { Stack } from 'expo-router'
 import { Text, View } from 'react-native'
 import { useCategories } from '@/api/categories/use-categories'
 import { useInventoryItems } from '@/api/inventory-items/use-inventory-items'
@@ -11,20 +12,28 @@ export default function Index() {
   const { inventoryItems } = useInventoryItems(householdId)
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      {inventoryItems.map((item) => (
-        <Text key={item.id}>
-          {item.name}, Shops:{' '}
-          {item.shopIds.map((shopId) => getShopName(shopId)).join(', ')}
-          Category: {item.categoryId ? getCategoryName(item.categoryId) : 'N/A'}
-        </Text>
-      ))}
-    </View>
+    <>
+      <Stack.Screen
+        options={{
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        {inventoryItems.map((item) => (
+          <Text key={item.id}>
+            {item.name}, Shops:{' '}
+            {item.shopIds.map((shopId) => getShopName(shopId)).join(', ')}
+            Category:{' '}
+            {item.categoryId ? getCategoryName(item.categoryId) : 'N/A'}
+          </Text>
+        ))}
+      </View>
+    </>
   )
 }

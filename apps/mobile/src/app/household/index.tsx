@@ -1,5 +1,6 @@
 import { Link, Stack } from 'expo-router'
 import { Pressable, Text, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import { useBootstrap } from '@/api/bootstrap'
 import {
   useHouseholdContext,
@@ -34,12 +35,13 @@ export default function Index() {
       <Stack.Screen
         options={{
           title: 'Haushalt',
+          headerLargeTitleEnabled: true,
         }}
       />
 
-      <View
-        style={{
-          flex: 1,
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
           justifyContent: 'center',
           alignItems: 'center',
         }}
@@ -57,7 +59,7 @@ export default function Index() {
         <Pressable onPress={handleSwitchHousehold} style={{ padding: 10 }}>
           <Text style={{ color: 'gray' }}>Haushalt wechseln</Text>
         </Pressable>
-      </View>
+      </ScrollView>
     </>
   )
 }

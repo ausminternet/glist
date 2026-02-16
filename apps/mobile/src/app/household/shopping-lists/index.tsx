@@ -1,3 +1,4 @@
+import { Stack } from 'expo-router/stack'
 import { Text, View } from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useShoppingListEvents } from '@/api/events'
@@ -15,21 +16,29 @@ export default function Index() {
   useShoppingListEvents(householdId)
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <Text>Einkaufsliste</Text>
-      {items.map((item) => (
-        <Text key={item.id}>
-          {item.name}, checked: {item.checked ? 'Yes' : 'No'}, Shops:{' '}
-          {item.shopIds.map((shopId) => getShopName(shopId)).join(', ')}
-          Category: {item.categoryId ? getCategoryName(item.categoryId) : 'N/A'}
-        </Text>
-      ))}
-    </View>
+    <>
+      <Stack.Screen
+        options={{
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Text>Einkaufsliste</Text>
+        {items.map((item) => (
+          <Text key={item.id}>
+            {item.name}, checked: {item.checked ? 'Yes' : 'No'}, Shops:{' '}
+            {item.shopIds.map((shopId) => getShopName(shopId)).join(', ')}
+            Category:{' '}
+            {item.categoryId ? getCategoryName(item.categoryId) : 'N/A'}
+          </Text>
+        ))}
+      </View>
+    </>
   )
 }

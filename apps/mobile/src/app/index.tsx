@@ -43,7 +43,9 @@ export default function HouseholdsScreen() {
           onPress={() => selectHousehold(household.id)}
           style={{ padding: 10 }}
         >
-          <Text>{household.name}</Text>
+          <Text>
+            {household.name} {household.id}
+          </Text>
         </Pressable>
       ))}
     </View>
