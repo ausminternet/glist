@@ -1,12 +1,23 @@
-import { Redirect, Stack } from 'expo-router'
-import { useHouseholdContext } from '@/provider/household-provider'
+import { Stack } from 'expo-router'
 
+// Hier muss mindestens ein leerer Stack sein:
+//https://github.com/expo/expo/issues/37305
 export default function HouseholdLayout() {
-  const { householdId } = useHouseholdContext()
-
-  if (!householdId) {
-    return <Redirect href="/" />
-  }
-
-  return <Stack />
+  return (
+    <Stack>
+      <Stack.Screen name="index" />
+      <Stack.Screen
+        name="shopping-lists/index"
+        options={{
+          title: 'Einkaufsliste',
+        }}
+      />
+      <Stack.Screen
+        name="inventory/index"
+        options={{
+          title: 'Inventar',
+        }}
+      />
+    </Stack>
+  )
 }
