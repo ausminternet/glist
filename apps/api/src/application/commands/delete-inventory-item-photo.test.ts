@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { generateHouseholdId } from '@/domain/household/household-id'
 import {
   createMockInventoryItemRepository,
   createMockPhotoStorage,
@@ -6,11 +7,13 @@ import {
 } from '@/test'
 import { DeleteInventoryItemPhotoCommandHandler } from './delete-inventory-item-photo'
 
+const householdId = generateHouseholdId()
+
 describe('DeleteInventoryItemPhotoCommandHandler', () => {
   const photoKey = 'inventory-item/test-id/12345.jpg'
 
   test('deletes photo successfully', async () => {
-    const item = createTestInventoryItem({ photoKey })
+    const item = createTestInventoryItem({ householdId, photoKey })
     const repository = createMockInventoryItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new DeleteInventoryItemPhotoCommandHandler(
@@ -18,7 +21,10 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({ inventoryItemId: item.id })
+    const result = await handler.execute(
+      { inventoryItemId: item.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(photoStorage.delete).toHaveBeenCalledTimes(1)
@@ -35,7 +41,10 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({ inventoryItemId: 'non-existent-id' })
+    const result = await handler.execute(
+      { inventoryItemId: 'non-existent-id' },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -48,7 +57,7 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
   })
 
   test('returns NO_PHOTO_EXISTS when item has no photo', async () => {
-    const item = createTestInventoryItem()
+    const item = createTestInventoryItem({ householdId })
     const repository = createMockInventoryItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new DeleteInventoryItemPhotoCommandHandler(
@@ -56,7 +65,10 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({ inventoryItemId: item.id })
+    const result = await handler.execute(
+      { inventoryItemId: item.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -66,7 +78,7 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
   })
 
   test('updates item updatedAt timestamp after deletion', async () => {
-    const item = createTestInventoryItem({ photoKey })
+    const item = createTestInventoryItem({ householdId, photoKey })
     const repository = createMockInventoryItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new DeleteInventoryItemPhotoCommandHandler(
@@ -76,7 +88,10 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
 
     const originalUpdatedAt = item.updatedAt
 
-    const result = await handler.execute({ inventoryItemId: item.id })
+    const result = await handler.execute(
+      { inventoryItemId: item.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).not.toBe(originalUpdatedAt)

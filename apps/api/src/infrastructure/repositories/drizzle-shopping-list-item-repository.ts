@@ -76,8 +76,7 @@ export class DrizzleShoppingListItemRepository
   async save(item: ShoppingListItem): Promise<void> {
     const schema = toSchema(item)
 
-    // Upsert the item
-    await this.db
+    const upsertItem = this.db
       .insert(shoppingListItems)
       .values(schema)
       .onConflictDoUpdate({
@@ -95,22 +94,27 @@ export class DrizzleShoppingListItemRepository
         },
       })
 
-    // Update shop associations: delete existing and insert new
-    await this.db
+    const deleteShops = this.db
       .delete(shoppingListItemShops)
       .where(eq(shoppingListItemShops.shoppingListItemId, item.id))
 
-    if (item.shopIds.length > 0) {
-      await this.db.insert(shoppingListItemShops).values(
-        [...item.shopIds].map((shopId) => ({
-          shoppingListItemId: item.id,
-          shopId,
-        })),
-      )
+    const shopAssociations = [...item.shopIds].map((shopId) => ({
+      shoppingListItemId: item.id,
+      shopId,
+    }))
+
+    if (shopAssociations.length > 0) {
+      const insertShops = this.db
+        .insert(shoppingListItemShops)
+        .values(shopAssociations)
+
+      await this.db.batch([upsertItem, deleteShops, insertShops])
+    } else {
+      await this.db.batch([upsertItem, deleteShops])
     }
   }
 
-  async find(id: string): Promise<ShoppingListItem | null> {
+  async findById(id: string): Promise<ShoppingListItem | null> {
     const row = await this.db
       .select()
       .from(shoppingListItems)

@@ -2,6 +2,7 @@ import { err, okWithEvent, type Result } from '@glist/shared'
 import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
 import type { ItemCheckedEvent } from '@/domain/shopping-list-item/events'
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
+import type { RequestContext } from '../shared/request-context'
 
 type CheckShoppingListItemError = ShoppingListItemNotFoundError
 
@@ -19,12 +20,13 @@ export class CheckShoppingListItemCommandHandler {
 
   async execute(
     command: CheckShoppingListItemCommand,
+    context: RequestContext,
   ): Promise<CheckShoppingListItemResult> {
     const { itemId } = command
 
-    const item = await this.shoppingListItemRepository.find(itemId)
+    const item = await this.shoppingListItemRepository.findById(itemId)
 
-    if (!item) {
+    if (!item || item.householdId !== context.householdId) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
     }
 

@@ -1,6 +1,7 @@
 import { err, ok, type Result, type UnitType } from '@glist/shared'
 import { isBlank } from '@/utils/is-blank'
 import type { CategoryId } from '../category/category-id'
+import type { HouseholdId } from '../household/household-id'
 import type { InventoryItemId } from '../inventory-item/inventory-item-id'
 import type { InvalidNameError } from '../shared/errors'
 import { Quantity, type QuantityError } from '../shared/quantity'
@@ -8,7 +9,7 @@ import type { ShopId } from '../shop/shop-id'
 import type { ShoppingListItemId } from './shopping-list-item-id'
 
 export type NewShoppingListItemInput = {
-  householdId: string
+  householdId: HouseholdId
   name: string
   description?: string
   categoryId?: CategoryId
@@ -19,7 +20,7 @@ export type NewShoppingListItemInput = {
 
 export type ShoppingListItemProps = {
   id: ShoppingListItemId
-  householdId: string
+  householdId: HouseholdId
   inventoryItemId: InventoryItemId | null
   name: string
   description: string | null
@@ -80,7 +81,7 @@ export class ShoppingListItem {
     id: ShoppingListItemId,
     inventoryItem: {
       inventoryItemId: InventoryItemId
-      householdId: string
+      householdId: HouseholdId
       name: string
       description: string | null
       categoryId: CategoryId | null
@@ -107,7 +108,7 @@ export class ShoppingListItem {
     return this.props.id
   }
 
-  get householdId(): string {
+  get householdId(): HouseholdId {
     return this.props.householdId
   }
 

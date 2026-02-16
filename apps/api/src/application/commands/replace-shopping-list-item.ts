@@ -8,6 +8,7 @@ import type {
   ChangeQuantityError,
 } from '@/domain/shopping-list-item/shopping-list-item'
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type ReplaceShoppingListItemCommand = {
   itemId: string
@@ -34,10 +35,11 @@ export class ReplaceShoppingListItemCommandHandler {
 
   async execute(
     command: ReplaceShoppingListItemCommand,
+    context: RequestContext,
   ): Promise<ReplaceShoppingListItemResult> {
-    const item = await this.shoppingListItemRepository.find(command.itemId)
+    const item = await this.shoppingListItemRepository.findById(command.itemId)
 
-    if (!item) {
+    if (!item || item.householdId !== context.householdId) {
       return err({
         type: 'SHOPPING_LIST_ITEM_NOT_FOUND',
         id: command.itemId,

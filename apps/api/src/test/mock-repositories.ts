@@ -69,7 +69,7 @@ export function createMockShoppingListItemRepository(
   items: ShoppingListItem[] = [],
 ): ShoppingListItemRepository {
   return {
-    find: mock((id: string) =>
+    findById: mock((id: string) =>
       Promise.resolve(items.find((i) => i.id === id) ?? null),
     ),
     save: mock(() => Promise.resolve()),
@@ -81,7 +81,7 @@ export function createMockShoppingListItemRepository(
 export function createMockShoppingListItemRepositoryWithCapture(): MockShoppingListItemRepositoryWithCapture {
   const repository: MockShoppingListItemRepositoryWithCapture = {
     savedItem: null,
-    find: mock(() => Promise.resolve(null)),
+    findById: mock(() => Promise.resolve(null)),
     save: mock((item: ShoppingListItem) => {
       repository.savedItem = item
       return Promise.resolve()

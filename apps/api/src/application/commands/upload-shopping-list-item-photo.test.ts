@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { generateHouseholdId } from '@/domain/household/household-id'
 import {
   createMockPhotoStorage,
   createMockShoppingListItemRepository,
@@ -6,12 +7,14 @@ import {
 } from '@/test'
 import { UploadShoppingListItemPhotoCommandHandler } from './upload-shopping-list-item-photo'
 
+const householdId = generateHouseholdId()
+
 describe('UploadShoppingListItemPhotoCommandHandler', () => {
   const photoData = new ArrayBuffer(100)
   const contentType = 'image/jpeg'
 
   test('uploads photo successfully', async () => {
-    const item = createTestShoppingListItem()
+    const item = createTestShoppingListItem({ householdId })
     const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
@@ -19,11 +22,14 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({
-      itemId: item.id,
-      photoData,
-      contentType,
-    })
+    const result = await handler.execute(
+      {
+        itemId: item.id,
+        photoData,
+        contentType,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
@@ -35,7 +41,10 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
 
   test('deletes old photo before uploading new one', async () => {
     const oldPhotoKey = 'shopping-list-item/old-id/12345.jpg'
-    const item = createTestShoppingListItem({ photoKey: oldPhotoKey })
+    const item = createTestShoppingListItem({
+      householdId,
+      photoKey: oldPhotoKey,
+    })
     const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
@@ -43,11 +52,14 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({
-      itemId: item.id,
-      photoData,
-      contentType,
-    })
+    const result = await handler.execute(
+      {
+        itemId: item.id,
+        photoData,
+        contentType,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(photoStorage.delete).toHaveBeenCalledTimes(1)
@@ -63,11 +75,14 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({
-      itemId: 'non-existent-item',
-      photoData,
-      contentType,
-    })
+    const result = await handler.execute(
+      {
+        itemId: 'non-existent-item',
+        photoData,
+        contentType,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -80,7 +95,7 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
   })
 
   test('returns INVALID_CONTENT_TYPE for unsupported content type', async () => {
-    const item = createTestShoppingListItem()
+    const item = createTestShoppingListItem({ householdId })
     const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
@@ -88,11 +103,14 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({
-      itemId: item.id,
-      photoData,
-      contentType: 'image/gif',
-    })
+    const result = await handler.execute(
+      {
+        itemId: item.id,
+        photoData,
+        contentType: 'image/gif',
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -105,7 +123,7 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
   })
 
   test('accepts image/jpeg content type', async () => {
-    const item = createTestShoppingListItem()
+    const item = createTestShoppingListItem({ householdId })
     const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
@@ -113,17 +131,20 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({
-      itemId: item.id,
-      photoData,
-      contentType: 'image/jpeg',
-    })
+    const result = await handler.execute(
+      {
+        itemId: item.id,
+        photoData,
+        contentType: 'image/jpeg',
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
   })
 
   test('accepts image/png content type', async () => {
-    const item = createTestShoppingListItem()
+    const item = createTestShoppingListItem({ householdId })
     const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
@@ -131,17 +152,20 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({
-      itemId: item.id,
-      photoData,
-      contentType: 'image/png',
-    })
+    const result = await handler.execute(
+      {
+        itemId: item.id,
+        photoData,
+        contentType: 'image/png',
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
   })
 
   test('accepts image/webp content type', async () => {
-    const item = createTestShoppingListItem()
+    const item = createTestShoppingListItem({ householdId })
     const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
@@ -149,17 +173,20 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({
-      itemId: item.id,
-      photoData,
-      contentType: 'image/webp',
-    })
+    const result = await handler.execute(
+      {
+        itemId: item.id,
+        photoData,
+        contentType: 'image/webp',
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
   })
 
   test('updates item updatedAt timestamp', async () => {
-    const item = createTestShoppingListItem()
+    const item = createTestShoppingListItem({ householdId })
     const originalUpdatedAt = item.updatedAt
     const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
@@ -168,11 +195,14 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
       photoStorage,
     )
 
-    const result = await handler.execute({
-      itemId: item.id,
-      photoData,
-      contentType,
-    })
+    const result = await handler.execute(
+      {
+        itemId: item.id,
+        photoData,
+        contentType,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).not.toBe(originalUpdatedAt)

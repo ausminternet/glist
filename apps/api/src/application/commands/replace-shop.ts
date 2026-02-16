@@ -2,6 +2,7 @@ import { err, ok, type Result } from '@glist/shared'
 import type { ShopNotFoundError } from '@/domain/shop/errors'
 import type { ChangeNameError } from '@/domain/shop/shop'
 import type { ShopRepository } from '@/domain/shop/shop-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type ReplaceShopCommand = {
   name: string
@@ -15,10 +16,11 @@ export class ReplaceShopCommandHandler {
 
   async execute(
     command: ReplaceShopCommand,
+    context: RequestContext,
   ): Promise<Result<void, ReplaceShopError>> {
     const shop = await this.repository.findById(command.shopId)
 
-    if (!shop) {
+    if (!shop || shop.householdId !== context.householdId) {
       return err({ type: 'SHOP_NOT_FOUND', id: command.shopId })
     }
 

@@ -110,7 +110,10 @@ shopsRouter.put(
     const repository = new DrizzleShopRepository(db)
     const command = new ReplaceShopCommandHandler(repository)
 
-    const result = await command.execute({ shopId: id, ...input })
+    const result = await command.execute(
+      { shopId: id, ...input },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -137,10 +140,16 @@ shopsRouter.put(
 )
 
 shopsRouter.delete('/:id', async (c) => {
+  const householdId = c.get('householdId')
   const id = c.req.param('id')
 
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleShopRepository(db)
+
+  const shop = await repository.findById(id)
+  if (!shop || shop.householdId !== householdId) {
+    return c.json({ success: true }) // Idempotent: nicht gefunden = ok
+  }
 
   await repository.delete(id)
 

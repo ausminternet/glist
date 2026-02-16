@@ -4,6 +4,7 @@ import {
   generatePhotoKey,
   type PhotoStorage,
 } from '@/infrastructure/storage/photo-storage'
+import type { RequestContext } from '../shared/request-context'
 
 export type UploadInventoryItemPhotoError =
   | { type: 'INVENTORY_ITEM_NOT_FOUND'; id: string }
@@ -25,6 +26,7 @@ export class UploadInventoryItemPhotoCommandHandler {
 
   async execute(
     command: UploadInventoryItemPhotoCommand,
+    context: RequestContext,
   ): Promise<Result<string, UploadInventoryItemPhotoError>> {
     if (!ALLOWED_CONTENT_TYPES.includes(command.contentType)) {
       return err({
@@ -35,7 +37,7 @@ export class UploadInventoryItemPhotoCommandHandler {
 
     const item = await this.repository.findById(command.inventoryItemId)
 
-    if (!item) {
+    if (!item || item.householdId !== context.householdId) {
       return err({
         type: 'INVENTORY_ITEM_NOT_FOUND',
         id: command.inventoryItemId,

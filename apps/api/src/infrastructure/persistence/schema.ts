@@ -167,25 +167,3 @@ export const inventoryItemShops = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.inventoryItemId, table.shopId] })],
 )
-
-// Export TypeScript types
-export type Household = typeof households.$inferSelect
-export type NewHousehold = typeof households.$inferInsert
-
-export type Category = typeof categories.$inferSelect
-export type NewCategory = typeof categories.$inferInsert
-
-export type Shop = typeof shops.$inferSelect
-export type NewShop = typeof shops.$inferInsert
-
-export type InventoryItem = typeof inventoryItems.$inferSelect
-export type NewInventoryItem = typeof inventoryItems.$inferInsert
-
-export type ShoppingListItem = typeof shoppingListItems.$inferSelect
-export type NewShoppingListItem = typeof shoppingListItems.$inferInsert
-
-export type ShoppingListItemShop = typeof shoppingListItemShops.$inferSelect
-export type NewShoppingListItemShop = typeof shoppingListItemShops.$inferInsert
-
-export type InventoryItemShop = typeof inventoryItemShops.$inferSelect
-export type NewInventoryItemShop = typeof inventoryItemShops.$inferInsert

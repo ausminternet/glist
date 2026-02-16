@@ -3,11 +3,9 @@ import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { CreateInventoryItemCommandHandler } from '@/application/commands/create-inventory-item'
-
 import { DeleteInventoryItemPhotoCommandHandler } from '@/application/commands/delete-inventory-item-photo'
 import { ReplaceInventoryItemCommandHandler } from '@/application/commands/replace-inventory-item'
 import { UploadInventoryItemPhotoCommandHandler } from '@/application/commands/upload-inventory-item-photo'
-import { GetInventoryItemsQueryHandler } from '@/application/queries/get-inventory-items'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemQueryRepository } from '@/infrastructure/repositories/drizzle-inventory-item-query-repository'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
@@ -19,10 +17,9 @@ const inventoryItemsRouter = new Hono<HouseholdContext>()
 inventoryItemsRouter.get('/', async (c) => {
   const householdId = c.get('householdId')
   const db = createDb(c.env.glist_db)
-  const repository = new DrizzleInventoryItemQueryRepository(db)
-  const query = new GetInventoryItemsQueryHandler(repository)
+  const queryRepository = new DrizzleInventoryItemQueryRepository(db)
 
-  const items = await query.execute({ householdId })
+  const items = await queryRepository.getAll(householdId)
 
   return c.json({ success: true, data: items })
 })
@@ -95,7 +92,10 @@ inventoryItemsRouter.put(
     const repository = new DrizzleInventoryItemRepository(db)
     const command = new ReplaceInventoryItemCommandHandler(repository)
 
-    const result = await command.execute({ ...input, inventoryItemId: id })
+    const result = await command.execute(
+      { ...input, inventoryItemId: id },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -127,10 +127,17 @@ inventoryItemsRouter.put(
 )
 
 inventoryItemsRouter.delete('/:id', async (c) => {
+  const householdId = c.get('householdId')
   const id = c.req.param('id')
 
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleInventoryItemRepository(db)
+
+  const item = await repository.findById(id)
+  if (!item || item.householdId !== householdId) {
+    return c.json({ success: true }) // Idempotent: nicht gefunden = ok
+  }
+
   await repository.delete(id)
 
   return c.json({ success: true })
@@ -164,11 +171,14 @@ inventoryItemsRouter.post('/:id/photo', async (c) => {
     photoStorage,
   )
 
-  const result = await command.execute({
-    inventoryItemId: id,
-    photoData,
-    contentType,
-  })
+  const result = await command.execute(
+    {
+      inventoryItemId: id,
+      photoData,
+      contentType,
+    },
+    { householdId },
+  )
 
   if (!result.ok) {
     switch (result.error.type) {
@@ -208,7 +218,7 @@ inventoryItemsRouter.delete('/:id/photo', async (c) => {
     photoStorage,
   )
 
-  const result = await command.execute({ inventoryItemId: id })
+  const result = await command.execute({ inventoryItemId: id }, { householdId })
 
   if (!result.ok) {
     switch (result.error.type) {

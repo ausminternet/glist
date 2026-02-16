@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { generateHouseholdId } from '@/domain/household/household-id'
 import {
   createMockShoppingListItemRepository,
   createTestShoppingListItem,
@@ -17,16 +18,22 @@ const validCommand: Omit<ReplaceShoppingListItemCommand, 'itemId'> = {
   shopIds: [],
 }
 
+const householdId = generateHouseholdId()
+
 describe('ReplaceShoppingListItemCommandHandler', () => {
   test('replaces item successfully', async () => {
     const item = createTestShoppingListItem({
+      householdId,
       name: 'Milk',
       description: 'Original',
     })
     const repository = createMockShoppingListItemRepository([item])
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
-    const result = await handler.execute({ ...validCommand, itemId: item.id })
+    const result = await handler.execute(
+      { ...validCommand, itemId: item.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(repository.save).toHaveBeenCalledTimes(1)
@@ -40,10 +47,13 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const repository = createMockShoppingListItemRepository()
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
-    const result = await handler.execute({
-      ...validCommand,
-      itemId: 'non-existent-item',
-    })
+    const result = await handler.execute(
+      {
+        ...validCommand,
+        itemId: 'non-existent-item',
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -55,19 +65,22 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
   })
 
   test('clears optional fields when set to null', async () => {
-    const item = createTestShoppingListItem({ name: 'Milk' })
+    const item = createTestShoppingListItem({ householdId, name: 'Milk' })
     const repository = createMockShoppingListItemRepository([item])
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
-    const result = await handler.execute({
-      itemId: item.id,
-      name: 'Simple Item',
-      description: null,
-      categoryId: null,
-      quantity: null,
-      quantityUnit: null,
-      shopIds: [],
-    })
+    const result = await handler.execute(
+      {
+        itemId: item.id,
+        name: 'Simple Item',
+        description: null,
+        categoryId: null,
+        quantity: null,
+        quantityUnit: null,
+        shopIds: [],
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(item.description).toBeNull()
@@ -76,11 +89,14 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
   })
 
   test('updates updatedAt timestamp', async () => {
-    const item = createTestShoppingListItem({ name: 'Milk' })
+    const item = createTestShoppingListItem({ householdId, name: 'Milk' })
     const repository = createMockShoppingListItemRepository([item])
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
-    const result = await handler.execute({ ...validCommand, itemId: item.id })
+    const result = await handler.execute(
+      { ...validCommand, itemId: item.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).toBeInstanceOf(Date)

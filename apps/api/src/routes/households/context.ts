@@ -1,11 +1,15 @@
 import type { MiddlewareHandler } from 'hono'
+import {
+  type HouseholdId,
+  parseHouseholdId,
+} from '@/domain/household/household-id'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleHouseholdQueryRepository } from '@/infrastructure/repositories/drizzle-household-query-repository'
 
 export type HouseholdContext = {
   Bindings: CloudflareBindings
   Variables: {
-    householdId: string
+    householdId: HouseholdId
   }
 }
 
@@ -26,6 +30,6 @@ export const withHousehold: MiddlewareHandler<HouseholdContext> = async (
     return c.json({ success: false, error: 'Household not found' }, 404)
   }
 
-  c.set('householdId', householdId)
+  c.set('householdId', parseHouseholdId(householdId))
   await next()
 }

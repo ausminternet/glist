@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { generateHouseholdId } from '@/domain/household/household-id'
 import {
   createMockInventoryItemRepository,
   createTestInventoryItem,
@@ -19,16 +20,21 @@ const validCommand: Omit<ReplaceInventoryItemCommand, 'inventoryItemId'> = {
   shopIds: [],
 }
 
+const householdId = generateHouseholdId()
+
 describe('ReplaceInventoryItemCommandHandler', () => {
   test('replaces item successfully', async () => {
-    const item = createTestInventoryItem({ name: 'Milk' })
+    const item = createTestInventoryItem({ householdId, name: 'Milk' })
     const repository = createMockInventoryItemRepository([item])
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
-    const result = await handler.execute({
-      ...validCommand,
-      inventoryItemId: item.id,
-    })
+    const result = await handler.execute(
+      {
+        ...validCommand,
+        inventoryItemId: item.id,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(repository.save).toHaveBeenCalledTimes(1)
@@ -42,10 +48,13 @@ describe('ReplaceInventoryItemCommandHandler', () => {
     const repository = createMockInventoryItemRepository()
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
-    const result = await handler.execute({
-      ...validCommand,
-      inventoryItemId: 'non-existent-id',
-    })
+    const result = await handler.execute(
+      {
+        ...validCommand,
+        inventoryItemId: 'non-existent-id',
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -57,7 +66,7 @@ describe('ReplaceInventoryItemCommandHandler', () => {
   })
 
   test('clears optional fields when set to null', async () => {
-    const item = createTestInventoryItem({ name: 'Milk' })
+    const item = createTestInventoryItem({ householdId, name: 'Milk' })
     const repository = createMockInventoryItemRepository([item])
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
@@ -73,7 +82,7 @@ describe('ReplaceInventoryItemCommandHandler', () => {
       shopIds: [],
     }
 
-    const result = await handler.execute(command)
+    const result = await handler.execute(command, { householdId })
 
     expect(result.ok).toBe(true)
     expect(item.description).toBeNull()
@@ -84,16 +93,19 @@ describe('ReplaceInventoryItemCommandHandler', () => {
   })
 
   test('updates updatedAt timestamp', async () => {
-    const item = createTestInventoryItem({ name: 'Milk' })
+    const item = createTestInventoryItem({ householdId, name: 'Milk' })
     const repository = createMockInventoryItemRepository([item])
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
     expect(item.updatedAt).toBeNull()
 
-    const result = await handler.execute({
-      ...validCommand,
-      inventoryItemId: item.id,
-    })
+    const result = await handler.execute(
+      {
+        ...validCommand,
+        inventoryItemId: item.id,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     expect(item.updatedAt).toBeInstanceOf(Date)

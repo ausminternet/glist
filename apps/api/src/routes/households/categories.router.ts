@@ -110,10 +110,13 @@ categoriesRouter.put(
     const repository = new DrizzleCategoryRepository(db)
     const command = new ReplaceCategoryCommandHandler(repository)
 
-    const result = await command.execute({
-      ...input,
-      categoryId: id,
-    })
+    const result = await command.execute(
+      {
+        ...input,
+        categoryId: id,
+      },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -140,10 +143,16 @@ categoriesRouter.put(
 )
 
 categoriesRouter.delete('/:id', async (c) => {
+  const householdId = c.get('householdId')
   const id = c.req.param('id')
 
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleCategoryRepository(db)
+
+  const category = await repository.findById(id)
+  if (!category || category.householdId !== householdId) {
+    return c.json({ success: true }) // Idempotent: nicht gefunden = ok
+  }
 
   await repository.delete(id)
 
