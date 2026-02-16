@@ -7,7 +7,7 @@ import { AddShoppingListItemFromInventoryCommandHandler } from '@/application/co
 import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
 import { ClearCheckedItemsCommandHandler } from '@/application/commands/clear-checked-items'
 import { DeleteShoppingListItemPhotoCommandHandler } from '@/application/commands/delete-shopping-list-item-photo'
-import { RemoveShoppingListItemCommandHandler } from '@/application/commands/remove-shopping-list-item'
+
 import { ReplaceShoppingListItemCommandHandler } from '@/application/commands/replace-shopping-list-item'
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
 import { UploadShoppingListItemPhotoCommandHandler } from '@/application/commands/upload-shopping-list-item-photo'
@@ -257,26 +257,15 @@ shoppingListItemsRouter.delete('/:itemId', async (c) => {
   const householdId = c.get('householdId')
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
-  const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
-  const command = new RemoveShoppingListItemCommandHandler(
-    shoppingListItemRepository,
-  )
+  const repository = new DrizzleShoppingListItemRepository(db)
 
-  const result = await command.execute({ itemId })
+  await repository.delete(itemId)
 
-  if (!result.ok) {
-    switch (result.error.type) {
-      case 'SHOPPING_LIST_ITEM_NOT_FOUND':
-        console.error('Failed to remove shopping list item', {
-          householdId,
-          itemId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
-    }
-  }
-
-  await broadcastShoppingListEvent(c.env, result.value.event)
+  await broadcastShoppingListEvent(c.env, {
+    type: 'item-removed',
+    householdId,
+    itemId,
+  })
 
   return c.json({ success: true })
 })

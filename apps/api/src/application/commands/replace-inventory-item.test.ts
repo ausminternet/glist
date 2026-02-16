@@ -1,38 +1,12 @@
-import { describe, expect, mock, test } from 'bun:test'
-import { parseHouseholdId } from '@/domain/household/household-id'
-import { InventoryItem } from '@/domain/inventory-item/inventory-item'
-import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
-import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import { describe, expect, test } from 'bun:test'
+import {
+  createMockInventoryItemRepository,
+  createTestInventoryItem,
+} from '@/test'
 import {
   type ReplaceInventoryItemCommand,
   ReplaceInventoryItemCommandHandler,
 } from './replace-inventory-item'
-
-function createTestInventoryItem(householdId: string) {
-  const result = InventoryItem.create(
-    generateInventoryItemId(),
-    parseHouseholdId(householdId),
-    {
-      name: 'Milk',
-      description: 'Original description',
-      targetStock: 1,
-      targetStockUnit: 'l',
-    },
-  )
-  if (!result.ok) throw new Error('Failed to create test item')
-  return result.value
-}
-
-function createMockRepository(
-  item: InventoryItem | null,
-): InventoryItemRepository {
-  return {
-    findById: mock(() => Promise.resolve(item)),
-    findAllByHouseholdId: mock(() => Promise.resolve([])),
-    save: mock(() => Promise.resolve()),
-    delete: mock(() => Promise.resolve()),
-  }
-}
 
 const validCommand: Omit<ReplaceInventoryItemCommand, 'inventoryItemId'> = {
   name: 'Updated Milk',
@@ -46,11 +20,9 @@ const validCommand: Omit<ReplaceInventoryItemCommand, 'inventoryItemId'> = {
 }
 
 describe('ReplaceInventoryItemCommandHandler', () => {
-  const householdId = '00000000-0000-0000-0000-000000000001'
-
   test('replaces item successfully', async () => {
-    const item = createTestInventoryItem(householdId)
-    const repository = createMockRepository(item)
+    const item = createTestInventoryItem({ name: 'Milk' })
+    const repository = createMockInventoryItemRepository([item])
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
     const result = await handler.execute({
@@ -67,7 +39,7 @@ describe('ReplaceInventoryItemCommandHandler', () => {
   })
 
   test('returns INVENTORY_ITEM_NOT_FOUND when item does not exist', async () => {
-    const repository = createMockRepository(null)
+    const repository = createMockInventoryItemRepository()
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
     const result = await handler.execute({
@@ -85,8 +57,8 @@ describe('ReplaceInventoryItemCommandHandler', () => {
   })
 
   test('clears optional fields when set to null', async () => {
-    const item = createTestInventoryItem(householdId)
-    const repository = createMockRepository(item)
+    const item = createTestInventoryItem({ name: 'Milk' })
+    const repository = createMockInventoryItemRepository([item])
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
     const command: ReplaceInventoryItemCommand = {
@@ -112,8 +84,8 @@ describe('ReplaceInventoryItemCommandHandler', () => {
   })
 
   test('updates updatedAt timestamp', async () => {
-    const item = createTestInventoryItem(householdId)
-    const repository = createMockRepository(item)
+    const item = createTestInventoryItem({ name: 'Milk' })
+    const repository = createMockInventoryItemRepository([item])
     const handler = new ReplaceInventoryItemCommandHandler(repository)
 
     expect(item.updatedAt).toBeNull()

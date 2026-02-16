@@ -2,7 +2,6 @@ import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { CreateShopCommandHandler } from '@/application/commands/create-shop'
-import { DeleteShopCommandHandler } from '@/application/commands/delete-shop'
 import { ReorderShopsCommandHandler } from '@/application/commands/reorder-shops'
 import { ReplaceShopCommandHandler } from '@/application/commands/replace-shop'
 import { createDb } from '@/infrastructure/persistence'
@@ -138,26 +137,12 @@ shopsRouter.put(
 )
 
 shopsRouter.delete('/:id', async (c) => {
-  const householdId = c.get('householdId')
   const id = c.req.param('id')
 
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleShopRepository(db)
-  const command = new DeleteShopCommandHandler(repository)
 
-  const result = await command.execute({ shopId: id })
-
-  if (!result.ok) {
-    switch (result.error.type) {
-      case 'SHOP_NOT_FOUND':
-        console.error('Failed to delete shop', {
-          id,
-          householdId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
-    }
-  }
+  await repository.delete(id)
 
   return c.json({ success: true })
 })

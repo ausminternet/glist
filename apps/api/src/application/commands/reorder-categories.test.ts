@@ -1,39 +1,21 @@
-import { describe, expect, mock, test } from 'bun:test'
-import { Category } from '@/domain/category/category'
-import { generateCategoryId } from '@/domain/category/category-id'
-import type { CategoryRepository } from '@/domain/category/category-repository'
+import { describe, expect, test } from 'bun:test'
 import { parseHouseholdId } from '@/domain/household/household-id'
+import { createMockCategoryRepository, createTestCategory } from '@/test'
 import { ReorderCategoriesCommandHandler } from './reorder-categories'
 
-const householdId = '00000000-0000-0000-0000-000000000001'
-
-function createTestCategory(householdId: string, name: string): Category {
-  const result = Category.create(
-    generateCategoryId(),
-    parseHouseholdId(householdId),
-    { name },
-  )
-  if (!result.ok) throw new Error('Failed to create test category')
-  return result.value
-}
-
-function createMockRepository(categories: Category[]): CategoryRepository {
-  return {
-    findById: mock(() => Promise.resolve(null)),
-    findAllByHouseholdId: mock(() => Promise.resolve(categories)),
-    save: mock(() => Promise.resolve()),
-    saveMany: mock(() => Promise.resolve()),
-    delete: mock(() => Promise.resolve()),
-  }
-}
+const householdId = parseHouseholdId('00000000-0000-0000-0000-000000000001')
 
 describe('ReorderCategoriesCommandHandler', () => {
   test('reorders categories successfully', async () => {
-    const category1 = createTestCategory(householdId, 'Dairy')
-    const category2 = createTestCategory(householdId, 'Vegetables')
-    const category3 = createTestCategory(householdId, 'Meat')
+    const category1 = createTestCategory({ householdId, name: 'Dairy' })
+    const category2 = createTestCategory({ householdId, name: 'Vegetables' })
+    const category3 = createTestCategory({ householdId, name: 'Meat' })
 
-    const repository = createMockRepository([category1, category2, category3])
+    const repository = createMockCategoryRepository([
+      category1,
+      category2,
+      category3,
+    ])
     const handler = new ReorderCategoriesCommandHandler(repository)
 
     const result = await handler.execute(
@@ -49,10 +31,10 @@ describe('ReorderCategoriesCommandHandler', () => {
   })
 
   test('returns CATEGORY_NOT_FOUND when id does not belong to household', async () => {
-    const category1 = createTestCategory(householdId, 'Dairy')
-    const category2 = createTestCategory(householdId, 'Vegetables')
+    const category1 = createTestCategory({ householdId, name: 'Dairy' })
+    const category2 = createTestCategory({ householdId, name: 'Vegetables' })
 
-    const repository = createMockRepository([category1, category2])
+    const repository = createMockCategoryRepository([category1, category2])
     const handler = new ReorderCategoriesCommandHandler(repository)
 
     const result = await handler.execute(
@@ -70,11 +52,15 @@ describe('ReorderCategoriesCommandHandler', () => {
   })
 
   test('returns CATEGORY_IDS_MISMATCH when not all categories are included', async () => {
-    const category1 = createTestCategory(householdId, 'Dairy')
-    const category2 = createTestCategory(householdId, 'Vegetables')
-    const category3 = createTestCategory(householdId, 'Meat')
+    const category1 = createTestCategory({ householdId, name: 'Dairy' })
+    const category2 = createTestCategory({ householdId, name: 'Vegetables' })
+    const category3 = createTestCategory({ householdId, name: 'Meat' })
 
-    const repository = createMockRepository([category1, category2, category3])
+    const repository = createMockCategoryRepository([
+      category1,
+      category2,
+      category3,
+    ])
     const handler = new ReorderCategoriesCommandHandler(repository)
 
     const result = await handler.execute(
@@ -92,10 +78,10 @@ describe('ReorderCategoriesCommandHandler', () => {
   })
 
   test('returns CATEGORY_IDS_MISMATCH when duplicate ids provided', async () => {
-    const category1 = createTestCategory(householdId, 'Dairy')
-    const category2 = createTestCategory(householdId, 'Vegetables')
+    const category1 = createTestCategory({ householdId, name: 'Dairy' })
+    const category2 = createTestCategory({ householdId, name: 'Vegetables' })
 
-    const repository = createMockRepository([category1, category2])
+    const repository = createMockCategoryRepository([category1, category2])
     const handler = new ReorderCategoriesCommandHandler(repository)
 
     const result = await handler.execute(
@@ -113,9 +99,9 @@ describe('ReorderCategoriesCommandHandler', () => {
   })
 
   test('works with single category', async () => {
-    const category = createTestCategory(householdId, 'Dairy')
+    const category = createTestCategory({ householdId, name: 'Dairy' })
 
-    const repository = createMockRepository([category])
+    const repository = createMockCategoryRepository([category])
     const handler = new ReorderCategoriesCommandHandler(repository)
 
     const result = await handler.execute(

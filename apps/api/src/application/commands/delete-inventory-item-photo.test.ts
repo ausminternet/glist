@@ -1,53 +1,17 @@
-import { describe, expect, mock, test } from 'bun:test'
-import { parseHouseholdId } from '@/domain/household/household-id'
-import { InventoryItem } from '@/domain/inventory-item/inventory-item'
-import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
-import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
+import { describe, expect, test } from 'bun:test'
+import {
+  createMockInventoryItemRepository,
+  createMockPhotoStorage,
+  createTestInventoryItem,
+} from '@/test'
 import { DeleteInventoryItemPhotoCommandHandler } from './delete-inventory-item-photo'
 
-function createTestInventoryItem(householdId: string, photoKey?: string) {
-  const result = InventoryItem.create(
-    generateInventoryItemId(),
-    parseHouseholdId(householdId),
-    {
-      name: 'Test Item',
-      targetStock: 1,
-    },
-  )
-  if (!result.ok) throw new Error('Failed to create test item')
-  if (photoKey) {
-    result.value.setPhotoKey(photoKey)
-  }
-  return result.value
-}
-
-function createMockRepository(
-  item: InventoryItem | null,
-): InventoryItemRepository {
-  return {
-    findById: mock(() => Promise.resolve(item)),
-    findAllByHouseholdId: mock(() => Promise.resolve([])),
-    save: mock(() => Promise.resolve()),
-    delete: mock(() => Promise.resolve()),
-  }
-}
-
-function createMockPhotoStorage(): PhotoStorage {
-  return {
-    upload: mock(() => Promise.resolve()),
-    delete: mock(() => Promise.resolve()),
-    getPublicUrl: mock((key: string) => `https://photos.test.com/${key}`),
-  }
-}
-
 describe('DeleteInventoryItemPhotoCommandHandler', () => {
-  const householdId = '00000000-0000-0000-0000-000000000001'
   const photoKey = 'inventory-item/test-id/12345.jpg'
 
   test('deletes photo successfully', async () => {
-    const item = createTestInventoryItem(householdId, photoKey)
-    const repository = createMockRepository(item)
+    const item = createTestInventoryItem({ photoKey })
+    const repository = createMockInventoryItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new DeleteInventoryItemPhotoCommandHandler(
       repository,
@@ -64,7 +28,7 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
   })
 
   test('returns INVENTORY_ITEM_NOT_FOUND when item does not exist', async () => {
-    const repository = createMockRepository(null)
+    const repository = createMockInventoryItemRepository()
     const photoStorage = createMockPhotoStorage()
     const handler = new DeleteInventoryItemPhotoCommandHandler(
       repository,
@@ -84,8 +48,8 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
   })
 
   test('returns NO_PHOTO_EXISTS when item has no photo', async () => {
-    const item = createTestInventoryItem(householdId) // No photoKey
-    const repository = createMockRepository(item)
+    const item = createTestInventoryItem()
+    const repository = createMockInventoryItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new DeleteInventoryItemPhotoCommandHandler(
       repository,
@@ -102,8 +66,8 @@ describe('DeleteInventoryItemPhotoCommandHandler', () => {
   })
 
   test('updates item updatedAt timestamp after deletion', async () => {
-    const item = createTestInventoryItem(householdId, photoKey)
-    const repository = createMockRepository(item)
+    const item = createTestInventoryItem({ photoKey })
+    const repository = createMockInventoryItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new DeleteInventoryItemPhotoCommandHandler(
       repository,

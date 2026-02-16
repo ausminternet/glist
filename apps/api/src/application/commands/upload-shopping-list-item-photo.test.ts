@@ -1,58 +1,10 @@
-import { describe, expect, mock, test } from 'bun:test'
-import { generateHouseholdId } from '@/domain/household/household-id'
-import { Quantity } from '@/domain/shared/quantity'
+import { describe, expect, test } from 'bun:test'
 import {
-  ShoppingListItem,
-  type ShoppingListItemProps,
-} from '@/domain/shopping-list-item/shopping-list-item'
-import { generateShoppingListItemId } from '@/domain/shopping-list-item/shopping-list-item-id'
-import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
-import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
+  createMockPhotoStorage,
+  createMockShoppingListItemRepository,
+  createTestShoppingListItem,
+} from '@/test'
 import { UploadShoppingListItemPhotoCommandHandler } from './upload-shopping-list-item-photo'
-
-function createTestShoppingListItem(options?: {
-  name?: string
-  photoKey?: string | null
-}) {
-  const quantityResult = Quantity.create(null, null)
-  if (!quantityResult.ok) throw new Error('Failed to create quantity')
-
-  const props: ShoppingListItemProps = {
-    id: generateShoppingListItemId(),
-    householdId: generateHouseholdId(),
-    inventoryItemId: null,
-    name: options?.name ?? 'Test Item',
-    description: null,
-    categoryId: null,
-    quantity: quantityResult.value,
-    checked: false,
-    shopIds: [],
-    photoKey: options?.photoKey ?? null,
-    createdAt: new Date(),
-    updatedAt: null,
-  }
-
-  return new ShoppingListItem(props)
-}
-
-function createMockRepository(
-  item: ShoppingListItem | null,
-): ShoppingListItemRepository {
-  return {
-    find: mock(() => Promise.resolve(item)),
-    save: mock(() => Promise.resolve()),
-    delete: mock(() => Promise.resolve()),
-    deleteCheckedByHouseholdId: mock(() => Promise.resolve()),
-  }
-}
-
-function createMockPhotoStorage(): PhotoStorage {
-  return {
-    upload: mock(() => Promise.resolve()),
-    delete: mock(() => Promise.resolve()),
-    getPublicUrl: mock((key: string) => `https://photos.test.com/${key}`),
-  }
-}
 
 describe('UploadShoppingListItemPhotoCommandHandler', () => {
   const photoData = new ArrayBuffer(100)
@@ -60,8 +12,7 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
 
   test('uploads photo successfully', async () => {
     const item = createTestShoppingListItem()
-
-    const repository = createMockRepository(item)
+    const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
       repository,
@@ -76,7 +27,7 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.value).toContain('https://photos.test.com/')
+    expect(result.value).toContain('https://example.com/')
     expect(photoStorage.upload).toHaveBeenCalledTimes(1)
     expect(repository.save).toHaveBeenCalledTimes(1)
     expect(item.photoKey).not.toBeNull()
@@ -84,11 +35,8 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
 
   test('deletes old photo before uploading new one', async () => {
     const oldPhotoKey = 'shopping-list-item/old-id/12345.jpg'
-    const item = createTestShoppingListItem({
-      photoKey: oldPhotoKey,
-    })
-
-    const repository = createMockRepository(item)
+    const item = createTestShoppingListItem({ photoKey: oldPhotoKey })
+    const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
       repository,
@@ -108,7 +56,7 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
   })
 
   test('returns SHOPPING_LIST_ITEM_NOT_FOUND when item does not exist', async () => {
-    const repository = createMockRepository(null)
+    const repository = createMockShoppingListItemRepository()
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
       repository,
@@ -133,8 +81,7 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
 
   test('returns INVALID_CONTENT_TYPE for unsupported content type', async () => {
     const item = createTestShoppingListItem()
-
-    const repository = createMockRepository(item)
+    const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
       repository,
@@ -159,8 +106,7 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
 
   test('accepts image/jpeg content type', async () => {
     const item = createTestShoppingListItem()
-
-    const repository = createMockRepository(item)
+    const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
       repository,
@@ -178,8 +124,7 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
 
   test('accepts image/png content type', async () => {
     const item = createTestShoppingListItem()
-
-    const repository = createMockRepository(item)
+    const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
       repository,
@@ -197,8 +142,7 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
 
   test('accepts image/webp content type', async () => {
     const item = createTestShoppingListItem()
-
-    const repository = createMockRepository(item)
+    const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
       repository,
@@ -217,8 +161,7 @@ describe('UploadShoppingListItemPhotoCommandHandler', () => {
   test('updates item updatedAt timestamp', async () => {
     const item = createTestShoppingListItem()
     const originalUpdatedAt = item.updatedAt
-
-    const repository = createMockRepository(item)
+    const repository = createMockShoppingListItemRepository([item])
     const photoStorage = createMockPhotoStorage()
     const handler = new UploadShoppingListItemPhotoCommandHandler(
       repository,

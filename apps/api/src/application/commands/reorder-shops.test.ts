@@ -1,37 +1,17 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { parseHouseholdId } from '@/domain/household/household-id'
-import { Shop } from '@/domain/shop/shop'
-import { generateShopId } from '@/domain/shop/shop-id'
-import type { ShopRepository } from '@/domain/shop/shop-repository'
+import { createMockShopRepository, createTestShop } from '@/test'
 import { ReorderShopsCommandHandler } from './reorder-shops'
 
-const householdId = '00000000-0000-0000-0000-000000000001'
-
-function createTestShop(householdId: string, name: string): Shop {
-  const result = Shop.create(generateShopId(), parseHouseholdId(householdId), {
-    name,
-  })
-  if (!result.ok) throw new Error('Failed to create test shop')
-  return result.value
-}
-
-function createMockRepository(shops: Shop[]): ShopRepository {
-  return {
-    findById: mock(() => Promise.resolve(null)),
-    findAllByHouseholdId: mock(() => Promise.resolve(shops)),
-    save: mock(() => Promise.resolve()),
-    saveMany: mock(() => Promise.resolve()),
-    delete: mock(() => Promise.resolve()),
-  }
-}
+const householdId = parseHouseholdId('00000000-0000-0000-0000-000000000001')
 
 describe('ReorderShopsCommandHandler', () => {
   test('reorders shops successfully', async () => {
-    const shop1 = createTestShop(householdId, 'Rewe')
-    const shop2 = createTestShop(householdId, 'Aldi')
-    const shop3 = createTestShop(householdId, 'Edeka')
+    const shop1 = createTestShop({ householdId, name: 'Rewe' })
+    const shop2 = createTestShop({ householdId, name: 'Aldi' })
+    const shop3 = createTestShop({ householdId, name: 'Edeka' })
 
-    const repository = createMockRepository([shop1, shop2, shop3])
+    const repository = createMockShopRepository([shop1, shop2, shop3])
     const handler = new ReorderShopsCommandHandler(repository)
 
     const result = await handler.execute(
@@ -47,10 +27,10 @@ describe('ReorderShopsCommandHandler', () => {
   })
 
   test('returns SHOP_NOT_FOUND when id does not belong to household', async () => {
-    const shop1 = createTestShop(householdId, 'Rewe')
-    const shop2 = createTestShop(householdId, 'Aldi')
+    const shop1 = createTestShop({ householdId, name: 'Rewe' })
+    const shop2 = createTestShop({ householdId, name: 'Aldi' })
 
-    const repository = createMockRepository([shop1, shop2])
+    const repository = createMockShopRepository([shop1, shop2])
     const handler = new ReorderShopsCommandHandler(repository)
 
     const result = await handler.execute(
@@ -68,11 +48,11 @@ describe('ReorderShopsCommandHandler', () => {
   })
 
   test('returns SHOP_IDS_MISMATCH when not all shops are included', async () => {
-    const shop1 = createTestShop(householdId, 'Rewe')
-    const shop2 = createTestShop(householdId, 'Aldi')
-    const shop3 = createTestShop(householdId, 'Edeka')
+    const shop1 = createTestShop({ householdId, name: 'Rewe' })
+    const shop2 = createTestShop({ householdId, name: 'Aldi' })
+    const shop3 = createTestShop({ householdId, name: 'Edeka' })
 
-    const repository = createMockRepository([shop1, shop2, shop3])
+    const repository = createMockShopRepository([shop1, shop2, shop3])
     const handler = new ReorderShopsCommandHandler(repository)
 
     const result = await handler.execute(
@@ -90,10 +70,10 @@ describe('ReorderShopsCommandHandler', () => {
   })
 
   test('returns SHOP_IDS_MISMATCH when duplicate ids provided', async () => {
-    const shop1 = createTestShop(householdId, 'Rewe')
-    const shop2 = createTestShop(householdId, 'Aldi')
+    const shop1 = createTestShop({ householdId, name: 'Rewe' })
+    const shop2 = createTestShop({ householdId, name: 'Aldi' })
 
-    const repository = createMockRepository([shop1, shop2])
+    const repository = createMockShopRepository([shop1, shop2])
     const handler = new ReorderShopsCommandHandler(repository)
 
     const result = await handler.execute(
@@ -111,9 +91,9 @@ describe('ReorderShopsCommandHandler', () => {
   })
 
   test('works with single shop', async () => {
-    const shop = createTestShop(householdId, 'Rewe')
+    const shop = createTestShop({ householdId, name: 'Rewe' })
 
-    const repository = createMockRepository([shop])
+    const repository = createMockShopRepository([shop])
     const handler = new ReorderShopsCommandHandler(repository)
 
     const result = await handler.execute({ ids: [shop.id] }, { householdId })

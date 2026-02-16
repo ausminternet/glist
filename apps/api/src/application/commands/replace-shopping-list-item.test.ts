@@ -1,52 +1,12 @@
-import { describe, expect, mock, test } from 'bun:test'
-import { generateHouseholdId } from '@/domain/household/household-id'
-import { Quantity } from '@/domain/shared/quantity'
+import { describe, expect, test } from 'bun:test'
 import {
-  ShoppingListItem,
-  type ShoppingListItemProps,
-} from '@/domain/shopping-list-item/shopping-list-item'
-import { generateShoppingListItemId } from '@/domain/shopping-list-item/shopping-list-item-id'
-import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
+  createMockShoppingListItemRepository,
+  createTestShoppingListItem,
+} from '@/test'
 import {
   type ReplaceShoppingListItemCommand,
   ReplaceShoppingListItemCommandHandler,
 } from './replace-shopping-list-item'
-
-function createTestShoppingListItem(options?: {
-  name?: string
-  description?: string
-}) {
-  const quantityResult = Quantity.create(null, null)
-  if (!quantityResult.ok) throw new Error('Failed to create quantity')
-
-  const props: ShoppingListItemProps = {
-    id: generateShoppingListItemId(),
-    householdId: generateHouseholdId(),
-    inventoryItemId: null,
-    name: options?.name ?? 'Milk',
-    description: options?.description ?? null,
-    categoryId: null,
-    quantity: quantityResult.value,
-    checked: false,
-    shopIds: [],
-    photoKey: null,
-    createdAt: new Date(),
-    updatedAt: null,
-  }
-
-  return new ShoppingListItem(props)
-}
-
-function createMockRepository(
-  item: ShoppingListItem | null,
-): ShoppingListItemRepository {
-  return {
-    find: mock(() => Promise.resolve(item)),
-    save: mock(() => Promise.resolve()),
-    delete: mock(() => Promise.resolve()),
-    deleteCheckedByHouseholdId: mock(() => Promise.resolve()),
-  }
-}
 
 const validCommand: Omit<ReplaceShoppingListItemCommand, 'itemId'> = {
   name: 'Updated Milk',
@@ -63,8 +23,7 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
       name: 'Milk',
       description: 'Original',
     })
-
-    const repository = createMockRepository(item)
+    const repository = createMockShoppingListItemRepository([item])
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute({ ...validCommand, itemId: item.id })
@@ -78,7 +37,7 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
   })
 
   test('returns SHOPPING_LIST_ITEM_NOT_FOUND when item does not exist', async () => {
-    const repository = createMockRepository(null)
+    const repository = createMockShoppingListItemRepository()
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute({
@@ -96,12 +55,8 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
   })
 
   test('clears optional fields when set to null', async () => {
-    const quantityResult = Quantity.create(5, 'l')
-    if (!quantityResult.ok) throw new Error('Failed to create quantity')
-
-    const item = createTestShoppingListItem()
-
-    const repository = createMockRepository(item)
+    const item = createTestShoppingListItem({ name: 'Milk' })
+    const repository = createMockShoppingListItemRepository([item])
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute({
@@ -121,9 +76,8 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
   })
 
   test('updates updatedAt timestamp', async () => {
-    const item = createTestShoppingListItem()
-
-    const repository = createMockRepository(item)
+    const item = createTestShoppingListItem({ name: 'Milk' })
+    const repository = createMockShoppingListItemRepository([item])
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
 
     const result = await handler.execute({ ...validCommand, itemId: item.id })

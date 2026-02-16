@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { CreateInventoryItemCommandHandler } from '@/application/commands/create-inventory-item'
-import { DeleteInventoryItemCommandHandler } from '@/application/commands/delete-inventory-item'
+
 import { DeleteInventoryItemPhotoCommandHandler } from '@/application/commands/delete-inventory-item-photo'
 import { ReplaceInventoryItemCommandHandler } from '@/application/commands/replace-inventory-item'
 import { UploadInventoryItemPhotoCommandHandler } from '@/application/commands/upload-inventory-item-photo'
@@ -127,26 +127,11 @@ inventoryItemsRouter.put(
 )
 
 inventoryItemsRouter.delete('/:id', async (c) => {
-  const householdId = c.get('householdId')
   const id = c.req.param('id')
 
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleInventoryItemRepository(db)
-  const command = new DeleteInventoryItemCommandHandler(repository)
-
-  const result = await command.execute({ inventoryItemId: id })
-
-  if (!result.ok) {
-    switch (result.error.type) {
-      case 'INVENTORY_ITEM_NOT_FOUND':
-        console.error('Failed to delete inventory item', {
-          id,
-          householdId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
-    }
-  }
+  await repository.delete(id)
 
   return c.json({ success: true })
 })
