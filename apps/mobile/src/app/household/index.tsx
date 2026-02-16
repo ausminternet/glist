@@ -44,6 +44,7 @@ export default function Index() {
           alignItems: 'center',
         }}
       >
+        <Text>Haushalt: {householdId}</Text>
         <Link href={`/household/inventory`}>Inventar</Link>
         <View style={{ height: 10 }} />
 

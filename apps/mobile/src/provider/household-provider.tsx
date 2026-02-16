@@ -12,8 +12,9 @@ import { HOUSEHOLD_STORAGE_KEY } from './storage-keys'
 interface HouseholdContextType {
   householdId: string | null
   isLoading: boolean
+  householdNotFound: boolean
   selectHousehold: (id: string) => Promise<void>
-  clearHousehold: () => Promise<void>
+  clearHousehold: (notFound?: boolean) => Promise<void>
 }
 
 const HouseholdContext = createContext<HouseholdContextType | null>(null)
@@ -45,6 +46,7 @@ interface HouseholdProviderProps {
 export function HouseholdProvider({ children }: HouseholdProviderProps) {
   const [householdId, setHouseholdId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [householdNotFound, setHouseholdNotFound] = useState(false)
 
   useEffect(() => {
     async function loadHousehold() {
@@ -67,16 +69,18 @@ export function HouseholdProvider({ children }: HouseholdProviderProps) {
     try {
       await AsyncStorage.setItem(HOUSEHOLD_STORAGE_KEY, id)
       setHouseholdId(id)
+      setHouseholdNotFound(false)
     } catch (error) {
       console.error('Failed to save household to storage:', error)
       throw error
     }
   }, [])
 
-  const clearHousehold = useCallback(async () => {
+  const clearHousehold = useCallback(async (notFound = false) => {
     try {
       await AsyncStorage.removeItem(HOUSEHOLD_STORAGE_KEY)
       setHouseholdId(null)
+      setHouseholdNotFound(notFound)
     } catch (error) {
       console.error('Failed to clear household from storage:', error)
       throw error
@@ -88,6 +92,7 @@ export function HouseholdProvider({ children }: HouseholdProviderProps) {
       value={{
         householdId,
         isLoading,
+        householdNotFound,
         selectHousehold,
         clearHousehold,
       }}

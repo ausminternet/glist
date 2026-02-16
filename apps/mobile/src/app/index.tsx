@@ -5,7 +5,8 @@ import { useHouseholdContext } from '@/provider/household-provider'
 
 export default function HouseholdsScreen() {
   const { households } = useHouseholds()
-  const { selectHousehold, householdId } = useHouseholdContext()
+  const { selectHousehold, householdId, householdNotFound } =
+    useHouseholdContext()
 
   if (householdId) {
     return <Redirect href="/household" />
@@ -19,6 +20,23 @@ export default function HouseholdsScreen() {
         alignItems: 'center',
       }}
     >
+      {householdNotFound && (
+        <View
+          style={{
+            backgroundColor: '#fee2e2',
+            padding: 16,
+            borderRadius: 8,
+            marginBottom: 20,
+          }}
+        >
+          <Text style={{ color: '#dc2626' }}>
+            Haushalt wurde nicht gefunden
+          </Text>
+        </View>
+      )}
+
+      <Text style={{ fontSize: 20, marginBottom: 20 }}>Haushalt auswählen</Text>
+
       {households?.map((household) => (
         <Pressable
           key={household.id}

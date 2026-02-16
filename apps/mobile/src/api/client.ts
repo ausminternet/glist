@@ -9,6 +9,33 @@ function getEnv(key: string): string {
 const API_URL = getEnv('EXPO_PUBLIC_API_URL')
 const API_KEY = getEnv('EXPO_PUBLIC_API_KEY')
 
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly statusText: string,
+    message?: string,
+  ) {
+    super(message ?? `API error: ${status} ${statusText}`)
+    this.name = 'ApiError'
+  }
+
+  get isNotFound(): boolean {
+    return this.status === 404
+  }
+
+  get isUnauthorized(): boolean {
+    return this.status === 401
+  }
+
+  get isForbidden(): boolean {
+    return this.status === 403
+  }
+
+  get isServerError(): boolean {
+    return this.status >= 500
+  }
+}
+
 export type ApiResponse<T> =
   | {
       success: true
@@ -41,7 +68,7 @@ export async function apiClient<T>(
   })
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.status} ${response.statusText}`)
+    throw new ApiError(response.status, response.statusText)
   }
 
   return response.json() as Promise<ApiResponse<T>>
