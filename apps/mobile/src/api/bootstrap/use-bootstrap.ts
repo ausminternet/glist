@@ -13,8 +13,8 @@ export function useBootstrap(householdId: string) {
 
       // Populate all caches immediately
       queryClient.setQueryData(
-        queryKeys.shoppingLists(householdId),
-        data.shoppingLists,
+        queryKeys.shoppingListItems(householdId),
+        data.shoppingListItems,
       )
 
       queryClient.setQueryData(
@@ -28,14 +28,6 @@ export function useBootstrap(householdId: string) {
         queryKeys.inventoryItems(householdId),
         data.inventoryItems,
       )
-
-      // Populate items for each shopping list
-      for (const list of data.shoppingLists) {
-        queryClient.setQueryData(
-          queryKeys.shoppingListItems(householdId, list.id),
-          list.items,
-        )
-      }
 
       return data
     },

@@ -6,9 +6,7 @@ export class GetInventoryItemsQueryHandler {
   constructor(private repository: InventoryItemQueryRepository) {}
 
   async execute(context: RequestContext): Promise<InventoryItemView[]> {
-    const items = await this.repository.findAllByHouseholdId(
-      context.householdId,
-    )
+    const items = await this.repository.getAll(context.householdId)
 
     return items
   }

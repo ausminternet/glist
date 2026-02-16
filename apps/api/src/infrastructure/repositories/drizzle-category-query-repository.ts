@@ -19,7 +19,7 @@ function categoryRowToView(row: CategoryRow): CategoryView {
 export class DrizzleCategoryQueryRepository implements CategoryQueryRepository {
   constructor(private db: Database) {}
 
-  async findAllByHouseholdId(householdId: string): Promise<CategoryView[]> {
+  async getAll(householdId: string): Promise<CategoryView[]> {
     const rows = await this.db
       .select()
       .from(categories)

@@ -7,7 +7,6 @@ import {
   inventoryItems,
   shoppingListItemShops,
   shoppingListItems,
-  shoppingLists,
   shops,
 } from './schema'
 
@@ -23,7 +22,6 @@ async function seed(d1: D1Database) {
     await db.delete(inventoryItemShops)
     await db.delete(shoppingListItems)
     await db.delete(inventoryItems)
-    await db.delete(shoppingLists)
     await db.delete(shops)
     await db.delete(categories)
     await db.delete(households)
@@ -76,16 +74,6 @@ async function seed(d1: D1Database) {
       .returning()
 
     console.log(`✓ Created ${createdShops.length} shops`)
-
-    const [shoppingList] = await db
-      .insert(shoppingLists)
-      .values({
-        name: 'Weekly Shopping',
-        householdId: household.id,
-      })
-      .returning()
-
-    console.log('✓ Created shopping list:', shoppingList.name)
 
     const findCategory = (name: string) =>
       createdCategories.find((c) => c.name === name)
@@ -152,7 +140,7 @@ async function seed(d1: D1Database) {
       .insert(shoppingListItems)
       .values([
         {
-          shoppingListId: shoppingList.id,
+          householdId: household.id,
           name: 'Milk',
           categoryId: findCategory('Dairy & Eggs')?.id,
           inventoryItemId: findInventoryItem('Milk')?.id,
@@ -162,7 +150,7 @@ async function seed(d1: D1Database) {
           createdAt: new Date(now),
         },
         {
-          shoppingListId: shoppingList.id,
+          householdId: household.id,
           name: 'Bread',
           categoryId: findCategory('Bakery')?.id,
           inventoryItemId: findInventoryItem('Bread')?.id,
@@ -172,7 +160,7 @@ async function seed(d1: D1Database) {
           createdAt: new Date(now + 1000),
         },
         {
-          shoppingListId: shoppingList.id,
+          householdId: household.id,
           name: 'Bananas',
           description: 'Ripe yellow bananas',
           categoryId: findCategory('Fruits & Vegetables')?.id,
@@ -182,7 +170,7 @@ async function seed(d1: D1Database) {
           createdAt: new Date(now + 2000),
         },
         {
-          shoppingListId: shoppingList.id,
+          householdId: household.id,
           name: 'Chicken Breast',
           categoryId: findCategory('Meat & Fish')?.id,
           quantity: 500,
@@ -271,7 +259,6 @@ async function seed(d1: D1Database) {
     console.log(`  - 1 household: ${household.name}`)
     console.log(`  - ${createdCategories.length} categories`)
     console.log(`  - ${createdShops.length} shops`)
-    console.log(`  - 1 shopping list: ${shoppingList.name}`)
     console.log(`  - ${createdInventoryItems.length} inventory items`)
     console.log(`  - ${createdShoppingListItems.length} shopping list items`)
     console.log('  - 8 shopping list item-shop relations')

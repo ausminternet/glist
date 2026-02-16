@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1770988758229,
-      "tag": "0000_bitter_proudstar",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1770999384672,
-      "tag": "0001_add-photo-key",
+      "when": 1771227481400,
+      "tag": "0000_first_amazoness",
       "breakpoints": true
     }
   ]

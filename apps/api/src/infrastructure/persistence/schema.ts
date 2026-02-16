@@ -69,26 +69,6 @@ export const shops = sqliteTable(
   ],
 )
 
-export const shoppingLists = sqliteTable(
-  'shopping_lists',
-  {
-    id: text('id')
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    name: text('name').notNull(),
-    householdId: text('household_id')
-      .notNull()
-      .references(() => households.id, { onDelete: 'cascade' }),
-    createdAt: integer('created_at', { mode: 'timestamp' })
-      .$defaultFn(() => new Date())
-      .notNull(),
-    updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(
-      () => new Date(),
-    ),
-  },
-  (table) => [index('idx_shopping_lists_household_id').on(table.householdId)],
-)
-
 export const inventoryItems = sqliteTable(
   'inventory_items',
   {
@@ -132,9 +112,9 @@ export const shoppingListItems = sqliteTable(
     categoryId: text('category_id').references(() => categories.id, {
       onDelete: 'set null',
     }),
-    shoppingListId: text('shopping_list_id')
+    householdId: text('household_id')
       .notNull()
-      .references(() => shoppingLists.id, { onDelete: 'cascade' }),
+      .references(() => households.id, { onDelete: 'cascade' }),
     inventoryItemId: text('inventory_item_id').references(
       () => inventoryItems.id,
       { onDelete: 'set null' },
@@ -151,10 +131,10 @@ export const shoppingListItems = sqliteTable(
     ),
   },
   (table) => [
-    index('idx_shopping_list_items_shopping_list_id').on(table.shoppingListId),
+    index('idx_shopping_list_items_household_id').on(table.householdId),
     index('idx_shopping_list_items_category_id').on(table.categoryId),
     index('idx_shopping_list_items_list_checked').on(
-      table.shoppingListId,
+      table.householdId,
       table.checked,
     ),
   ],
@@ -197,9 +177,6 @@ export type NewCategory = typeof categories.$inferInsert
 
 export type Shop = typeof shops.$inferSelect
 export type NewShop = typeof shops.$inferInsert
-
-export type ShoppingList = typeof shoppingLists.$inferSelect
-export type NewShoppingList = typeof shoppingLists.$inferInsert
 
 export type InventoryItem = typeof inventoryItems.$inferSelect
 export type NewInventoryItem = typeof inventoryItems.$inferInsert

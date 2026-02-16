@@ -17,7 +17,7 @@ shopsRouter.get('/', async (c) => {
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleShopQueryRepository(db)
 
-  const shops = await repository.findAllByHouseholdId(householdId)
+  const shops = await repository.getAll(householdId)
 
   return c.json({ success: true, data: shops })
 })

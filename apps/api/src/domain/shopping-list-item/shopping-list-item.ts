@@ -5,10 +5,10 @@ import type { InventoryItemId } from '../inventory-item/inventory-item-id'
 import type { InvalidNameError } from '../shared/errors'
 import { Quantity, type QuantityError } from '../shared/quantity'
 import type { ShopId } from '../shop/shop-id'
-import type { ShoppingListId } from '../shopping-list/shopping-list-id'
 import type { ShoppingListItemId } from './shopping-list-item-id'
 
 export type NewShoppingListItemInput = {
+  householdId: string
   name: string
   description?: string
   categoryId?: CategoryId
@@ -19,7 +19,7 @@ export type NewShoppingListItemInput = {
 
 export type ShoppingListItemProps = {
   id: ShoppingListItemId
-  shoppingListId: ShoppingListId
+  householdId: string
   inventoryItemId: InventoryItemId | null
   name: string
   description: string | null
@@ -43,7 +43,6 @@ export class ShoppingListItem {
 
   static create(
     id: ShoppingListItemId,
-    shoppingListId: ShoppingListId,
     input: NewShoppingListItemInput,
   ): Result<ShoppingListItem, CreateShoppingListItemError> {
     if (isBlank(input.name)) {
@@ -62,7 +61,7 @@ export class ShoppingListItem {
     return ok(
       new ShoppingListItem({
         id,
-        shoppingListId,
+        householdId: input.householdId,
         name: input.name,
         description: input.description ?? null,
         categoryId: input.categoryId ?? null,
@@ -79,9 +78,9 @@ export class ShoppingListItem {
 
   static createFromInventoryItem(
     id: ShoppingListItemId,
-    shoppingListId: ShoppingListId,
     inventoryItem: {
       inventoryItemId: InventoryItemId
+      householdId: string
       name: string
       description: string | null
       categoryId: CategoryId | null
@@ -90,8 +89,8 @@ export class ShoppingListItem {
   ): ShoppingListItem {
     return new ShoppingListItem({
       id,
+      householdId: inventoryItem.householdId,
       inventoryItemId: inventoryItem.inventoryItemId,
-      shoppingListId,
       name: inventoryItem.name,
       description: inventoryItem.description,
       categoryId: inventoryItem.categoryId,
@@ -107,36 +106,47 @@ export class ShoppingListItem {
   get id(): ShoppingListItemId {
     return this.props.id
   }
-  get shoppingListId(): ShoppingListId {
-    return this.props.shoppingListId
+
+  get householdId(): string {
+    return this.props.householdId
   }
+
   get name(): string {
     return this.props.name
   }
+
   get description(): string | null {
     return this.props.description
   }
+
   get categoryId(): CategoryId | null {
     return this.props.categoryId
   }
+
   get quantity(): number | null {
     return this.props.quantity.value
   }
+
   get quantityUnit(): UnitType | null {
     return this.props.quantity.unit
   }
+
   get checked(): boolean {
     return this.props.checked
   }
+
   get shopIds(): readonly ShopId[] {
     return this.props.shopIds
   }
+
   get photoKey(): string | null {
     return this.props.photoKey
   }
+
   get createdAt(): Date {
     return this.props.createdAt
   }
+
   get updatedAt(): Date | null {
     return this.props.updatedAt
   }

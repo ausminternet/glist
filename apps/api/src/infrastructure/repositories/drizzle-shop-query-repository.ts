@@ -19,7 +19,7 @@ function shopRowToView(row: ShopRow): ShopView {
 export class DrizzleShopQueryRepository implements ShopQueryRepository {
   constructor(private db: Database) {}
 
-  async findAllByHouseholdId(householdId: string): Promise<ShopView[]> {
+  async getAll(householdId: string): Promise<ShopView[]> {
     const rows = await this.db
       .select()
       .from(shops)

@@ -17,7 +17,7 @@ categoriesRouter.get('/', async (c) => {
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleCategoryQueryRepository(db)
 
-  const categories = await repository.findAllByHouseholdId(householdId)
+  const categories = await repository.getAll(householdId)
 
   return c.json({ success: true, data: categories })
 })

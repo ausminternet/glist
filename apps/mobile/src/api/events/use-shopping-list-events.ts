@@ -9,12 +9,12 @@ import { queryKeys } from '../query-keys'
 const API_URL = process.env.EXPO_PUBLIC_API_URL
 const API_KEY = process.env.EXPO_PUBLIC_API_KEY
 
-export function useShoppingListEvents(householdId: string, listId: string) {
+export function useShoppingListEvents(householdId: string) {
   const queryClient = useQueryClient()
   const eventSourceRef = useRef<EventSource | null>(null)
 
   useEffect(() => {
-    const url = `${API_URL}/households/${householdId}/shopping-lists/${listId}/events`
+    const url = `${API_URL}/households/${householdId}/shopping-list-items/events`
 
     const es = new EventSource(url, {
       headers: {
@@ -33,7 +33,7 @@ export function useShoppingListEvents(householdId: string, listId: string) {
 
       try {
         const data = JSON.parse(event.data) as ShoppingListSSEEvent
-        const queryKey = queryKeys.shoppingListItems(householdId, listId)
+        const queryKey = queryKeys.shoppingListItems(householdId)
 
         console.log(`[SSE] Received event: ${data.type}`)
 
@@ -99,7 +99,7 @@ export function useShoppingListEvents(householdId: string, listId: string) {
       appStateSubscription.remove()
       console.log('[SSE] Disconnected')
     }
-  }, [householdId, listId, queryClient])
+  }, [householdId, queryClient])
 
   return {
     close: () => eventSourceRef.current?.close(),

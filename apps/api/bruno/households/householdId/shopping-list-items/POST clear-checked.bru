@@ -1,0 +1,19 @@
+meta {
+  name: POST clear-checked
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{base_url}}/households/:householdId/shopping-list-items/clear-checked
+  body: none
+  auth: inherit
+}
+
+params:path {
+  householdId:
+}
+
+headers {
+  x-api-key: {{api_key}}
+}

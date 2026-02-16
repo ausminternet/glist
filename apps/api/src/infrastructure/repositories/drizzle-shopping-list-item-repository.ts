@@ -1,9 +1,9 @@
 import { and, eq } from 'drizzle-orm'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
+import { parseHouseholdId } from '@/domain/shared/household-id'
 import { Quantity } from '@/domain/shared/quantity'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import { parseShoppingListId } from '@/domain/shopping-list/shopping-list-id'
 import {
   ShoppingListItem,
   type ShoppingListItemProps,
@@ -31,7 +31,7 @@ function toDomain(
 
   const props: ShoppingListItemProps = {
     id: parseShoppingListItemId(row.id),
-    shoppingListId: parseShoppingListId(row.shoppingListId),
+    householdId: parseHouseholdId(row.householdId),
     name: row.name,
     description: row.description,
     categoryId: row.categoryId ? parseCategoryId(row.categoryId) : null,
@@ -54,7 +54,7 @@ function toSchema(
 ): typeof shoppingListItems.$inferInsert {
   return {
     id: item.id,
-    shoppingListId: item.shoppingListId,
+    householdId: item.householdId,
     name: item.name,
     description: item.description,
     categoryId: item.categoryId,
@@ -110,7 +110,7 @@ export class DrizzleShoppingListItemRepository
     }
   }
 
-  async findById(id: string): Promise<ShoppingListItem | null> {
+  async find(id: string): Promise<ShoppingListItem | null> {
     const row = await this.db
       .select()
       .from(shoppingListItems)
@@ -136,13 +136,13 @@ export class DrizzleShoppingListItemRepository
     await this.db.delete(shoppingListItems).where(eq(shoppingListItems.id, id))
   }
 
-  async deleteCheckedByShoppingListId(shoppingListId: string): Promise<void> {
+  async deleteCheckedByHouseholdId(householdId: string): Promise<void> {
     // Shop associations are deleted via CASCADE
     await this.db
       .delete(shoppingListItems)
       .where(
         and(
-          eq(shoppingListItems.shoppingListId, shoppingListId),
+          eq(shoppingListItems.householdId, householdId),
           eq(shoppingListItems.checked, true),
         ),
       )

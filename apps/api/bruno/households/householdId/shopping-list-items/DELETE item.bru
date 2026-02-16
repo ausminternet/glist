@@ -1,0 +1,20 @@
+meta {
+  name: DELETE item
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{base_url}}/households/:householdId/shopping-list-items/:itemId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  householdId:
+  itemId:
+}
+
+headers {
+  x-api-key: {{api_key}}
+}

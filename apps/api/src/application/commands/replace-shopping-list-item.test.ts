@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { generateHouseholdId } from '@/domain/shared/household-id'
 import { Quantity } from '@/domain/shared/quantity'
-import { parseShoppingListId } from '@/domain/shopping-list/shopping-list-id'
 import {
   ShoppingListItem,
   type ShoppingListItemProps,
@@ -12,16 +12,16 @@ import {
   ReplaceShoppingListItemCommandHandler,
 } from './replace-shopping-list-item'
 
-function createTestShoppingListItem(
-  shoppingListId: string,
-  options?: { name?: string; description?: string },
-) {
+function createTestShoppingListItem(options?: {
+  name?: string
+  description?: string
+}) {
   const quantityResult = Quantity.create(null, null)
   if (!quantityResult.ok) throw new Error('Failed to create quantity')
 
   const props: ShoppingListItemProps = {
     id: generateShoppingListItemId(),
-    shoppingListId: parseShoppingListId(shoppingListId),
+    householdId: generateHouseholdId(),
     inventoryItemId: null,
     name: options?.name ?? 'Milk',
     description: options?.description ?? null,
@@ -41,10 +41,10 @@ function createMockRepository(
   item: ShoppingListItem | null,
 ): ShoppingListItemRepository {
   return {
-    findById: mock(() => Promise.resolve(item)),
+    find: mock(() => Promise.resolve(item)),
     save: mock(() => Promise.resolve()),
     delete: mock(() => Promise.resolve()),
-    deleteCheckedByShoppingListId: mock(() => Promise.resolve()),
+    deleteCheckedByHouseholdId: mock(() => Promise.resolve()),
   }
 }
 
@@ -58,10 +58,8 @@ const validCommand: Omit<ReplaceShoppingListItemCommand, 'itemId'> = {
 }
 
 describe('ReplaceShoppingListItemCommandHandler', () => {
-  const shoppingListId = '00000000-0000-0000-0000-000000000010'
-
   test('replaces item successfully', async () => {
-    const item = createTestShoppingListItem(shoppingListId, {
+    const item = createTestShoppingListItem({
       name: 'Milk',
       description: 'Original',
     })
@@ -101,21 +99,7 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
     const quantityResult = Quantity.create(5, 'l')
     if (!quantityResult.ok) throw new Error('Failed to create quantity')
 
-    const props: ShoppingListItemProps = {
-      id: generateShoppingListItemId(),
-      shoppingListId: parseShoppingListId(shoppingListId),
-      inventoryItemId: null,
-      name: 'Milk',
-      description: 'Some description',
-      categoryId: null,
-      quantity: quantityResult.value,
-      checked: false,
-      shopIds: [],
-      photoKey: null,
-      createdAt: new Date(),
-      updatedAt: null,
-    }
-    const item = new ShoppingListItem(props)
+    const item = createTestShoppingListItem()
 
     const repository = createMockRepository(item)
     const handler = new ReplaceShoppingListItemCommandHandler(repository)
@@ -137,7 +121,7 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
   })
 
   test('updates updatedAt timestamp', async () => {
-    const item = createTestShoppingListItem(shoppingListId)
+    const item = createTestShoppingListItem()
 
     const repository = createMockRepository(item)
     const handler = new ReplaceShoppingListItemCommandHandler(repository)

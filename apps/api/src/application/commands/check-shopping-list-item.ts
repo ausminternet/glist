@@ -1,6 +1,6 @@
 import { err, okWithEvent, type Result } from '@glist/shared'
-import type { ItemCheckedEvent } from '@/domain/shopping-list/events'
 import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
+import type { ItemCheckedEvent } from '@/domain/shopping-list-item/events'
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 
 type CheckShoppingListItemError = ShoppingListItemNotFoundError
@@ -22,18 +22,19 @@ export class CheckShoppingListItemCommandHandler {
   ): Promise<CheckShoppingListItemResult> {
     const { itemId } = command
 
-    const item = await this.shoppingListItemRepository.findById(itemId)
+    const item = await this.shoppingListItemRepository.find(itemId)
 
     if (!item) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
     }
 
     item.check()
+
     await this.shoppingListItemRepository.save(item)
 
     return okWithEvent(undefined, {
       type: 'item-checked',
-      listId: item.shoppingListId,
+      householdId: item.householdId,
       itemId,
     })
   }

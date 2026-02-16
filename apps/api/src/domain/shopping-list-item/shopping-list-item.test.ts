@@ -1,40 +1,34 @@
 import { describe, expect, test } from 'bun:test'
 import { parseCategoryId } from '../category/category-id'
 import { parseInventoryItemId } from '../inventory-item/inventory-item-id'
+import { generateHouseholdId } from '../shared/household-id'
 import { parseShopIds } from '../shop/shop-id'
-import { parseShoppingListId } from '../shopping-list/shopping-list-id'
 import { ShoppingListItem } from './shopping-list-item'
 import { generateShoppingListItemId } from './shopping-list-item-id'
 
 describe('ShoppingListItem', () => {
-  const shoppingListId = parseShoppingListId(
-    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  )
+  const householdId = '12345678-1234-1234-1234-1234567890ab'
 
   describe('create', () => {
     test('creates item with all properties', () => {
-      const result = ShoppingListItem.create(
-        generateShoppingListItemId(),
-        shoppingListId,
-        {
-          name: 'Organic Milk',
-          description: 'From the farm',
-          categoryId: parseCategoryId('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'),
-          quantity: 2,
-          quantityUnit: 'l',
-          shopIds: parseShopIds([
-            'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
-            'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
-          ]),
-        },
-      )
+      const result = ShoppingListItem.create(generateShoppingListItemId(), {
+        householdId,
+        name: 'Organic Milk',
+        description: 'From the farm',
+        categoryId: parseCategoryId('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'),
+        quantity: 2,
+        quantityUnit: 'l',
+        shopIds: parseShopIds([
+          'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+          'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
+        ]),
+      })
 
       expect(result.ok).toBe(true)
       if (!result.ok) return
 
       const item = result.value
       expect(item.id).toBeDefined()
-      expect(item.shoppingListId).toBe(shoppingListId)
       expect(item.name).toBe('Organic Milk')
       expect(item.description).toBe('From the farm')
       expect(item.categoryId).toBe(
@@ -54,11 +48,10 @@ describe('ShoppingListItem', () => {
     })
 
     test('returns INVALID_NAME error for empty name', () => {
-      const result1 = ShoppingListItem.create(
-        generateShoppingListItemId(),
-        shoppingListId,
-        { name: '' },
-      )
+      const result1 = ShoppingListItem.create(generateShoppingListItemId(), {
+        householdId,
+        name: '',
+      })
       expect(result1.ok).toBe(false)
       if (result1.ok) return
       expect(result1.error).toEqual({
@@ -66,11 +59,10 @@ describe('ShoppingListItem', () => {
         reason: 'Name cannot be empty',
       })
 
-      const result2 = ShoppingListItem.create(
-        generateShoppingListItemId(),
-        shoppingListId,
-        { name: '   ' },
-      )
+      const result2 = ShoppingListItem.create(generateShoppingListItemId(), {
+        householdId,
+        name: '   ',
+      })
       expect(result2.ok).toBe(false)
       if (result2.ok) return
       expect(result2.error).toEqual({
@@ -80,14 +72,11 @@ describe('ShoppingListItem', () => {
     })
 
     test('returns INVALID_QUANTITY error for invalid quantity', () => {
-      const result = ShoppingListItem.create(
-        generateShoppingListItemId(),
-        shoppingListId,
-        {
-          name: 'Milk',
-          quantity: -1,
-        },
-      )
+      const result = ShoppingListItem.create(generateShoppingListItemId(), {
+        householdId,
+        name: 'Milk',
+        quantity: -1,
+      })
 
       expect(result.ok).toBe(false)
       if (result.ok) return
@@ -99,8 +88,8 @@ describe('ShoppingListItem', () => {
     test('changeName returns INVALID_NAME error for empty name', () => {
       const createResult = ShoppingListItem.create(
         generateShoppingListItemId(),
-        shoppingListId,
         {
+          householdId,
           name: 'Milk',
         },
       )
@@ -129,8 +118,8 @@ describe('ShoppingListItem', () => {
     test('changeQuantity returns INVALID_QUANTITY error for invalid quantity', () => {
       const createResult = ShoppingListItem.create(
         generateShoppingListItemId(),
-        shoppingListId,
         {
+          householdId,
           name: 'Milk',
         },
       )
@@ -150,8 +139,8 @@ describe('ShoppingListItem', () => {
     test('toggleChecked toggles the status', () => {
       const createResult = ShoppingListItem.create(
         generateShoppingListItemId(),
-        shoppingListId,
         {
+          householdId,
           name: 'Milk',
         },
       )
@@ -174,6 +163,7 @@ describe('ShoppingListItem', () => {
         inventoryItemId: parseInventoryItemId(
           'e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a55',
         ),
+        householdId: generateHouseholdId(),
         name: 'Milk',
         description: 'Organic whole milk',
         categoryId: parseCategoryId('f5eebc99-9c0b-4ef8-bb6d-6bb9bd380a66'),
@@ -185,14 +175,12 @@ describe('ShoppingListItem', () => {
 
       const shoppingListItem = ShoppingListItem.createFromInventoryItem(
         generateShoppingListItemId(),
-        shoppingListId,
-        inventoryItem,
+        { ...inventoryItem, householdId: inventoryItem.householdId },
       )
 
       expect(shoppingListItem.inventoryItemId).toBe(
         inventoryItem.inventoryItemId,
       )
-      expect(shoppingListItem.shoppingListId).toBeDefined()
       expect(shoppingListItem.name).toBe(inventoryItem.name)
       expect(shoppingListItem.description).toBe(inventoryItem.description)
       expect(shoppingListItem.categoryId).toBe(inventoryItem.categoryId)

@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { generateHouseholdId } from '@/domain/shared/household-id'
 import { Quantity } from '@/domain/shared/quantity'
-import { parseShoppingListId } from '@/domain/shopping-list/shopping-list-id'
 import {
   ShoppingListItem,
   type ShoppingListItemProps,
@@ -10,16 +10,16 @@ import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/sho
 import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import { DeleteShoppingListItemPhotoCommandHandler } from './delete-shopping-list-item-photo'
 
-function createTestShoppingListItem(
-  shoppingListId: string,
-  options?: { name?: string; photoKey?: string | null },
-) {
+function createTestShoppingListItem(options?: {
+  name?: string
+  photoKey?: string | null
+}) {
   const quantityResult = Quantity.create(null, null)
   if (!quantityResult.ok) throw new Error('Failed to create quantity')
 
   const props: ShoppingListItemProps = {
     id: generateShoppingListItemId(),
-    shoppingListId: parseShoppingListId(shoppingListId),
+    householdId: generateHouseholdId(),
     inventoryItemId: null,
     name: options?.name ?? 'Test Item',
     description: null,
@@ -39,10 +39,10 @@ function createMockRepository(
   item: ShoppingListItem | null,
 ): ShoppingListItemRepository {
   return {
-    findById: mock(() => Promise.resolve(item)),
+    find: mock(() => Promise.resolve(item)),
     save: mock(() => Promise.resolve()),
     delete: mock(() => Promise.resolve()),
-    deleteCheckedByShoppingListId: mock(() => Promise.resolve()),
+    deleteCheckedByHouseholdId: mock(() => Promise.resolve()),
   }
 }
 
@@ -55,11 +55,10 @@ function createMockPhotoStorage(): PhotoStorage {
 }
 
 describe('DeleteShoppingListItemPhotoCommandHandler', () => {
-  const shoppingListId = '00000000-0000-0000-0000-000000000010'
   const photoKey = 'shopping-list-item/test-id/12345.jpg'
 
   test('deletes photo successfully', async () => {
-    const item = createTestShoppingListItem(shoppingListId, { photoKey })
+    const item = createTestShoppingListItem({ photoKey })
 
     const repository = createMockRepository(item)
     const photoStorage = createMockPhotoStorage()
@@ -98,7 +97,7 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
   })
 
   test('returns NO_PHOTO_EXISTS when item has no photo', async () => {
-    const item = createTestShoppingListItem(shoppingListId)
+    const item = createTestShoppingListItem()
     // No photoKey set
 
     const repository = createMockRepository(item)
@@ -118,7 +117,7 @@ describe('DeleteShoppingListItemPhotoCommandHandler', () => {
   })
 
   test('updates item updatedAt timestamp after deletion', async () => {
-    const item = createTestShoppingListItem(shoppingListId, { photoKey })
+    const item = createTestShoppingListItem({ photoKey })
     const originalUpdatedAt = item.updatedAt
 
     const repository = createMockRepository(item)

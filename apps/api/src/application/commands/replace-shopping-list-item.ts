@@ -1,8 +1,8 @@
 import { err, okWithEvent, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import type { ItemUpdatedEvent } from '@/domain/shopping-list/events'
 import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
+import type { ItemUpdatedEvent } from '@/domain/shopping-list-item/events'
 import type {
   ChangeNameError,
   ChangeQuantityError,
@@ -35,7 +35,7 @@ export class ReplaceShoppingListItemCommandHandler {
   async execute(
     command: ReplaceShoppingListItemCommand,
   ): Promise<ReplaceShoppingListItemResult> {
-    const item = await this.shoppingListItemRepository.findById(command.itemId)
+    const item = await this.shoppingListItemRepository.find(command.itemId)
 
     if (!item) {
       return err({
@@ -69,7 +69,7 @@ export class ReplaceShoppingListItemCommandHandler {
 
     return okWithEvent(undefined, {
       type: 'item-updated',
-      listId: item.shoppingListId,
+      householdId: item.householdId,
       itemId: command.itemId,
     })
   }

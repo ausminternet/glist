@@ -1,0 +1,30 @@
+meta {
+  name: POST add from inventory
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/households/:householdId/shopping-list-items/from-inventory
+  body: json
+  auth: inherit
+}
+
+params:path {
+  householdId:
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+body:json {
+  {
+    "inventoryItemId": ""
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

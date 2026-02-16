@@ -1,6 +1,6 @@
 import { err, okWithEvent, type Result } from '@glist/shared'
-import type { ItemUncheckedEvent } from '@/domain/shopping-list/events'
 import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
+import type { ItemUncheckedEvent } from '@/domain/shopping-list-item/events'
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 
 type UncheckShoppingListItemError = ShoppingListItemNotFoundError
@@ -22,7 +22,7 @@ export class UncheckShoppingListItemCommandHandler {
   ): Promise<UncheckShoppingListItemResult> {
     const { itemId } = command
 
-    const item = await this.shoppingListItemRepository.findById(itemId)
+    const item = await this.shoppingListItemRepository.find(itemId)
 
     if (!item) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: itemId })
@@ -33,7 +33,7 @@ export class UncheckShoppingListItemCommandHandler {
 
     return okWithEvent(undefined, {
       type: 'item-unchecked',
-      listId: item.shoppingListId,
+      householdId: item.householdId,
       itemId,
     })
   }

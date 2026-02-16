@@ -12,7 +12,7 @@ function shoppingListItemToView(
 ): ShoppingListItemView {
   return {
     id: itemRow.id,
-    shoppingListId: itemRow.shoppingListId,
+    householdId: itemRow.householdId,
     name: itemRow.name,
     description: itemRow.description,
     categoryId: itemRow.categoryId,
@@ -32,7 +32,7 @@ export class DrizzleShoppingListItemQueryRepository
 {
   constructor(private db: Database) {}
 
-  async findById(id: string): Promise<ShoppingListItemView | null> {
+  async find(id: string): Promise<ShoppingListItemView | null> {
     const row = await this.db
       .select()
       .from(shoppingListItems)
@@ -53,43 +53,11 @@ export class DrizzleShoppingListItemQueryRepository
     return shoppingListItemToView(row, shopIds)
   }
 
-  async findAllByShoppingListId(
-    shoppingListId: string,
-  ): Promise<ShoppingListItemView[]> {
+  async getAll(householdId: string): Promise<ShoppingListItemView[]> {
     const rows = await this.db
       .select()
       .from(shoppingListItems)
-      .where(eq(shoppingListItems.shoppingListId, shoppingListId))
-
-    if (rows.length === 0) {
-      return []
-    }
-
-    const itemIds = rows.map((row) => row.id)
-    const shopRows = await this.db
-      .select()
-      .from(shoppingListItemShops)
-      .where(inArray(shoppingListItemShops.shoppingListItemId, itemIds))
-
-    const shopsByItemId = new Map<string, string[]>()
-    for (const row of shopRows) {
-      const shops = shopsByItemId.get(row.shoppingListItemId) ?? []
-      shops.push(row.shopId)
-      shopsByItemId.set(row.shoppingListItemId, shops)
-    }
-
-    return rows.map((row) =>
-      shoppingListItemToView(row, shopsByItemId.get(row.id) ?? []),
-    )
-  }
-
-  async findAllByShoppingListIds(
-    shoppingListIds: string[],
-  ): Promise<ShoppingListItemView[]> {
-    const rows = await this.db
-      .select()
-      .from(shoppingListItems)
-      .where(inArray(shoppingListItems.shoppingListId, shoppingListIds))
+      .where(eq(shoppingListItems.householdId, householdId))
 
     if (rows.length === 0) {
       return []

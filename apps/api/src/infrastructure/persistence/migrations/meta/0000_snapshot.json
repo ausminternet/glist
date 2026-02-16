@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "07c2ad15-9693-45d8-bc30-f18edb78bb27",
+  "id": "0ff63c89-96c4-4caf-ac33-89a84af23ab3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "categories": {
@@ -54,12 +54,17 @@
       "indexes": {
         "idx_categories_household_id": {
           "name": "idx_categories_household_id",
-          "columns": ["household_id"],
+          "columns": [
+            "household_id"
+          ],
           "isUnique": false
         },
         "idx_categories_household_name": {
           "name": "idx_categories_household_name",
-          "columns": ["household_id", "name"],
+          "columns": [
+            "household_id",
+            "name"
+          ],
           "isUnique": false
         }
       },
@@ -68,8 +73,12 @@
           "name": "categories_household_id_households_id_fk",
           "tableFrom": "categories",
           "tableTo": "households",
-          "columnsFrom": ["household_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "household_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -140,8 +149,12 @@
           "name": "inventory_item_shops_inventory_item_id_inventory_items_id_fk",
           "tableFrom": "inventory_item_shops",
           "tableTo": "inventory_items",
-          "columnsFrom": ["inventory_item_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "inventory_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -149,15 +162,22 @@
           "name": "inventory_item_shops_shop_id_shops_id_fk",
           "tableFrom": "inventory_item_shops",
           "tableTo": "shops",
-          "columnsFrom": ["shop_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "shop_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "inventory_item_shops_inventory_item_id_shop_id_pk": {
-          "columns": ["inventory_item_id", "shop_id"],
+          "columns": [
+            "inventory_item_id",
+            "shop_id"
+          ],
           "name": "inventory_item_shops_inventory_item_id_shop_id_pk"
         }
       },
@@ -230,6 +250,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "photo_key": {
+          "name": "photo_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -248,12 +275,16 @@
       "indexes": {
         "idx_inventory_items_household_id": {
           "name": "idx_inventory_items_household_id",
-          "columns": ["household_id"],
+          "columns": [
+            "household_id"
+          ],
           "isUnique": false
         },
         "idx_inventory_items_category_id": {
           "name": "idx_inventory_items_category_id",
-          "columns": ["category_id"],
+          "columns": [
+            "category_id"
+          ],
           "isUnique": false
         }
       },
@@ -262,8 +293,12 @@
           "name": "inventory_items_category_id_categories_id_fk",
           "tableFrom": "inventory_items",
           "tableTo": "categories",
-          "columnsFrom": ["category_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -271,8 +306,12 @@
           "name": "inventory_items_household_id_households_id_fk",
           "tableFrom": "inventory_items",
           "tableTo": "households",
-          "columnsFrom": ["household_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "household_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -305,8 +344,12 @@
           "name": "shopping_list_item_shops_shopping_list_item_id_shopping_list_items_id_fk",
           "tableFrom": "shopping_list_item_shops",
           "tableTo": "shopping_list_items",
-          "columnsFrom": ["shopping_list_item_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "shopping_list_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -314,15 +357,22 @@
           "name": "shopping_list_item_shops_shop_id_shops_id_fk",
           "tableFrom": "shopping_list_item_shops",
           "tableTo": "shops",
-          "columnsFrom": ["shop_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "shop_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "shopping_list_item_shops_shopping_list_item_id_shop_id_pk": {
-          "columns": ["shopping_list_item_id", "shop_id"],
+          "columns": [
+            "shopping_list_item_id",
+            "shop_id"
+          ],
           "name": "shopping_list_item_shops_shopping_list_item_id_shop_id_pk"
         }
       },
@@ -360,8 +410,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "shopping_list_id": {
-          "name": "shopping_list_id",
+        "household_id": {
+          "name": "household_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -396,6 +446,13 @@
           "autoincrement": false,
           "default": false
         },
+        "photo_key": {
+          "name": "photo_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -412,19 +469,26 @@
         }
       },
       "indexes": {
-        "idx_shopping_list_items_shopping_list_id": {
-          "name": "idx_shopping_list_items_shopping_list_id",
-          "columns": ["shopping_list_id"],
+        "idx_shopping_list_items_household_id": {
+          "name": "idx_shopping_list_items_household_id",
+          "columns": [
+            "household_id"
+          ],
           "isUnique": false
         },
         "idx_shopping_list_items_category_id": {
           "name": "idx_shopping_list_items_category_id",
-          "columns": ["category_id"],
+          "columns": [
+            "category_id"
+          ],
           "isUnique": false
         },
         "idx_shopping_list_items_list_checked": {
           "name": "idx_shopping_list_items_list_checked",
-          "columns": ["shopping_list_id", "checked"],
+          "columns": [
+            "household_id",
+            "checked"
+          ],
           "isUnique": false
         }
       },
@@ -433,17 +497,25 @@
           "name": "shopping_list_items_category_id_categories_id_fk",
           "tableFrom": "shopping_list_items",
           "tableTo": "categories",
-          "columnsFrom": ["category_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "shopping_list_items_shopping_list_id_shopping_lists_id_fk": {
-          "name": "shopping_list_items_shopping_list_id_shopping_lists_id_fk",
+        "shopping_list_items_household_id_households_id_fk": {
+          "name": "shopping_list_items_household_id_households_id_fk",
           "tableFrom": "shopping_list_items",
-          "tableTo": "shopping_lists",
-          "columnsFrom": ["shopping_list_id"],
-          "columnsTo": ["id"],
+          "tableTo": "households",
+          "columnsFrom": [
+            "household_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -451,70 +523,13 @@
           "name": "shopping_list_items_inventory_item_id_inventory_items_id_fk",
           "tableFrom": "shopping_list_items",
           "tableTo": "inventory_items",
-          "columnsFrom": ["inventory_item_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "inventory_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "shopping_lists": {
-      "name": "shopping_lists",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "household_id": {
-          "name": "household_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "idx_shopping_lists_household_id": {
-          "name": "idx_shopping_lists_household_id",
-          "columns": ["household_id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "shopping_lists_household_id_households_id_fk": {
-          "name": "shopping_lists_household_id_households_id_fk",
-          "tableFrom": "shopping_lists",
-          "tableTo": "households",
-          "columnsFrom": ["household_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -572,12 +587,17 @@
       "indexes": {
         "idx_shops_household_id": {
           "name": "idx_shops_household_id",
-          "columns": ["household_id"],
+          "columns": [
+            "household_id"
+          ],
           "isUnique": false
         },
         "idx_shops_household_name": {
           "name": "idx_shops_household_name",
-          "columns": ["household_id", "name"],
+          "columns": [
+            "household_id",
+            "name"
+          ],
           "isUnique": false
         }
       },
@@ -586,8 +606,12 @@
           "name": "shops_household_id_households_id_fk",
           "tableFrom": "shops",
           "tableTo": "households",
-          "columnsFrom": ["household_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "household_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

@@ -5,7 +5,6 @@ import { type HouseholdContext, withHousehold } from './context'
 import { eventsRouter } from './events.router'
 import inventoryItemsRouter from './inventory-items.router'
 import shoppingListItemsRouter from './shopping-list-items.router'
-import shoppingListsRouter from './shopping-lists.router'
 import shopsRouter from './shops.router'
 
 const householdRouter = new Hono<HouseholdContext>()
@@ -14,8 +13,7 @@ householdRouter.use('*', withHousehold)
 householdRouter.route('/bootstrap', bootstrapRouter)
 householdRouter.route('/categories', categoriesRouter)
 householdRouter.route('/inventory-items', inventoryItemsRouter)
-householdRouter.route('/shopping-lists', shoppingListsRouter)
-householdRouter.route('/shopping-lists', shoppingListItemsRouter)
+householdRouter.route('/shopping-list-items', shoppingListItemsRouter)
 householdRouter.route('/shops', shopsRouter)
 householdRouter.route('/', eventsRouter)
 

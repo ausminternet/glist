@@ -1,11 +1,11 @@
-import type { ShoppingListDomainEvent } from '@/domain/shopping-list/events'
+import type { ShoppingListDomainEvent } from '@/domain/shopping-list-item/events'
 import { toSSEEvent } from './shopping-list-events-do'
 
 export async function broadcastShoppingListEvent(
   env: CloudflareBindings,
   event: ShoppingListDomainEvent,
 ): Promise<void> {
-  const id = env.SHOPPING_LIST_EVENTS.idFromName(event.listId)
+  const id = env.SHOPPING_LIST_EVENTS.idFromName(event.householdId)
   const stub = env.SHOPPING_LIST_EVENTS.get(id)
 
   await stub.fetch('http://internal/broadcast', {

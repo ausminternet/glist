@@ -1,5 +1,5 @@
 import type { InventoryItemView } from '@glist/views'
 
 export interface InventoryItemQueryRepository {
-  findAllByHouseholdId(householdId: string): Promise<InventoryItemView[]>
+  getAll(householdId: string): Promise<InventoryItemView[]>
 }

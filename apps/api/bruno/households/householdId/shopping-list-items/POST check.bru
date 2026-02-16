@@ -1,0 +1,20 @@
+meta {
+  name: POST check
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/households/:householdId/shopping-list-items/:itemId/check
+  body: none
+  auth: inherit
+}
+
+params:path {
+  householdId:
+  itemId:
+}
+
+headers {
+  x-api-key: {{api_key}}
+}

@@ -1,0 +1,31 @@
+meta {
+  name: DELETE photo
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{base_url}}/households/:householdId/shopping-list-items/:itemId/photo
+  body: none
+  auth: inherit
+}
+
+params:path {
+  householdId:
+  itemId:
+}
+
+headers {
+  x-api-key: {{api_key}}
+}
+
+docs {
+  Delete the photo for a shopping list item.
+
+  Returns an error if the item has no photo.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

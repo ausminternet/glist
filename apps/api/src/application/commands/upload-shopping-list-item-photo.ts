@@ -38,7 +38,7 @@ export class UploadShoppingListItemPhotoCommandHandler {
       })
     }
 
-    const item = await this.shoppingListItemRepository.findById(command.itemId)
+    const item = await this.shoppingListItemRepository.find(command.itemId)
 
     if (!item) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })

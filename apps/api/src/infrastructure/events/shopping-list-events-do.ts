@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers'
 import type { ShoppingListSSEEvent } from '@glist/shared'
-import type { ShoppingListDomainEvent } from '@/domain/shopping-list/events'
+import type { ShoppingListDomainEvent } from '@/domain/shopping-list-item/events'
 
 const HEARTBEAT_INTERVAL_MS = 30_000 // 30 seconds
 

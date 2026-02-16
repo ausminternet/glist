@@ -5,21 +5,9 @@ import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-
 import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
 import { parseHouseholdId } from '@/domain/shared/household-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
-import { ShoppingList } from '@/domain/shopping-list/shopping-list'
-import { generateShoppingListId } from '@/domain/shopping-list/shopping-list-id'
 import type { ShoppingListItem } from '@/domain/shopping-list-item/shopping-list-item'
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import { AddShoppingListItemFromInventoryCommandHandler } from './add-shopping-list-item-from-inventory'
-
-function createTestShoppingList(householdId: string) {
-  const result = ShoppingList.create(
-    generateShoppingListId(),
-    parseHouseholdId(householdId),
-    'Test Shopping List',
-  )
-  if (!result.ok) throw new Error('Failed to create test shopping list')
-  return result.value
-}
 
 function createTestInventoryItem(
   householdId: string,
@@ -51,14 +39,13 @@ function createMockShoppingListItemRepository(): ShoppingListItemRepository & {
 } {
   const repository = {
     savedItem: null as ShoppingListItem | null,
-    findById: mock(() => Promise.resolve(null)),
-    findByShoppingListId: mock(() => Promise.resolve([])),
+    find: mock(() => Promise.resolve(null)),
     save: mock((item: ShoppingListItem) => {
       repository.savedItem = item
       return Promise.resolve()
     }),
     delete: mock(() => Promise.resolve()),
-    deleteCheckedByShoppingListId: mock(() => Promise.resolve()),
+    deleteCheckedByHouseholdId: mock(() => Promise.resolve()),
   }
   return repository
 }
@@ -78,7 +65,6 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
   const householdId = '00000000-0000-0000-0000-000000000001'
 
   test('adds item from inventory to shopping list', async () => {
-    const shoppingList = createTestShoppingList(householdId)
     const inventoryItem = createTestInventoryItem(householdId, {
       name: 'Milk',
       description: 'Organic whole milk',
@@ -91,10 +77,12 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
       inventoryItemRepository,
     )
 
-    const result = await handler.execute({
-      inventoryItemId: inventoryItem.id,
-      shoppingListId: shoppingList.id,
-    })
+    const result = await handler.execute(
+      {
+        inventoryItemId: inventoryItem.id,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
@@ -115,7 +103,6 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
       '00000000-0000-0000-0000-0000000000a1',
       '00000000-0000-0000-0000-0000000000a2',
     ]
-    const shoppingList = createTestShoppingList(householdId)
     const inventoryItem = createTestInventoryItem(householdId, {
       categoryId,
       shopIds,
@@ -128,10 +115,12 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
       inventoryItemRepository,
     )
 
-    const result = await handler.execute({
-      inventoryItemId: inventoryItem.id,
-      shoppingListId: shoppingList.id,
-    })
+    const result = await handler.execute(
+      {
+        inventoryItemId: inventoryItem.id,
+      },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
@@ -143,7 +132,6 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
   })
 
   test('returns INVENTORY_ITEM_NOT_FOUND when item does not exist', async () => {
-    const shoppingList = createTestShoppingList(householdId)
     const shoppingListItemRepository = createMockShoppingListItemRepository()
     const inventoryItemRepository = createMockInventoryItemRepository(null)
     const handler = new AddShoppingListItemFromInventoryCommandHandler(
@@ -151,10 +139,10 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
       inventoryItemRepository,
     )
 
-    const result = await handler.execute({
-      inventoryItemId: 'non-existent-item',
-      shoppingListId: shoppingList.id,
-    })
+    const result = await handler.execute(
+      { inventoryItemId: 'non-existent-item' },
+      { householdId },
+    )
 
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -164,7 +152,6 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
   })
 
   test('returns the id of the newly created shopping list item', async () => {
-    const shoppingList = createTestShoppingList(householdId)
     const inventoryItem = createTestInventoryItem(householdId)
     const shoppingListItemRepository = createMockShoppingListItemRepository()
     const inventoryItemRepository =
@@ -174,10 +161,10 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
       inventoryItemRepository,
     )
 
-    const result = await handler.execute({
-      inventoryItemId: inventoryItem.id,
-      shoppingListId: shoppingList.id,
-    })
+    const result = await handler.execute(
+      { inventoryItemId: inventoryItem.id },
+      { householdId },
+    )
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
@@ -187,7 +174,7 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
     expect(result.value.value).toBe(savedItem.id)
     expect(result.value.event).toEqual({
       type: 'item-added',
-      listId: shoppingList.id,
+      householdId,
       itemId: savedItem.id,
     })
   })

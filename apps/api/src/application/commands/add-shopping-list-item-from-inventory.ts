@@ -1,15 +1,14 @@
 import { err, okWithEvent, type Result } from '@glist/shared'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import type { ItemAddedEvent } from '@/domain/shopping-list/events'
-import { parseShoppingListId } from '@/domain/shopping-list/shopping-list-id'
+import type { ItemAddedEvent } from '@/domain/shopping-list-item/events'
 import { ShoppingListItem } from '@/domain/shopping-list-item/shopping-list-item'
 import { generateShoppingListItemId } from '@/domain/shopping-list-item/shopping-list-item-id'
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
+import type { RequestContext } from '../shared/request-context'
 
 export type AddShoppingListItemFromInventoryCommand = {
   inventoryItemId: string
-  shoppingListId: string
 }
 
 export type AddShoppingListItemFromInventoryError =
@@ -29,6 +28,7 @@ export class AddShoppingListItemFromInventoryCommandHandler {
 
   async execute(
     command: AddShoppingListItemFromInventoryCommand,
+    context: RequestContext,
   ): Promise<AddShoppingListItemFromInventoryResult> {
     const inventoryItem = await this.inventoryItemRepository.findById(
       command.inventoryItemId,
@@ -43,9 +43,9 @@ export class AddShoppingListItemFromInventoryCommandHandler {
 
     const shoppingListItem = ShoppingListItem.createFromInventoryItem(
       generateShoppingListItemId(),
-      parseShoppingListId(command.shoppingListId),
       {
         inventoryItemId: parseInventoryItemId(inventoryItem.id),
+        householdId: context.householdId,
         name: inventoryItem.name,
         description: inventoryItem.description,
         categoryId: inventoryItem.categoryId,
@@ -57,7 +57,7 @@ export class AddShoppingListItemFromInventoryCommandHandler {
 
     return okWithEvent(shoppingListItem.id, {
       type: 'item-added',
-      listId: command.shoppingListId,
+      householdId: context.householdId,
       itemId: shoppingListItem.id,
     })
   }

@@ -17,19 +17,18 @@ import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { DrizzleShoppingListItemQueryRepository } from '@/infrastructure/repositories/drizzle-shopping-list-item-query-repository'
 import { DrizzleShoppingListItemRepository } from '@/infrastructure/repositories/drizzle-shopping-list-item-repository'
-import { DrizzleShoppingListRepository } from '@/infrastructure/repositories/drizzle-shopping-list-repository'
 import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import type { HouseholdContext } from './context'
 
 const shoppingListItemsRouter = new Hono<HouseholdContext>()
 
-shoppingListItemsRouter.get('/:listId/items', async (c) => {
-  const listId = c.req.param('listId')
+shoppingListItemsRouter.get('/', async (c) => {
+  const householdId = c.get('householdId')
   const db = createDb(c.env.glist_db)
   const queryRepository = new DrizzleShoppingListItemQueryRepository(db)
   const query = new GetShoppingListItemsQueryHandler(queryRepository)
 
-  const result = await query.execute({ listId })
+  const result = await query.execute({ householdId })
 
   return c.json({ success: true, data: result })
 })
@@ -45,36 +44,28 @@ const AddShoppingListItemCommandSchema = z.object({
 
 // Add a new item to a shopping list
 shoppingListItemsRouter.post(
-  '/:listId/items',
+  '/',
   zValidator('json', AddShoppingListItemCommandSchema),
   async (c) => {
-    const listId = c.req.param('listId')
+    const householdId = c.get('householdId')
     const input = c.req.valid('json')
 
     const db = createDb(c.env.glist_db)
-    const shoppingListRepository = new DrizzleShoppingListRepository(db)
     const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
     const command = new AddShoppingListItemCommandHandler(
-      shoppingListRepository,
       shoppingListItemRepository,
     )
 
-    const result = await command.execute({ ...input, shoppingListId: listId })
+    const result = await command.execute({ ...input }, { householdId })
 
     if (!result.ok) {
       switch (result.error.type) {
-        case 'SHOPPING_LIST_NOT_FOUND':
-          console.error('Failed to add shopping list item', {
-            listId,
-            error: result.error,
-          })
-          return c.json({ success: false, error: result.error }, 404)
         case 'INVALID_NAME':
         case 'INVALID_QUANTITY':
         case 'INVALID_UNIT':
         case 'UNIT_WITHOUT_VALUE':
           console.error('Failed to add shopping list item', {
-            listId,
+            householdId,
             input,
             error: result.error,
           })
@@ -94,10 +85,10 @@ const AddShoppingListItemFromInventoryCommandSchema = z.object({
 
 // Add an item from inventory to a shopping list
 shoppingListItemsRouter.post(
-  '/:listId/items/from-inventory',
+  '/from-inventory',
   zValidator('json', AddShoppingListItemFromInventoryCommandSchema),
   async (c) => {
-    const listId = c.req.param('listId')
+    const householdId = c.get('householdId')
     const input = c.req.valid('json')
 
     const db = createDb(c.env.glist_db)
@@ -108,17 +99,19 @@ shoppingListItemsRouter.post(
       inventoryItemRepository,
     )
 
-    const result = await command.execute({
-      inventoryItemId: input.inventoryItemId,
-      shoppingListId: listId,
-    })
+    const result = await command.execute(
+      {
+        inventoryItemId: input.inventoryItemId,
+      },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {
         case 'SHOPPING_LIST_NOT_FOUND':
         case 'INVENTORY_ITEM_NOT_FOUND':
           console.error('Failed to add shopping list item from inventory', {
-            listId,
+            householdId,
             inventoryItemId: input.inventoryItemId,
             error: result.error,
           })
@@ -133,8 +126,8 @@ shoppingListItemsRouter.post(
 )
 
 // Check a shopping list item
-shoppingListItemsRouter.post('/:listId/items/:itemId/check', async (c) => {
-  const listId = c.req.param('listId')
+shoppingListItemsRouter.post('/:itemId/check', async (c) => {
+  const householdId = c.get('householdId')
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
   const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
@@ -148,7 +141,7 @@ shoppingListItemsRouter.post('/:listId/items/:itemId/check', async (c) => {
     switch (result.error.type) {
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to check shopping list item', {
-          listId,
+          householdId,
           itemId,
           error: result.error,
         })
@@ -162,8 +155,8 @@ shoppingListItemsRouter.post('/:listId/items/:itemId/check', async (c) => {
 })
 
 // Uncheck a shopping list item
-shoppingListItemsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
-  const listId = c.req.param('listId')
+shoppingListItemsRouter.post('/:itemId/uncheck', async (c) => {
+  const householdId = c.get('householdId')
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
   const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
@@ -177,7 +170,7 @@ shoppingListItemsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
     switch (result.error.type) {
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to uncheck shopping list item', {
-          listId,
+          householdId,
           itemId,
           error: result.error,
         })
@@ -191,28 +184,15 @@ shoppingListItemsRouter.post('/:listId/items/:itemId/uncheck', async (c) => {
 })
 
 // Clear all checked items from a shopping list
-shoppingListItemsRouter.post('/:listId/items/clear-checked', async (c) => {
-  const listId = c.req.param('listId')
+shoppingListItemsRouter.post('/clear-checked', async (c) => {
+  const householdId = c.get('householdId')
   const db = createDb(c.env.glist_db)
-  const shoppingListRepository = new DrizzleShoppingListRepository(db)
   const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
   const command = new ClearCheckedItemsCommandHandler(
-    shoppingListRepository,
     shoppingListItemRepository,
   )
 
-  const result = await command.execute({ shoppingListId: listId })
-
-  if (!result.ok) {
-    switch (result.error.type) {
-      case 'SHOPPING_LIST_NOT_FOUND':
-        console.error('Failed to clear checked items', {
-          listId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
-    }
-  }
+  await command.execute({ householdId })
 
   return c.json({ success: true })
 })
@@ -228,10 +208,10 @@ const ReplaceShoppingListItemCommandSchema = z.object({
 
 // Replace/update a shopping list item
 shoppingListItemsRouter.put(
-  '/:listId/items/:itemId',
+  '/:itemId',
   zValidator('json', ReplaceShoppingListItemCommandSchema),
   async (c) => {
-    const listId = c.req.param('listId')
+    const householdId = c.get('householdId')
     const itemId = c.req.param('itemId')
     const input = c.req.valid('json')
 
@@ -247,7 +227,7 @@ shoppingListItemsRouter.put(
       switch (result.error.type) {
         case 'SHOPPING_LIST_ITEM_NOT_FOUND':
           console.error('Failed to replace shopping list item', {
-            listId,
+            householdId,
             itemId,
             error: result.error,
           })
@@ -257,7 +237,7 @@ shoppingListItemsRouter.put(
         case 'INVALID_UNIT':
         case 'UNIT_WITHOUT_VALUE':
           console.error('Failed to replace shopping list item', {
-            listId,
+            householdId,
             itemId,
             input,
             error: result.error,
@@ -273,8 +253,8 @@ shoppingListItemsRouter.put(
 )
 
 // Remove a shopping list item
-shoppingListItemsRouter.delete('/:listId/items/:itemId', async (c) => {
-  const listId = c.req.param('listId')
+shoppingListItemsRouter.delete('/:itemId', async (c) => {
+  const householdId = c.get('householdId')
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
   const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
@@ -288,7 +268,7 @@ shoppingListItemsRouter.delete('/:listId/items/:itemId', async (c) => {
     switch (result.error.type) {
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to remove shopping list item', {
-          listId,
+          householdId,
           itemId,
           error: result.error,
         })
@@ -302,8 +282,8 @@ shoppingListItemsRouter.delete('/:listId/items/:itemId', async (c) => {
 })
 
 // Upload a photo for a shopping list item
-shoppingListItemsRouter.post('/:listId/items/:itemId/photo', async (c) => {
-  const listId = c.req.param('listId')
+shoppingListItemsRouter.post('/:itemId/photo', async (c) => {
+  const householdId = c.get('householdId')
   const itemId = c.req.param('itemId')
 
   const contentType = c.req.header('content-type')
@@ -340,14 +320,14 @@ shoppingListItemsRouter.post('/:listId/items/:itemId/photo', async (c) => {
     switch (result.error.type) {
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to upload shopping list item photo', {
-          listId,
+          householdId,
           itemId,
           error: result.error,
         })
         return c.json({ success: false, error: result.error }, 404)
       case 'INVALID_CONTENT_TYPE':
         console.error('Failed to upload shopping list item photo', {
-          listId,
+          householdId,
           itemId,
           contentType,
           error: result.error,
@@ -360,8 +340,8 @@ shoppingListItemsRouter.post('/:listId/items/:itemId/photo', async (c) => {
 })
 
 // Delete a photo from a shopping list item
-shoppingListItemsRouter.delete('/:listId/items/:itemId/photo', async (c) => {
-  const listId = c.req.param('listId')
+shoppingListItemsRouter.delete('/:itemId/photo', async (c) => {
+  const householdId = c.get('householdId')
   const itemId = c.req.param('itemId')
 
   const db = createDb(c.env.glist_db)
@@ -381,14 +361,14 @@ shoppingListItemsRouter.delete('/:listId/items/:itemId/photo', async (c) => {
     switch (result.error.type) {
       case 'SHOPPING_LIST_ITEM_NOT_FOUND':
         console.error('Failed to delete shopping list item photo', {
-          listId,
+          householdId,
           itemId,
           error: result.error,
         })
         return c.json({ success: false, error: result.error }, 404)
       case 'NO_PHOTO_EXISTS':
         console.error('Failed to delete shopping list item photo', {
-          listId,
+          householdId,
           itemId,
           error: result.error,
         })

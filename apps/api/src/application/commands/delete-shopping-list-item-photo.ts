@@ -20,7 +20,7 @@ export class DeleteShoppingListItemPhotoCommandHandler {
   async execute(
     command: DeleteShoppingListItemPhotoCommand,
   ): Promise<Result<void, DeleteShoppingListItemPhotoError>> {
-    const item = await this.shoppingListItemRepository.findById(command.itemId)
+    const item = await this.shoppingListItemRepository.find(command.itemId)
 
     if (!item) {
       return err({

@@ -3,9 +3,9 @@ import type { HouseholdContext } from './context.js'
 
 export const eventsRouter = new Hono<HouseholdContext>()
 
-eventsRouter.get('/shopping-lists/:listId/events', async (c) => {
-  const listId = c.req.param('listId')
-  const id = c.env.SHOPPING_LIST_EVENTS.idFromName(listId)
+eventsRouter.get('/shopping-list-items/events', async (c) => {
+  const householdId = c.get('householdId')
+  const id = c.env.SHOPPING_LIST_EVENTS.idFromName(householdId)
   const stub = c.env.SHOPPING_LIST_EVENTS.get(id)
 
   const response = await stub.fetch('http://internal/subscribe')

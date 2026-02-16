@@ -32,9 +32,7 @@ export class DrizzleInventoryItemQueryRepository
 {
   constructor(private db: Database) {}
 
-  async findAllByHouseholdId(
-    householdId: string,
-  ): Promise<InventoryItemView[]> {
+  async getAll(householdId: string): Promise<InventoryItemView[]> {
     const rows = await this.db
       .select()
       .from(inventoryItems)
