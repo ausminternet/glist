@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { CreateInventoryItemCommandHandler } from '@/application/commands/create-inventory-item'
+import { DeleteInventoryItemCommandHandler } from '@/application/commands/delete-inventory-item'
 import { DeleteInventoryItemPhotoCommandHandler } from '@/application/commands/delete-inventory-item-photo'
 import { ReplaceInventoryItemCommandHandler } from '@/application/commands/replace-inventory-item'
 import { UploadInventoryItemPhotoCommandHandler } from '@/application/commands/upload-inventory-item-photo'
@@ -135,13 +136,16 @@ inventoryItemsRouter.delete('/:id', async (c) => {
 
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleInventoryItemRepository(db)
+  const photoStorage = new R2PhotoStorage(
+    c.env.glist_photos,
+    c.env.PHOTO_URL_BASE,
+  )
+  const command = new DeleteInventoryItemCommandHandler(
+    repository,
+    photoStorage,
+  )
 
-  const item = await repository.findById(id)
-  if (!item || item.householdId !== householdId) {
-    return c.json({ success: true }) // Idempotent: nicht gefunden = ok
-  }
-
-  await repository.delete(id)
+  await command.execute({ inventoryItemId: id }, { householdId })
 
   return c.json({ success: true })
 })

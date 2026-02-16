@@ -140,6 +140,22 @@ export class DrizzleShoppingListItemRepository
     await this.db.delete(shoppingListItems).where(eq(shoppingListItems.id, id))
   }
 
+  async findCheckedByHouseholdId(
+    householdId: string,
+  ): Promise<ShoppingListItem[]> {
+    const rows = await this.db
+      .select()
+      .from(shoppingListItems)
+      .where(
+        and(
+          eq(shoppingListItems.householdId, householdId),
+          eq(shoppingListItems.checked, true),
+        ),
+      )
+
+    return rows.map((row) => toDomain(row, []))
+  }
+
   async deleteCheckedByHouseholdId(householdId: string): Promise<void> {
     // Shop associations are deleted via CASCADE
     await this.db

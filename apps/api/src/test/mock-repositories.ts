@@ -72,6 +72,11 @@ export function createMockShoppingListItemRepository(
     findById: mock((id: string) =>
       Promise.resolve(items.find((i) => i.id === id) ?? null),
     ),
+    findCheckedByHouseholdId: mock((householdId: string) =>
+      Promise.resolve(
+        items.filter((i) => i.householdId === householdId && i.checked),
+      ),
+    ),
     save: mock(() => Promise.resolve()),
     delete: mock(() => Promise.resolve()),
     deleteCheckedByHouseholdId: mock(() => Promise.resolve()),
@@ -82,6 +87,7 @@ export function createMockShoppingListItemRepositoryWithCapture(): MockShoppingL
   const repository: MockShoppingListItemRepositoryWithCapture = {
     savedItem: null,
     findById: mock(() => Promise.resolve(null)),
+    findCheckedByHouseholdId: mock(() => Promise.resolve([])),
     save: mock((item: ShoppingListItem) => {
       repository.savedItem = item
       return Promise.resolve()

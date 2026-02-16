@@ -6,8 +6,8 @@ import { AddShoppingListItemCommandHandler } from '@/application/commands/add-sh
 import { AddShoppingListItemFromInventoryCommandHandler } from '@/application/commands/add-shopping-list-item-from-inventory'
 import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
 import { ClearCheckedItemsCommandHandler } from '@/application/commands/clear-checked-items'
+import { DeleteShoppingListItemCommandHandler } from '@/application/commands/delete-shopping-list-item'
 import { DeleteShoppingListItemPhotoCommandHandler } from '@/application/commands/delete-shopping-list-item-photo'
-
 import { ReplaceShoppingListItemCommandHandler } from '@/application/commands/replace-shopping-list-item'
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
 import { UploadShoppingListItemPhotoCommandHandler } from '@/application/commands/upload-shopping-list-item-photo'
@@ -190,8 +190,13 @@ shoppingListItemsRouter.post('/clear-checked', async (c) => {
   const householdId = c.get('householdId')
   const db = createDb(c.env.glist_db)
   const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
+  const photoStorage = new R2PhotoStorage(
+    c.env.glist_photos,
+    c.env.PHOTO_URL_BASE,
+  )
   const command = new ClearCheckedItemsCommandHandler(
     shoppingListItemRepository,
+    photoStorage,
   )
 
   await command.execute({ householdId })
@@ -260,13 +265,16 @@ shoppingListItemsRouter.delete('/:itemId', async (c) => {
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleShoppingListItemRepository(db)
+  const photoStorage = new R2PhotoStorage(
+    c.env.glist_photos,
+    c.env.PHOTO_URL_BASE,
+  )
+  const command = new DeleteShoppingListItemCommandHandler(
+    repository,
+    photoStorage,
+  )
 
-  const item = await repository.findById(itemId)
-  if (!item || item.householdId !== householdId) {
-    return c.json({ success: true }) // Idempotent: nicht gefunden = ok
-  }
-
-  await repository.delete(itemId)
+  await command.execute({ itemId }, { householdId })
 
   await broadcastShoppingListEvent(c.env, {
     type: 'item-removed',
