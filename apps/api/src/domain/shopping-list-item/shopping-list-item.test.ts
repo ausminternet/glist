@@ -1,27 +1,26 @@
 import { describe, expect, test } from 'bun:test'
-import { parseCategoryId } from '../category/category-id'
+import { generateCategoryId } from '../category/category-id'
 import { generateHouseholdId } from '../household/household-id'
-import { parseInventoryItemId } from '../inventory-item/inventory-item-id'
-import { parseShopIds } from '../shop/shop-id'
+import { generateInventoryItemId } from '../inventory-item/inventory-item-id'
+import { generateShopId } from '../shop/shop-id'
 import { ShoppingListItem } from './shopping-list-item'
 import { generateShoppingListItemId } from './shopping-list-item-id'
 
 describe('ShoppingListItem', () => {
-  const householdId = '12345678-1234-1234-1234-1234567890ab'
+  const householdId = generateHouseholdId()
 
   describe('create', () => {
     test('creates item with all properties', () => {
+      const categoryId = generateCategoryId()
+      const shopIds = [generateShopId(), generateShopId()]
       const result = ShoppingListItem.create(generateShoppingListItemId(), {
         householdId,
         name: 'Organic Milk',
         description: 'From the farm',
-        categoryId: parseCategoryId('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'),
+        categoryId,
         quantity: 2,
         quantityUnit: 'l',
-        shopIds: parseShopIds([
-          'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
-          'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
-        ]),
+        shopIds,
       })
 
       expect(result.ok).toBe(true)
@@ -31,41 +30,36 @@ describe('ShoppingListItem', () => {
       expect(item.id).toBeDefined()
       expect(item.name).toBe('Organic Milk')
       expect(item.description).toBe('From the farm')
-      expect(item.categoryId).toBe(
-        parseCategoryId('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'),
-      )
+      expect(item.categoryId).toBe(categoryId)
       expect(item.quantity).toBe(2)
       expect(item.quantityUnit).toBe('l')
       expect(item.checked).toBe(false)
-      expect(item.shopIds).toEqual(
-        parseShopIds([
-          'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
-          'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
-        ]),
-      )
+      expect(item.shopIds).toEqual(shopIds)
       expect(item.createdAt).toBeInstanceOf(Date)
       expect(item.updatedAt).toBeNull()
     })
 
     test('returns INVALID_NAME error for empty name', () => {
-      const result1 = ShoppingListItem.create(generateShoppingListItemId(), {
+      const result = ShoppingListItem.create(generateShoppingListItemId(), {
         householdId,
         name: '',
       })
-      expect(result1.ok).toBe(false)
-      if (result1.ok) return
-      expect(result1.error).toEqual({
+      expect(result.ok).toBe(false)
+      if (result.ok) return
+      expect(result.error).toEqual({
         type: 'INVALID_NAME',
         reason: 'Name cannot be empty',
       })
+    })
 
-      const result2 = ShoppingListItem.create(generateShoppingListItemId(), {
+    test('returns INVALID_NAME error for whitespace-only name', () => {
+      const result = ShoppingListItem.create(generateShoppingListItemId(), {
         householdId,
         name: '   ',
       })
-      expect(result2.ok).toBe(false)
-      if (result2.ok) return
-      expect(result2.error).toEqual({
+      expect(result.ok).toBe(false)
+      if (result.ok) return
+      expect(result.error).toEqual({
         type: 'INVALID_NAME',
         reason: 'Name cannot be empty',
       })
@@ -160,17 +154,12 @@ describe('ShoppingListItem', () => {
   describe('createFromInventoryItem', () => {
     test('creates shopping list item from inventory item', () => {
       const inventoryItem = {
-        inventoryItemId: parseInventoryItemId(
-          'e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a55',
-        ),
+        inventoryItemId: generateInventoryItemId(),
         householdId: generateHouseholdId(),
         name: 'Milk',
         description: 'Organic whole milk',
-        categoryId: parseCategoryId('f5eebc99-9c0b-4ef8-bb6d-6bb9bd380a66'),
-        shopIds: parseShopIds([
-          'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
-          'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
-        ]),
+        categoryId: generateCategoryId(),
+        shopIds: [generateShopId(), generateShopId()],
       }
 
       const shoppingListItem = ShoppingListItem.createFromInventoryItem(

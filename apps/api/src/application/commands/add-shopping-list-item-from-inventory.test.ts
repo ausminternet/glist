@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
-import { parseCategoryId } from '@/domain/category/category-id'
-import { parseHouseholdId } from '@/domain/household/household-id'
-import { parseShopIds } from '@/domain/shop/shop-id'
+import { generateCategoryId } from '@/domain/category/category-id'
+import { generateHouseholdId } from '@/domain/household/household-id'
+import { generateShopId } from '@/domain/shop/shop-id'
 import {
   createMockInventoryItemRepository,
   createMockShoppingListItemRepositoryWithCapture,
@@ -9,7 +9,7 @@ import {
 } from '@/test'
 import { AddShoppingListItemFromInventoryCommandHandler } from './add-shopping-list-item-from-inventory'
 
-const householdId = parseHouseholdId('00000000-0000-0000-0000-000000000001')
+const householdId = generateHouseholdId()
 
 describe('AddShoppingListItemFromInventoryCommandHandler', () => {
   test('adds item from inventory to shopping list', async () => {
@@ -49,11 +49,8 @@ describe('AddShoppingListItemFromInventoryCommandHandler', () => {
   })
 
   test('copies category and shops from inventory item', async () => {
-    const categoryId = parseCategoryId('00000000-0000-0000-0000-0000000000ca')
-    const shopIds = parseShopIds([
-      '00000000-0000-0000-0000-0000000000a1',
-      '00000000-0000-0000-0000-0000000000a2',
-    ])
+    const categoryId = generateCategoryId()
+    const shopIds = [generateShopId(), generateShopId()]
     const inventoryItem = createTestInventoryItem({
       householdId,
       categoryId,

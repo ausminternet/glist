@@ -68,6 +68,26 @@ describe('Quantity', () => {
       if (result.ok) return
       expect(result.error).toEqual({ type: 'INVALID_UNIT', unit: 'cats' })
     })
+
+    test('accepts all valid unit types', () => {
+      const units = [
+        'piece',
+        'kg',
+        'g',
+        'l',
+        'ml',
+        'can',
+        'bottle',
+        'pack',
+      ] as const
+
+      for (const unit of units) {
+        const result = Quantity.create(5, unit)
+        expect(result.ok).toBe(true)
+        if (!result.ok) return
+        expect(result.value.unit).toBe(unit)
+      }
+    })
   })
 
   describe('empty', () => {

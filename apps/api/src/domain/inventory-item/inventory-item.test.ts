@@ -1,30 +1,30 @@
 import { describe, expect, test } from 'bun:test'
-import { parseCategoryId } from '../category/category-id'
-import { parseHouseholdId } from '../household/household-id'
-import { parseShopIds } from '../shop/shop-id'
+import { generateCategoryId } from '../category/category-id'
+import { generateHouseholdId } from '../household/household-id'
+import { generateShopId } from '../shop/shop-id'
 import { InventoryItem } from './inventory-item'
 import { generateInventoryItemId } from './inventory-item-id'
 
 describe('InventoryItem', () => {
-  const householdId = parseHouseholdId('00000000-0000-0000-0000-000000000123')
+  const householdId = generateHouseholdId()
 
   describe('create', () => {
     test('creates item with all properties', () => {
+      const categoryId = generateCategoryId()
+      const shopIds = [generateShopId(), generateShopId()]
+
       const result = InventoryItem.create(
         generateInventoryItemId(),
         householdId,
         {
           name: 'Milk',
           description: 'Organic whole milk',
-          categoryId: parseCategoryId('00000000-0000-0000-0000-00000000da17'),
+          categoryId,
           targetStock: 2,
           targetStockUnit: 'l',
           basePriceCents: 199,
           basePriceUnit: 'l',
-          shopIds: parseShopIds([
-            '00000000-0000-0000-0000-000000000001',
-            '00000000-0000-0000-0000-000000000002',
-          ]),
+          shopIds,
         },
       )
 
@@ -36,19 +36,12 @@ describe('InventoryItem', () => {
       expect(item.householdId).toBe(householdId)
       expect(item.name).toBe('Milk')
       expect(item.description).toBe('Organic whole milk')
-      expect(item.categoryId).toBe(
-        parseCategoryId('00000000-0000-0000-0000-00000000da17'),
-      )
+      expect(item.categoryId).toBe(categoryId)
       expect(item.targetStock).toBe(2)
       expect(item.targetStockUnit).toBe('l')
       expect(item.basePriceCents).toBe(199)
       expect(item.basePriceUnit).toBe('l')
-      expect(item.shopIds).toEqual(
-        parseShopIds([
-          '00000000-0000-0000-0000-000000000001',
-          '00000000-0000-0000-0000-000000000002',
-        ]),
-      )
+      expect(item.shopIds).toEqual(shopIds)
       expect(item.createdAt).toBeInstanceOf(Date)
       expect(item.updatedAt).toBeNull()
     })

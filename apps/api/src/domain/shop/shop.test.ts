@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test'
-import { parseHouseholdId } from '../household/household-id'
+import { generateHouseholdId } from '@/domain/household/household-id'
 import { Shop } from './shop'
 import { generateShopId } from './shop-id'
 
 describe('Shop', () => {
-  const householdId = parseHouseholdId('00000000-0000-0000-0000-000000000123')
+  const householdId = generateHouseholdId()
 
   describe('create', () => {
     test('creates shop with name', () => {

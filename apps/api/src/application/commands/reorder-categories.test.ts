@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { parseHouseholdId } from '@/domain/household/household-id'
+import { generateHouseholdId } from '@/domain/household/household-id'
 import { createMockCategoryRepository, createTestCategory } from '@/test'
 import { ReorderCategoriesCommandHandler } from './reorder-categories'
 
-const householdId = parseHouseholdId('00000000-0000-0000-0000-000000000001')
+const householdId = generateHouseholdId()
 
 describe('ReorderCategoriesCommandHandler', () => {
   test('reorders categories successfully', async () => {
