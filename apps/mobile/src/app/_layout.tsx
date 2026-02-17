@@ -26,13 +26,20 @@ function RootNav() {
   return (
     <Stack>
       <Stack.Protected guard={!householdId}>
-        <Stack.Screen name="index" options={{ animation: 'fade' }} />
+        <Stack.Screen
+          name="index"
+          options={{
+            title: 'Haushalte',
+            headerLargeTitleEnabled: true,
+            animation: 'slide_from_left',
+          }}
+        />
       </Stack.Protected>
 
       <Stack.Protected guard={!!householdId}>
         <Stack.Screen
           name="household"
-          options={{ headerShown: false, animation: 'fade' }}
+          options={{ headerShown: false, animation: 'slide_from_right' }}
         />
       </Stack.Protected>
     </Stack>

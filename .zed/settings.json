@@ -9,6 +9,7 @@
         "!angular",
         "!typescrpt-language-server",
         "vtsls",
+        "...",
       ],
       "formatter": { "language_server": { "name": "biome" } },
       "code_actions_on_format": {
@@ -25,6 +26,7 @@
         "!angular",
         "!typescript-language-server",
         "vtsls",
+        "...",
       ],
       "formatter": { "language_server": { "name": "biome" } },
       "code_actions_on_format": {
@@ -35,7 +37,12 @@
       },
     },
     "TSX": {
-      "language_servers": ["!eslint", "!typescript-language-server", "vtsls"],
+      "language_servers": [
+        "!eslint",
+        "!typescript-language-server",
+        "vtsls",
+        "...",
+      ],
       "formatter": { "language_server": { "name": "biome" } },
       "code_actions_on_format": {
         "source.fixAll.biome": true,

@@ -1,16 +1,27 @@
-import { Link, Stack } from 'expo-router'
+import { useQueryClient } from '@tanstack/react-query'
+import { Stack } from 'expo-router'
 import { useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
-import { ScrollView, Switch } from 'react-native-gesture-handler'
+import { PlatformColor, Pressable, Text, View } from 'react-native'
+import {
+  RefreshControl,
+  ScrollView,
+  Switch,
+} from 'react-native-gesture-handler'
 import { useBootstrap } from '@/api/bootstrap'
+import { useHousehold } from '@/api/households/use-household'
+import { useInventoryItems } from '@/api/inventory-items'
 import { useShoppingListItems } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
+import { HouseholdSwitcher } from '@/components/household-switcher.component'
+import { List } from '@/components/list.components'
+import { ListItem } from '@/components/list-item.component'
 import {
   useHouseholdContext,
   useHouseholdId,
 } from '@/provider/household-provider'
 
 export default function Index() {
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [withNoShop, setWithNoShop] = useState(false)
   const householdId = useHouseholdId()
   const { error, isSuccess } = useBootstrap(householdId)
@@ -18,8 +29,18 @@ export default function Index() {
     householdId,
     isSuccess,
   )
+  const { inventoryItems } = useInventoryItems(householdId)
   const { shops } = useShops(householdId, isSuccess)
   const { clearHousehold } = useHouseholdContext()
+  const household = useHousehold(householdId)
+
+  const queryClient = useQueryClient()
+
+  const handleOnRefetch = async () => {
+    setIsRefreshing(true)
+    await queryClient.invalidateQueries()
+    setIsRefreshing(false)
+  }
 
   const handleSwitchHousehold = async () => {
     await clearHousehold()
@@ -54,42 +75,81 @@ export default function Index() {
     <>
       <Stack.Screen
         options={{
-          title: 'Haushalt',
+          title: household.name,
           headerLargeTitleEnabled: true,
+          headerLeft: () => <HouseholdSwitcher />,
         }}
       />
 
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          justifyContent: 'center',
-          alignItems: 'center',
+          padding: 16,
+          gap: 24,
+          flexDirection: 'column',
         }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleOnRefetch}
+          />
+        }
       >
-        <Text>Haushalt: {householdId}</Text>
-        <Link href={`/household/inventory`}>Inventar</Link>
-        <View style={{ height: 10 }} />
+        <List>
+          <ListItem
+            title="Vorräte"
+            href="/household/inventory"
+            icon="tray.circle.fill"
+            iconSize={38}
+            iconTintColor={PlatformColor('systemMint')}
+            right={inventoryItems.length}
+          />
+        </List>
 
-        <Link href={`/household/shopping-lists`}>
-          <Text>Einkaufsliste {itemCounts.all}</Text>
-        </Link>
+        <List>
+          <ListItem
+            title="Einkaufsliste"
+            href="/household/shopping-lists"
+            icon="cart.circle.fill"
+            iconSize={38}
+            iconTintColor={PlatformColor('systemBlue')}
+            right={itemCounts.unchecked}
+          />
+        </List>
 
-        <Text>NoShop? {withNoShop ? 'Ja' : 'Nein'}</Text>
-
-        <Switch value={withNoShop} onValueChange={setWithNoShop} />
-
-        {shopsWithItemCount.map((shop) => (
-          <Link
-            key={shop.id}
-            href={`/household/shopping-lists?shopId=${shop.id}${withNoShop ? '&withNoShop=true' : ''}`}
+        <View>
+          <Text
+            style={{
+              fontSize: 18,
+              marginBlockStart: 8,
+              marginBlockEnd: 16,
+              paddingLeft: 20,
+              fontWeight: 'bold',
+              color: PlatformColor('label'),
+            }}
           >
-            <Text>
-              {shop.name} {shop.itemCount}
-            </Text>
-          </Link>
-        ))}
-
-        <View style={{ height: 20 }} />
+            Smarte Listen
+          </Text>
+          <List>
+            <ListItem
+              title="Inkl. Artikel ohne Geschäft"
+              right={
+                <Switch
+                  value={withNoShop}
+                  onChange={(event) => setWithNoShop(event.nativeEvent.value)}
+                />
+              }
+            />
+            {shopsWithItemCount.map((shop) => (
+              <ListItem
+                key={shop.id}
+                title={shop.name}
+                right={shop.itemCount}
+                href={`/household/shopping-lists?shopId=${shop.id}${withNoShop ? '&withNoShop=true' : ''}`}
+              />
+            ))}
+          </List>
+        </View>
 
         <Pressable onPress={handleSwitchHousehold} style={{ padding: 10 }}>
           <Text style={{ color: 'gray' }}>Haushalt wechseln</Text>

@@ -1,29 +1,27 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { Redirect } from 'expo-router'
-import { Button, Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import { useHouseholds } from '@/api/households/use-households'
+import { List } from '@/components/list.components'
+import { ListItem } from '@/components/list-item.component'
 import { useHouseholdContext } from '@/provider/household-provider'
 
 export default function HouseholdsScreen() {
   const { households } = useHouseholds()
   const { selectHousehold, householdId, householdNotFound } =
     useHouseholdContext()
-  const queryClient = useQueryClient()
-
-  const handleReload = () => {
-    queryClient.invalidateQueries()
-  }
 
   if (householdId) {
     return <Redirect href="/household" />
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+    <ScrollView
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        padding: 16,
+        gap: 24,
+        flexDirection: 'column',
       }}
     >
       {householdNotFound && (
@@ -41,21 +39,16 @@ export default function HouseholdsScreen() {
         </View>
       )}
 
-      <Text style={{ fontSize: 20, marginBottom: 20 }}>Haushalt auswählen</Text>
-
-      <Button title="Reload" onPress={handleReload} />
-
-      {households?.map((household) => (
-        <Pressable
-          key={household.id}
-          onPress={() => selectHousehold(household.id)}
-          style={{ padding: 10 }}
-        >
-          <Text>
-            {household.name} {household.id}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
+      <List>
+        {households.map((household) => (
+          <ListItem
+            key={household.id}
+            onPress={() => selectHousehold(household.id)}
+            title={household.name}
+            subtitle={household.id}
+          />
+        ))}
+      </List>
+    </ScrollView>
   )
 }
