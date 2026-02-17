@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Stack } from 'expo-router'
 import { useState } from 'react'
-import { PlatformColor, Pressable, Text, View } from 'react-native'
+import { PlatformColor, Text, View } from 'react-native'
 import { RefreshControl, ScrollView } from 'react-native-gesture-handler'
 import { useBootstrap } from '@/api/bootstrap'
 import { useHousehold } from '@/api/households/use-household'
@@ -12,10 +12,7 @@ import { HouseholdSwitcher } from '@/components/household-switcher.component'
 import { List } from '@/components/list.components'
 import { ListItem } from '@/components/list-item.component'
 import { PersistedSwitch } from '@/components/persisted-switch.component'
-import {
-  useHouseholdContext,
-  useHouseholdId,
-} from '@/provider/household-provider'
+import { useHouseholdId } from '@/provider/household-provider'
 import { WITH_NO_SHOP_STORAGE_KEY } from '@/provider/storage-keys'
 
 export default function Index() {
@@ -29,7 +26,6 @@ export default function Index() {
   )
   const { inventoryItems } = useInventoryItems(householdId)
   const { shops } = useShops(householdId, isSuccess)
-  const { clearHousehold } = useHouseholdContext()
   const household = useHousehold(householdId)
 
   const queryClient = useQueryClient()
@@ -38,10 +34,6 @@ export default function Index() {
     setIsRefreshing(true)
     await queryClient.invalidateQueries()
     setIsRefreshing(false)
-  }
-
-  const handleSwitchHousehold = async () => {
-    await clearHousehold()
   }
 
   const shopsWithItems = shops.filter(
@@ -148,10 +140,6 @@ export default function Index() {
             ))}
           </List>
         </View>
-
-        <Pressable onPress={handleSwitchHousehold} style={{ padding: 10 }}>
-          <Text style={{ color: 'gray' }}>Haushalt wechseln</Text>
-        </Pressable>
       </ScrollView>
     </>
   )

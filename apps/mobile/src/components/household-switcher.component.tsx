@@ -7,8 +7,7 @@ import { useHouseholds } from '@/api/households/use-households'
 import { useHouseholdContext } from '@/provider/household-provider'
 
 export const HouseholdSwitcher: FC = () => {
-  const { selectHousehold, householdId } = useHouseholdContext()
-
+  const { selectHousehold, householdId, clearHousehold } = useHouseholdContext()
   const { households } = useHouseholds()
 
   return (
@@ -47,6 +46,12 @@ export const HouseholdSwitcher: FC = () => {
                 )}
               </DropdownMenu.Item>
             ))}
+        </DropdownMenu.Group>
+        <DropdownMenu.Group>
+          <DropdownMenu.Item key="clear" onSelect={() => clearHousehold()}>
+            <DropdownMenu.ItemTitle>Haushaltsauswahl</DropdownMenu.ItemTitle>
+            <DropdownMenu.ItemIcon ios={{ name: 'arrow.left.arrow.right' }} />
+          </DropdownMenu.Item>
         </DropdownMenu.Group>
       </DropdownMenu.Content>
     </DropdownMenu.Root>

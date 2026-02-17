@@ -13,7 +13,6 @@ export const List: FC<ListProps> = ({ children, style, ...rest }) => {
 
 const Styles = StyleSheet.create({
   container: {
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
     borderRadius: 28,
     overflow: 'hidden',
     backgroundColor: PlatformColor('secondarySystemGroupedBackground'),
