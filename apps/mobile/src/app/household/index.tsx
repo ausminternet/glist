@@ -2,11 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Stack } from 'expo-router'
 import { useState } from 'react'
 import { PlatformColor, Pressable, Text, View } from 'react-native'
-import {
-  RefreshControl,
-  ScrollView,
-  Switch,
-} from 'react-native-gesture-handler'
+import { RefreshControl, ScrollView } from 'react-native-gesture-handler'
 import { useBootstrap } from '@/api/bootstrap'
 import { useHousehold } from '@/api/households/use-household'
 import { useInventoryItems } from '@/api/inventory-items'
@@ -15,10 +11,12 @@ import { useShops } from '@/api/shops'
 import { HouseholdSwitcher } from '@/components/household-switcher.component'
 import { List } from '@/components/list.components'
 import { ListItem } from '@/components/list-item.component'
+import { PersistedSwitch } from '@/components/persisted-switch.component'
 import {
   useHouseholdContext,
   useHouseholdId,
 } from '@/provider/household-provider'
+import { WITH_NO_SHOP_STORAGE_KEY } from '@/provider/storage-keys'
 
 export default function Index() {
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -134,9 +132,9 @@ export default function Index() {
             <ListItem
               title="Inkl. Artikel ohne Geschäft"
               right={
-                <Switch
-                  value={withNoShop}
-                  onChange={(event) => setWithNoShop(event.nativeEvent.value)}
+                <PersistedSwitch
+                  storageKey={WITH_NO_SHOP_STORAGE_KEY}
+                  onValueChange={setWithNoShop}
                 />
               }
             />
