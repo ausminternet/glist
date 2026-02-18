@@ -33,7 +33,9 @@ export function useHouseholdId() {
   const { householdId } = useHouseholdContext()
 
   if (!householdId) {
-    throw new Error('No household selected')
+    throw new Error(
+      'No household selected. This hook had been called before the household was selected.',
+    )
   }
 
   return householdId
