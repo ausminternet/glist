@@ -32,7 +32,7 @@ export const HouseholdSwitcher: FC = () => {
             <DropdownMenu.ItemIcon ios={{ name: 'gear' }} />
           </DropdownMenu.Item>*/}
 
-          {households.length > 1 &&
+          {households.length > 0 &&
             households.map((household) => (
               <DropdownMenu.Item
                 key={household.id}
@@ -51,6 +51,12 @@ export const HouseholdSwitcher: FC = () => {
           <DropdownMenu.Item key="clear" onSelect={() => clearHousehold()}>
             <DropdownMenu.ItemTitle>Haushaltsauswahl</DropdownMenu.ItemTitle>
             <DropdownMenu.ItemIcon ios={{ name: 'arrow.left.arrow.right' }} />
+          </DropdownMenu.Item>
+        </DropdownMenu.Group>
+        <DropdownMenu.Group>
+          <DropdownMenu.Item key="gear" onSelect={() => clearHousehold()}>
+            <DropdownMenu.ItemTitle>Einstellungen</DropdownMenu.ItemTitle>
+            <DropdownMenu.ItemIcon ios={{ name: 'gear' }} />
           </DropdownMenu.Item>
         </DropdownMenu.Group>
       </DropdownMenu.Content>

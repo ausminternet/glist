@@ -35,7 +35,7 @@ function RootNav() {
           options={{
             title: 'Haushalte',
             headerLargeTitleEnabled: true,
-            animation: 'slide_from_left',
+            animation: 'fade',
           }}
         />
       </Stack.Protected>
@@ -43,7 +43,7 @@ function RootNav() {
       <Stack.Protected guard={!!household}>
         <Stack.Screen
           name="household"
-          options={{ headerShown: false, animation: 'slide_from_right' }}
+          options={{ headerShown: false, animation: 'fade' }}
         />
       </Stack.Protected>
     </Stack>
