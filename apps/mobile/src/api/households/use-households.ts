@@ -7,11 +7,7 @@ import { getHouseholds } from './get-households'
 export function useHouseholds() {
   const { householdNotFound } = useHouseholdContext()
 
-  const {
-    data = [],
-    refetch,
-    ...rest
-  } = useQuery({
+  const { data, isPending, refetch, ...rest } = useQuery({
     queryKey: queryKeys.households(),
     queryFn: getHouseholds,
     staleTime: 5 * 60 * 1000,
@@ -24,5 +20,5 @@ export function useHouseholds() {
     }
   }, [householdNotFound, refetch])
 
-  return { households: data, refetch, ...rest }
+  return { households: data ?? [], isPending, refetch, ...rest }
 }

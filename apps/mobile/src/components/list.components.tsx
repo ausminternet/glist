@@ -1,5 +1,6 @@
 import type { FC, PropsWithChildren } from 'react'
-import { PlatformColor, StyleSheet, View, type ViewProps } from 'react-native'
+import { StyleSheet, View, type ViewProps } from 'react-native'
+import { colors } from './colors'
 
 type ListProps = PropsWithChildren<ViewProps>
 
@@ -15,6 +16,6 @@ const Styles = StyleSheet.create({
   container: {
     borderRadius: 28,
     overflow: 'hidden',
-    backgroundColor: PlatformColor('secondarySystemGroupedBackground'),
+    backgroundColor: colors.groupedBackground.secondary,
   },
 })

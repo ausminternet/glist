@@ -1,5 +1,6 @@
 import type { FC } from 'react'
-import { PlatformColor, View } from 'react-native'
+import { View } from 'react-native'
+import { colors } from './colors'
 
 export interface ListItemDividerProps {
   inset?: boolean
@@ -16,7 +17,7 @@ export const ListItemDivider: FC<ListItemDividerProps> = ({
         opacity: pressed ? 0 : 1,
         marginInlineStart: inset ? 44 : 0,
         height: 1,
-        backgroundColor: PlatformColor('separator'),
+        backgroundColor: colors.separator.default,
       }}
     />
   )

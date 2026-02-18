@@ -1,13 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Stack } from 'expo-router'
 import { useState } from 'react'
-import { PlatformColor, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 import { RefreshControl, ScrollView } from 'react-native-gesture-handler'
 import { useBootstrap } from '@/api/bootstrap'
 import { useHousehold } from '@/api/households/use-household'
 import { useInventoryItems } from '@/api/inventory-items'
 import { useShoppingListItems } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
+import { colors } from '@/components/colors'
 import { HouseholdSwitcher } from '@/components/household-switcher.component'
 import { List } from '@/components/list.components'
 import { ListItem } from '@/components/list-item.component'
@@ -33,6 +34,7 @@ export default function Index() {
   const handleOnRefetch = async () => {
     setIsRefreshing(true)
     await queryClient.invalidateQueries()
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     setIsRefreshing(false)
   }
 
@@ -65,7 +67,7 @@ export default function Index() {
     <>
       <Stack.Screen
         options={{
-          title: household.name,
+          title: household?.name,
           headerLargeTitleEnabled: true,
           headerLeft: () => <HouseholdSwitcher />,
         }}
@@ -91,7 +93,7 @@ export default function Index() {
             href="/household/inventory"
             icon="tray.circle.fill"
             iconSize={38}
-            iconTintColor={PlatformColor('systemMint')}
+            iconTintColor={colors.system.mint}
             right={inventoryItems.length}
           />
         </List>
@@ -102,7 +104,7 @@ export default function Index() {
             href="/household/shopping-lists"
             icon="cart.circle.fill"
             iconSize={38}
-            iconTintColor={PlatformColor('systemBlue')}
+            iconTintColor={colors.system.blue}
             right={itemCounts.unchecked}
           />
         </List>
@@ -115,7 +117,7 @@ export default function Index() {
               marginBlockEnd: 16,
               paddingLeft: 20,
               fontWeight: 'bold',
-              color: PlatformColor('label'),
+              color: colors.label.primary,
             }}
           >
             Smarte Listen

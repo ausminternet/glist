@@ -1,10 +1,10 @@
 import { SymbolView } from 'expo-symbols'
 import type { FC } from 'react'
-import { PlatformColor } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import * as DropdownMenu from 'zeego/dropdown-menu'
 import { useHouseholds } from '@/api/households/use-households'
 import { useHouseholdContext } from '@/provider/household-provider'
+import { colors } from './colors'
 
 export const HouseholdSwitcher: FC = () => {
   const { selectHousehold, householdId, clearHousehold } = useHouseholdContext()
@@ -18,7 +18,7 @@ export const HouseholdSwitcher: FC = () => {
             name="house"
             size={24}
             style={{ margin: 6 }}
-            tintColor={PlatformColor('label')}
+            tintColor={colors.label.primary}
           />
         </Pressable>
       </DropdownMenu.Trigger>

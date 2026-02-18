@@ -2,27 +2,38 @@ import * as Haptics from 'expo-haptics'
 import { type Href, useRouter } from 'expo-router'
 import { type SFSymbol, SymbolView } from 'expo-symbols'
 import { type FC, type ReactNode, useState } from 'react'
-import { type ColorValue, PlatformColor, Text, View } from 'react-native'
+import { type ColorValue, Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
+import { colors } from './colors'
 import { ListItemDivider } from './list-item-divider.component'
 
-export interface ListItemProps {
+type BaseListItemProps = {
   title: string
   afterTitle?: ReactNode
   subtitle?: string | ReactNode
   onPress?: () => void
   href?: Href
-  left?: ReactNode
   icon?: SFSymbol
   right?: ReactNode
   iconTintColor?: ColorValue
   iconSize?: number
   chevron?: boolean
-  checkbox?: boolean
-  onToggleCheckbox?: (newValue: boolean) => void
-  checked?: boolean
   compact?: boolean
 }
+
+type WithCheckbox = BaseListItemProps & {
+  onToggleCheckbox: (newValue: boolean) => void
+  checked: boolean
+  left?: never
+}
+
+type WithLeft = BaseListItemProps & {
+  left?: ReactNode
+  onToggleCheckbox?: never
+  checked?: never
+}
+
+export type ListItemProps = WithCheckbox | WithLeft
 
 export const ListItem: FC<ListItemProps> = ({
   title,
@@ -33,7 +44,7 @@ export const ListItem: FC<ListItemProps> = ({
   right,
   left,
   icon,
-  iconTintColor = PlatformColor('secondaryLabel'),
+  iconTintColor = colors.label.secondary,
   iconSize = 32,
   chevron = true,
   onToggleCheckbox,
@@ -56,16 +67,14 @@ export const ListItem: FC<ListItemProps> = ({
 
   return (
     <Pressable
-      style={({ pressed }) => ({
+      style={{
         backgroundColor:
-          pressed && shouldIndicatePress
-            ? PlatformColor('systemGray5')
-            : 'transparent',
-        paddingHorizontal: 16,
+          pressed && shouldIndicatePress ? colors.gray.gray5 : 'transparent',
+        paddingInline: 16,
         paddingBlockStart: 1,
-        marginBottom: -1,
+        marginBlockEnd: -1,
         zIndex: pressed ? 1 : 0,
-      })}
+      }}
       onPress={handleOnPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
@@ -102,11 +111,7 @@ export const ListItem: FC<ListItemProps> = ({
               <SymbolView
                 name={checked ? 'checkmark.circle.fill' : 'circle'}
                 size={32}
-                tintColor={
-                  checked
-                    ? PlatformColor('systemBlue')
-                    : PlatformColor('tertiaryLabelColor')
-                }
+                tintColor={checked ? colors.system.blue : colors.label.tertiary}
               />
             </Pressable>
           )}
@@ -134,7 +139,7 @@ export const ListItem: FC<ListItemProps> = ({
             style={{
               justifyContent: 'center',
               gap: 6,
-              paddingVertical: 14,
+              paddingBlock: 14,
             }}
           >
             <View
@@ -145,9 +150,7 @@ export const ListItem: FC<ListItemProps> = ({
                   fontSize: compact ? 15 : 17,
                   fontWeight: compact ? '600' : 'normal',
                   textDecorationLine: checked ? 'line-through' : undefined,
-                  color: checked
-                    ? PlatformColor('tertiaryLabelColor')
-                    : PlatformColor('labelColor'),
+                  color: checked ? colors.label.tertiary : colors.label.primary,
                 }}
               >
                 {title}
@@ -161,7 +164,7 @@ export const ListItem: FC<ListItemProps> = ({
                 style={{
                   fontSize: 15,
                   maxWidth: 200,
-                  color: PlatformColor('secondaryLabelColor'),
+                  color: colors.label.secondary,
                 }}
               >
                 {subtitle}
@@ -176,15 +179,15 @@ export const ListItem: FC<ListItemProps> = ({
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
-            paddingVertical: 14,
+            paddingBlock: 14,
           }}
         >
-          {(right && typeof right === 'string') || typeof right === 'number' ? (
+          {typeof right === 'string' || typeof right === 'number' ? (
             <Text
               numberOfLines={1}
               style={{
                 fontSize: 17,
-                color: PlatformColor('secondaryLabelColor'),
+                color: colors.label.secondary,
                 maxWidth: 170,
               }}
             >
@@ -199,7 +202,7 @@ export const ListItem: FC<ListItemProps> = ({
               name="chevron.right"
               size={12}
               weight="bold"
-              tintColor={PlatformColor('tertiaryLabelColor')}
+              tintColor={colors.label.tertiary}
             />
           )}
         </View>

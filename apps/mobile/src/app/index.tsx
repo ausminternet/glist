@@ -1,15 +1,26 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Redirect } from 'expo-router'
-import { Text, View } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
+import { useState } from 'react'
+import { Button, Text, View } from 'react-native'
+import { RefreshControl, ScrollView } from 'react-native-gesture-handler'
 import { useHouseholds } from '@/api/households/use-households'
 import { List } from '@/components/list.components'
 import { ListItem } from '@/components/list-item.component'
 import { useHouseholdContext } from '@/provider/household-provider'
 
 export default function HouseholdsScreen() {
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const { households } = useHouseholds()
   const { selectHousehold, householdId, householdNotFound } =
     useHouseholdContext()
+
+  const queryClient = useQueryClient()
+
+  const handleOnRefetch = async () => {
+    setIsRefreshing(true)
+    await queryClient.invalidateQueries()
+    setIsRefreshing(false)
+  }
 
   if (householdId) {
     return <Redirect href="/household" />
@@ -23,6 +34,9 @@ export default function HouseholdsScreen() {
         gap: 24,
         flexDirection: 'column',
       }}
+      refreshControl={
+        <RefreshControl refreshing={isRefreshing} onRefresh={handleOnRefetch} />
+      }
     >
       {householdNotFound && (
         <View
@@ -38,6 +52,9 @@ export default function HouseholdsScreen() {
           </Text>
         </View>
       )}
+      <View>
+        <Button onPress={handleOnRefetch} title="Refetch" />
+      </View>
 
       <List>
         {households.map((household) => (

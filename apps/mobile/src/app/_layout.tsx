@@ -6,6 +6,7 @@ import {
 import { Stack } from 'expo-router'
 import { ActivityIndicator, useColorScheme, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { useHouseholds } from '@/api/households/use-households'
 import {
   HouseholdProvider,
   useHouseholdContext,
@@ -14,8 +15,9 @@ import { AppQueryClientProvider } from '@/provider/query-client-provider'
 
 function RootNav() {
   const { householdId, isLoading } = useHouseholdContext()
+  const { households, isPending } = useHouseholds()
 
-  if (isLoading) {
+  if (isLoading || isPending) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />
@@ -23,9 +25,11 @@ function RootNav() {
     )
   }
 
+  const household = households.find((h) => h.id === householdId)
+
   return (
     <Stack>
-      <Stack.Protected guard={!householdId}>
+      <Stack.Protected guard={!household}>
         <Stack.Screen
           name="index"
           options={{
@@ -36,7 +40,7 @@ function RootNav() {
         />
       </Stack.Protected>
 
-      <Stack.Protected guard={!!householdId}>
+      <Stack.Protected guard={!!household}>
         <Stack.Screen
           name="household"
           options={{ headerShown: false, animation: 'slide_from_right' }}

@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "dotenv -e .env.local -- expo start",
-    "ios": "dotenv -e .env.local -- expo run:ios --device",
+    "ios": "dotenv -e .env.local -- expo run:ios",
+    "ios:device": "dotenv -e .env.local -- expo run:ios --device",
     "build": "dotenv -e .env.production -- expo run:ios --configuration Release --device",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
