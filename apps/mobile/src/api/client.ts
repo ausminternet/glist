@@ -1,6 +1,8 @@
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 const API_KEY = process.env.EXPO_PUBLIC_API_KEY ?? ''
 
+const SIMULATED_DELAY_MS = 0
+
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
@@ -52,6 +54,10 @@ export async function apiClient<T>(
     'Content-Type': 'application/json',
     'x-api-key': API_KEY,
     ...options.headers,
+  }
+
+  if (__DEV__) {
+    await new Promise((resolve) => setTimeout(resolve, SIMULATED_DELAY_MS))
   }
 
   const response = await fetch(url, {

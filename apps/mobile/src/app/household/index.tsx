@@ -1,9 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Stack } from 'expo-router'
 import { useState } from 'react'
-import { Text, View } from 'react-native'
+import { ActivityIndicator, Text, View } from 'react-native'
 import { RefreshControl, ScrollView } from 'react-native-gesture-handler'
-import { useBootstrap } from '@/api/bootstrap'
 import { useHousehold } from '@/api/households/use-household'
 import { useInventoryItems } from '@/api/inventory-items'
 import { useShoppingListItems } from '@/api/shopping-list-items'
@@ -20,13 +19,14 @@ export default function Index() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [withNoShop, setWithNoShop] = useState(false)
   const householdId = useHouseholdId()
-  const { error, isSuccess } = useBootstrap(householdId)
-  const { getShoppingListItemCountByShopId, itemCounts } = useShoppingListItems(
-    householdId,
-    isSuccess,
-  )
-  const { inventoryItems } = useInventoryItems(householdId)
-  const { shops } = useShops(householdId, isSuccess)
+  const {
+    getShoppingListItemCountByShopId,
+    itemCounts,
+    isPending: shoppingListPending,
+  } = useShoppingListItems(householdId)
+  const { inventoryItems, isPending: inventoryPending } =
+    useInventoryItems(householdId)
+  const { shops } = useShops(householdId)
   const household = useHousehold(householdId)
 
   const queryClient = useQueryClient()
@@ -49,25 +49,11 @@ export default function Index() {
     }))
     .filter((shop) => shop.itemCount > 0)
 
-  if (error) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <Text>Error: {error.message}</Text>
-      </View>
-    )
-  }
-
   return (
     <>
       <Stack.Screen
         options={{
-          title: household?.name,
+          title: household.name,
           headerLargeTitleEnabled: true,
           headerLeft: () => <HouseholdSwitcher />,
         }}
@@ -94,7 +80,9 @@ export default function Index() {
             icon="tray.circle.fill"
             iconSize={38}
             iconTintColor={colors.system.mint}
-            right={inventoryItems.length}
+            right={
+              inventoryPending ? <ActivityIndicator /> : inventoryItems.length
+            }
           />
         </List>
 
@@ -105,7 +93,9 @@ export default function Index() {
             icon="cart.circle.fill"
             iconSize={38}
             iconTintColor={colors.system.blue}
-            right={itemCounts.unchecked}
+            right={
+              shoppingListPending ? <ActivityIndicator /> : itemCounts.unchecked
+            }
           />
         </List>
 

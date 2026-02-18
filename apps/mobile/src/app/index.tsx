@@ -7,6 +7,7 @@ import { useHouseholds } from '@/api/households/use-households'
 import { List } from '@/components/list.components'
 import { ListItem } from '@/components/list-item.component'
 import { useHouseholdContext } from '@/provider/household-provider'
+import { clearHouseholdContentCaches } from '@/provider/query-client-provider'
 
 export default function HouseholdsScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -52,9 +53,26 @@ export default function HouseholdsScreen() {
           </Text>
         </View>
       )}
-      <View>
-        <Button onPress={handleOnRefetch} title="Refetch" />
-      </View>
+      {__DEV__ && (
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: '#f97316',
+            borderRadius: 8,
+            padding: 12,
+            gap: 8,
+          }}
+        >
+          <Text style={{ color: '#f97316', fontWeight: 'bold', fontSize: 12 }}>
+            🛠 DEBUG
+          </Text>
+          <Button
+            title="Haushaltsinhalte-Cache leeren"
+            color="#f97316"
+            onPress={clearHouseholdContentCaches}
+          />
+        </View>
+      )}
 
       <List>
         {households.map((household) => (

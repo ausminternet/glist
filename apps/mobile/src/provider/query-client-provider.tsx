@@ -22,6 +22,18 @@ export const client = new QueryClient({
   },
 })
 
+export async function clearHouseholdContentCaches() {
+  client.removeQueries({
+    predicate: (query) => {
+      const key = query.queryKey
+      // Nur haushaltsspezifische Inhalte: ['households', 'household', id, ...]
+      // Nicht die Haushaltsliste selbst: ['households']
+      return key.length > 2 && key[0] === 'households' && key[1] === 'household'
+    },
+  })
+  await AsyncStorage.removeItem(REACT_QUERY_CLIENT_STORAGE_KEY)
+}
+
 persistQueryClient({
   queryClient: client,
   persister: {
