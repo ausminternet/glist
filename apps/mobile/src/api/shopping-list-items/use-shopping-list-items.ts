@@ -11,6 +11,7 @@ export function useShoppingListItems(householdId: string) {
     queryFn: () => getShoppingListItems(householdId),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: 'always',
   })
 
   const getShoppingListItemsByShopId = (

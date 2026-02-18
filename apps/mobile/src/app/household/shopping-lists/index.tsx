@@ -1,6 +1,8 @@
 import { useLocalSearchParams } from 'expo-router'
 import { Stack } from 'expo-router/stack'
+import { useEffect } from 'react'
 import { Button, Image, Text, View } from 'react-native'
+import { useEvent } from 'react-native-reanimated'
 import { useCategories } from '@/api/categories'
 import { useShoppingListEvents } from '@/api/events'
 import {
@@ -30,8 +32,6 @@ export default function Index() {
   const filteredShoppingListItems = shopId
     ? getShoppingListItemsByShopId(shopId, withNoShop === 'true')
     : shoppingListItems
-
-  console.log(filteredShoppingListItems.map((item) => item.photoUrl))
 
   return (
     <>
