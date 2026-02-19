@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from 'expo-router'
 import { Stack } from 'expo-router/stack'
-import { Button, Image, Text, View } from 'react-native'
-import { useCategories } from '@/api/categories'
+import { useColorScheme } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import { useShoppingListEvents } from '@/api/events'
 import {
   useCheckShoppingListItem,
@@ -9,17 +9,20 @@ import {
   useUncheckShoppingListItem,
 } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
+import { colors } from '@/components/colors'
+import { List } from '@/components/list.components'
+import { ListItem } from '@/components/list-item.component'
 
 export default function Index() {
   const { shopId, withNoShop } = useLocalSearchParams<{
     shopId: string
     withNoShop: string
   }>()
+  const colorTheme = useColorScheme()
   const { householdId } = useLocalSearchParams<{ householdId: string }>()
   const { shoppingListItems, getShoppingListItemsByShopId } =
     useShoppingListItems(householdId)
   const { getShopName } = useShops(householdId)
-  const { getCategoryName } = useCategories(householdId)
   const { checkShoppingListItem } = useCheckShoppingListItem()
   const { uncheckShoppingListItem } = useUncheckShoppingListItem()
 
@@ -35,60 +38,40 @@ export default function Index() {
         options={{
           title: 'Einkaufsliste',
           headerBackButtonDisplayMode: 'minimal',
+          headerLargeTitleEnabled: true,
+          contentStyle: {
+            backgroundColor:
+              colorTheme === 'dark' ? 'black' : colors.background.tertiary,
+          },
         }}
       />
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          gap: 24,
+          flexDirection: 'column',
         }}
       >
-        <Text>Einkaufsliste</Text>
-        {filteredShoppingListItems.map((item) => (
-          <View key={item.id}>
-            {item.photoUrl && (
-              <Image
-                source={{ uri: item.photoUrl }}
-                style={{ width: 100, height: 100 }}
-              />
-            )}
-            <Text>{item.name}</Text>
-            <Text>checked: {item.checked ? 'Yes' : 'No'}</Text>
-            <Text>
-              Shops:{' '}
-              {item.shopIds.map((shopId) => getShopName(shopId)).join(', ')}
-            </Text>
-            <Text>
-              Category:{' '}
-              {item.categoryId ? getCategoryName(item.categoryId) : 'N/A'}
-            </Text>
-            <View>
-              {item.checked ? (
-                <Button
-                  onPress={() =>
-                    uncheckShoppingListItem({
-                      householdId,
-                      itemId: item.id,
-                    })
-                  }
-                  title="Uncheck"
-                />
-              ) : (
-                <Button
-                  onPress={() =>
-                    checkShoppingListItem({
-                      householdId,
-                      itemId: item.id,
-                    })
-                  }
-                  title="Check"
-                />
-              )}
-            </View>
-          </View>
-        ))}
-      </View>
+        <List type="plain" backgroundColor="transparent">
+          {filteredShoppingListItems.map((item) => (
+            <ListItem
+              key={item.id}
+              onToggleCheckbox={() => {
+                item.checked
+                  ? uncheckShoppingListItem({ householdId, itemId: item.id })
+                  : checkShoppingListItem({ householdId, itemId: item.id })
+              }}
+              checked={item.checked}
+              subtitle={item.description}
+              right={item.shopIds
+                .map((shopId) => getShopName(shopId))
+                .join(', ')}
+            >
+              {`${item.quantity ?? ''} ${item.name}`}
+            </ListItem>
+          ))}
+        </List>
+      </ScrollView>
     </>
   )
 }

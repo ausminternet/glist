@@ -63,7 +63,6 @@ export default function Index() {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          padding: 16,
           gap: 24,
           flexDirection: 'column',
         }}

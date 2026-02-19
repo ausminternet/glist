@@ -1,21 +1,33 @@
 import type { FC, PropsWithChildren } from 'react'
-import { StyleSheet, View, type ViewProps } from 'react-native'
+import { type ColorValue, View, type ViewProps } from 'react-native'
 import { colors } from './colors'
 
-type ListProps = PropsWithChildren<ViewProps>
+export interface ListProps extends PropsWithChildren<ViewProps> {
+  type?: 'inset' | 'plain'
+  backgroundColor?: ColorValue
+}
 
-export const List: FC<ListProps> = ({ children, style, ...rest }) => {
+export const List: FC<ListProps> = ({
+  children,
+  style,
+  type = 'inset',
+  backgroundColor = colors.groupedBackground.secondary,
+  ...rest
+}) => {
   return (
-    <View style={[Styles.container, style]} {...rest}>
+    <View
+      style={[
+        style,
+        {
+          marginInline: type === 'inset' ? 16 : 0,
+          borderRadius: type === 'inset' ? 28 : 0,
+          backgroundColor,
+          overflow: 'hidden',
+        },
+      ]}
+      {...rest}
+    >
       {children}
     </View>
   )
 }
-
-const Styles = StyleSheet.create({
-  container: {
-    borderRadius: 28,
-    overflow: 'hidden',
-    backgroundColor: colors.groupedBackground.secondary,
-  },
-})
