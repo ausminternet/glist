@@ -1,8 +1,6 @@
 import { useLocalSearchParams } from 'expo-router'
 import { Stack } from 'expo-router/stack'
-import { useEffect } from 'react'
 import { Button, Image, Text, View } from 'react-native'
-import { useEvent } from 'react-native-reanimated'
 import { useCategories } from '@/api/categories'
 import { useShoppingListEvents } from '@/api/events'
 import {
@@ -11,15 +9,13 @@ import {
   useUncheckShoppingListItem,
 } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
-import { useHouseholdId } from '@/provider/household-provider'
 
 export default function Index() {
   const { shopId, withNoShop } = useLocalSearchParams<{
     shopId: string
     withNoShop: string
   }>()
-  const householdId = useHouseholdId()
-
+  const { householdId } = useLocalSearchParams<{ householdId: string }>()
   const { shoppingListItems, getShoppingListItemsByShopId } =
     useShoppingListItems(householdId)
   const { getShopName } = useShops(householdId)
@@ -37,6 +33,7 @@ export default function Index() {
     <>
       <Stack.Screen
         options={{
+          title: 'Einkaufsliste',
           headerBackButtonDisplayMode: 'minimal',
         }}
       />

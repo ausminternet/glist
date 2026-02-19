@@ -1,24 +1,26 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Stack } from 'expo-router'
-import { useState } from 'react'
-import { ActivityIndicator, Text, View } from 'react-native'
+import { SplashScreen, Stack, useLocalSearchParams } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { ActivityIndicator, View } from 'react-native'
 import { RefreshControl, ScrollView } from 'react-native-gesture-handler'
 import { useHousehold } from '@/api/households/use-household'
 import { useInventoryItems } from '@/api/inventory-items'
 import { useShoppingListItems } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
-import { HouseholdSwitcher } from '@/components/household-switcher.component'
 import { List } from '@/components/list.components'
+import { ListHeader } from '@/components/list-header.component'
 import { ListItem } from '@/components/list-item.component'
 import { PersistedSwitch } from '@/components/persisted-switch.component'
-import { useHouseholdId } from '@/provider/household-provider'
+import { useMinDuration } from '@/hooks/use-min-duration'
 import { WITH_NO_SHOP_STORAGE_KEY } from '@/provider/storage-keys'
 
 export default function Index() {
-  const [isRefreshing, setIsRefreshing] = useState(false)
   const [withNoShop, setWithNoShop] = useState(false)
-  const householdId = useHouseholdId()
+  const { householdId, hideSplash } = useLocalSearchParams<{
+    householdId: string
+    hideSplash?: string
+  }>()
   const {
     getShoppingListItemCountByShopId,
     itemCounts,
@@ -27,20 +29,19 @@ export default function Index() {
   const { inventoryItems, isPending: inventoryPending } =
     useInventoryItems(householdId)
   const { shops } = useShops(householdId)
-  const household = useHousehold(householdId)
-
+  const { household } = useHousehold(householdId)
+  const { isRunning, run } = useMinDuration()
   const queryClient = useQueryClient()
-
-  const handleOnRefetch = async () => {
-    setIsRefreshing(true)
-    await queryClient.invalidateQueries()
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsRefreshing(false)
-  }
 
   const shopsWithItems = shops.filter(
     (shop) => getShoppingListItemCountByShopId(shop.id, false) > 0,
   )
+
+  useEffect(() => {
+    if (hideSplash === 'true') {
+      setTimeout(() => SplashScreen.hide(), 1000)
+    }
+  }, [hideSplash])
 
   const shopsWithItemCount = shopsWithItems
     .map((shop) => ({
@@ -53,9 +54,9 @@ export default function Index() {
     <>
       <Stack.Screen
         options={{
-          title: household.name,
+          title: household?.name || 'Haushalt',
+          headerBackButtonDisplayMode: 'minimal',
           headerLargeTitleEnabled: true,
-          headerLeft: () => <HouseholdSwitcher />,
         }}
       />
 
@@ -68,67 +69,60 @@ export default function Index() {
         }}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleOnRefetch}
+            refreshing={isRunning}
+            onRefresh={() => run(() => queryClient.refetchQueries())}
           />
         }
       >
         <List>
           <ListItem
-            title="Vorräte"
-            href="/household/inventory"
+            href={`/${householdId}/inventory`}
             icon="tray.circle.fill"
             iconSize={38}
             iconTintColor={colors.system.mint}
             right={
               inventoryPending ? <ActivityIndicator /> : inventoryItems.length
             }
-          />
+          >
+            Vorräte
+          </ListItem>
         </List>
 
         <List>
           <ListItem
-            title="Einkaufsliste"
-            href="/household/shopping-lists"
+            href={`/${householdId}/shopping-lists`}
             icon="cart.circle.fill"
             iconSize={38}
             iconTintColor={colors.system.blue}
             right={
               shoppingListPending ? <ActivityIndicator /> : itemCounts.unchecked
             }
-          />
+          >
+            Einkaufsliste
+          </ListItem>
         </List>
 
         <View>
-          <Text
-            style={{
-              fontSize: 18,
-              marginBlockStart: 8,
-              marginBlockEnd: 16,
-              paddingLeft: 20,
-              fontWeight: 'bold',
-              color: colors.label.primary,
-            }}
-          >
-            Smarte Listen
-          </Text>
+          <ListHeader>Smarte Listen</ListHeader>
           <List>
             <ListItem
-              title="Inkl. Artikel ohne Geschäft"
               right={
                 <PersistedSwitch
                   storageKey={WITH_NO_SHOP_STORAGE_KEY}
                   onValueChange={setWithNoShop}
                 />
               }
-            />
+            >
+              Inkl. Artikel ohne Geschäft
+            </ListItem>
             {shopsWithItemCount.map((shop) => (
               <ListItem
                 key={shop.id}
-                title={shop.name}
                 right={shop.itemCount}
-                href={`/household/shopping-lists?shopId=${shop.id}${withNoShop ? '&withNoShop=true' : ''}`}
-              />
+                href={`/${householdId}/shopping-lists?shopId=${shop.id}${withNoShop ? '&withNoShop=true' : ''}`}
+              >
+                {shop.name}
+              </ListItem>
             ))}
           </List>
         </View>

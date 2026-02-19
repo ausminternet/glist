@@ -1,14 +1,18 @@
 import * as Haptics from 'expo-haptics'
 import { type Href, useRouter } from 'expo-router'
 import { type SFSymbol, SymbolView } from 'expo-symbols'
-import { type FC, type ReactNode, useState } from 'react'
+import {
+  type FC,
+  type PropsWithChildren,
+  type ReactNode,
+  useState,
+} from 'react'
 import { type ColorValue, Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import { colors } from './colors'
 import { ListItemDivider } from './list-item-divider.component'
 
 type BaseListItemProps = {
-  title: string
   afterTitle?: ReactNode
   subtitle?: string | ReactNode
   onPress?: () => void
@@ -19,6 +23,7 @@ type BaseListItemProps = {
   iconSize?: number
   chevron?: boolean
   compact?: boolean
+  children?: string
 }
 
 type WithCheckbox = BaseListItemProps & {
@@ -35,8 +40,7 @@ type WithLeft = BaseListItemProps & {
 
 export type ListItemProps = WithCheckbox | WithLeft
 
-export const ListItem: FC<ListItemProps> = ({
-  title,
+export const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
   afterTitle,
   subtitle,
   onPress,
@@ -50,6 +54,7 @@ export const ListItem: FC<ListItemProps> = ({
   onToggleCheckbox,
   checked,
   compact,
+  children,
 }) => {
   const router = useRouter()
   const [pressed, setPressed] = useState(false)
@@ -153,7 +158,7 @@ export const ListItem: FC<ListItemProps> = ({
                   color: checked ? colors.label.tertiary : colors.label.primary,
                 }}
               >
-                {title}
+                {children}
               </Text>
               {afterTitle}
             </View>

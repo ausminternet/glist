@@ -4,61 +4,30 @@ import {
   ThemeProvider,
 } from '@react-navigation/native'
 import { Stack } from 'expo-router'
-import { ActivityIndicator, useColorScheme, View } from 'react-native'
+import { useColorScheme } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { useHouseholds } from '@/api/households/use-households'
-import {
-  HouseholdProvider,
-  useHouseholdContext,
-} from '@/provider/household-provider'
 import { AppQueryClientProvider } from '@/provider/query-client-provider'
-
-function RootNav() {
-  const { householdId, isLoading } = useHouseholdContext()
-  const { households, isPending } = useHouseholds()
-
-  if (isLoading || isPending) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    )
-  }
-
-  const household = households.find((h) => h.id === householdId)
-
-  return (
-    <Stack>
-      <Stack.Protected guard={!household}>
-        <Stack.Screen
-          name="index"
-          options={{
-            title: 'Haushalte',
-            headerLargeTitleEnabled: true,
-            animation: 'fade',
-          }}
-        />
-      </Stack.Protected>
-
-      <Stack.Protected guard={!!household}>
-        <Stack.Screen
-          name="household"
-          options={{ headerShown: false, animation: 'fade' }}
-        />
-      </Stack.Protected>
-    </Stack>
-  )
-}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme()
+
+  const theme = colorScheme === 'dark' ? DarkTheme : DefaultTheme
+  const themeValue = {
+    ...theme,
+    // https://github.com/expo/expo/issues/41743
+    // https://github.com/expo/expo/issues/39969
+    colors: {
+      ...theme.colors,
+      background:
+        colorScheme === 'dark' ? 'transparent' : DefaultTheme.colors.background,
+    },
+  }
+
   return (
     <GestureHandlerRootView>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={themeValue}>
         <AppQueryClientProvider>
-          <HouseholdProvider>
-            <RootNav />
-          </HouseholdProvider>
+          <Stack />
         </AppQueryClientProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
