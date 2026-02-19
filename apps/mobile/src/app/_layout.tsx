@@ -27,7 +27,16 @@ export default function RootLayout() {
     <GestureHandlerRootView>
       <ThemeProvider value={themeValue}>
         <AppQueryClientProvider>
-          <Stack />
+          <Stack>
+            <Stack.Screen
+              name="[householdId]/modals"
+              options={{
+                presentation: 'modal',
+                headerLargeTitleEnabled: true,
+                headerShown: false,
+              }}
+            />
+          </Stack>
         </AppQueryClientProvider>
       </ThemeProvider>
     </GestureHandlerRootView>

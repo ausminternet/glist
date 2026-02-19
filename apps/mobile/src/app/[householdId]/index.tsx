@@ -1,8 +1,18 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { SplashScreen, Stack, useLocalSearchParams } from 'expo-router'
+import {
+  SplashScreen,
+  Stack,
+  useLocalSearchParams,
+  useRouter,
+} from 'expo-router'
+import { SymbolView } from 'expo-symbols'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
-import { RefreshControl, ScrollView } from 'react-native-gesture-handler'
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+} from 'react-native-gesture-handler'
 import { useHousehold } from '@/api/households/use-household'
 import { useInventoryItems } from '@/api/inventory-items'
 import { useShoppingListItems } from '@/api/shopping-list-items'
@@ -32,6 +42,7 @@ export default function Index() {
   const { household } = useHousehold(householdId)
   const { isRunning, run } = useMinDuration()
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   const shopsWithItems = shops.filter(
     (shop) => getShoppingListItemCountByShopId(shop.id, false) > 0,
@@ -57,6 +68,17 @@ export default function Index() {
           title: household?.name || 'Haushalt',
           headerBackButtonDisplayMode: 'minimal',
           headerLargeTitleEnabled: true,
+          headerRight: () => (
+            <Pressable
+              onPress={() => router.push(`/${householdId}/modals/test-modal`)}
+            >
+              <SymbolView
+                name="ellipsis"
+                size={24}
+                tintColor={colors.label.primary}
+              />
+            </Pressable>
+          ),
         }}
       />
 
