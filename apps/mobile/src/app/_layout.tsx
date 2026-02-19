@@ -18,8 +18,7 @@ export default function RootLayout() {
     // https://github.com/expo/expo/issues/39969
     colors: {
       ...theme.colors,
-      background:
-        colorScheme === 'dark' ? 'transparent' : DefaultTheme.colors.background,
+      background: colorScheme === 'dark' ? 'transparent' : 'rgb(242, 242, 247)',
     },
   }
 

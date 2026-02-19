@@ -6,10 +6,10 @@ export const ListHeader: FC<PropsWithChildren> = ({ children }) => {
   return (
     <Text
       style={{
-        fontSize: 18,
+        fontSize: 22,
         marginBlockStart: 8,
-        marginBlockEnd: 16,
-        paddingLeft: 20,
+        marginBlockEnd: 10,
+        paddingInlineStart: 28,
         fontWeight: 'bold',
         color: colors.label.primary,
       }}
