@@ -4,12 +4,14 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 import { AppState } from 'react-native'
 import EventSource from 'react-native-sse'
+import { useHouseholdId } from '@/hooks/use-household-id'
 import { queryKeys } from '../query-keys'
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 const API_KEY = process.env.EXPO_PUBLIC_API_KEY ?? ''
 
-export function useShoppingListEvents(householdId: string) {
+export function useShoppingListEvents() {
+  const householdId = useHouseholdId()
   const queryClient = useQueryClient()
   const eventSourceRef = useRef<EventSource | null>(null)
 

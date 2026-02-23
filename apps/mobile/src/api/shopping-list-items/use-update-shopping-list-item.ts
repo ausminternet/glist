@@ -1,26 +1,18 @@
 import type { UpdateShoppingListItemInput } from '@glist/schemas'
 import type { ShoppingListItemView } from '@glist/views'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useHouseholdId } from '@/hooks/use-household-id'
 import { queryKeys } from '../query-keys'
 import { updateShoppingListItem } from './update-shopping-list-item'
 
-// interface useSaveShoppingListItemOptions {
-//   onSuccess?: (itemId: string) => void
-//   onError?: (error: Error) => void
-// }
-//
 interface MutateProps {
   itemId: string
   payload: UpdateShoppingListItemInput
 }
 
-export function useUpdateShoppingListItem(
-  householdId: string,
-
-  // options: useSaveShoppingListItemOptions = {},
-) {
+export function useUpdateShoppingListItem() {
+  const householdId = useHouseholdId()
   const queryClient = useQueryClient()
-  // const { onSuccess, onError } = options
 
   const { mutate, ...rest } = useMutation({
     mutationFn: (variables: MutateProps) =>

@@ -11,26 +11,22 @@ import {
 } from '@/hooks/use-shopping-list-item-form'
 
 interface UseSubmitShoppingListFormProps {
-  householdId: string
   setPreventRemove: (value: boolean) => void
-  resetFormAndGoBack: () => void
 }
 
 export function useSubmitShoppingListForm({
-  householdId,
   setPreventRemove,
-  resetFormAndGoBack,
 }: UseSubmitShoppingListFormProps) {
-  const { addShoppingListItem } = useSaveShoppingListItem(householdId)
-  const { updateShoppingListItem } = useUpdateShoppingListItem(householdId)
+  const { addShoppingListItem } = useSaveShoppingListItem()
+  const { updateShoppingListItem } = useUpdateShoppingListItem()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const add = (input: SaveShoppingListItemArgs) => {
+  const add = (input: SaveShoppingListItemArgs, onSuccess?: () => void) => {
     const payload = toAddShoppingListItemInput(input)
     setPreventRemove(false)
     addShoppingListItem(payload, {
       onSuccess: () => {
-        resetFormAndGoBack()
+        onSuccess?.()
       },
       onError: (error) => {
         setPreventRemove(true)
@@ -43,6 +39,7 @@ export function useSubmitShoppingListForm({
   const update = (
     shoppingListItemId: string,
     input: SaveShoppingListItemArgs,
+    onSuccess?: () => void,
   ) => {
     const payload = toUpdateShoppingListItemInput(input)
     setPreventRemove(false)
@@ -50,7 +47,7 @@ export function useSubmitShoppingListForm({
       { itemId: shoppingListItemId, payload },
       {
         onSuccess: () => {
-          resetFormAndGoBack()
+          onSuccess?.()
         },
         onError: (error) => {
           setPreventRemove(true)
@@ -67,12 +64,13 @@ export function useSubmitShoppingListForm({
   const submit = (
     payload: SaveShoppingListItemArgs,
     shoppingListItemId?: string,
+    onSuccess?: () => void,
   ) => {
     setIsSubmitting(true)
     if (shoppingListItemId) {
-      update(shoppingListItemId, payload)
+      update(shoppingListItemId, payload, onSuccess)
     } else {
-      add(payload)
+      add(payload, onSuccess)
     }
   }
 

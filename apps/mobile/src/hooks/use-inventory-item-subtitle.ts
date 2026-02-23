@@ -3,13 +3,9 @@ import { useCallback } from 'react'
 import { useCategories } from '@/api/categories'
 import { useShops } from '@/api/shops'
 
-/**
- * Custom hook that generates subtitle text for inventory items.
- * Combines category and shop information into a readable format.
- */
-export function useInventoryItemSubtitle(householdId: string) {
-  const { categories = [] } = useCategories(householdId)
-  const { shops = [] } = useShops(householdId)
+export function useInventoryItemSubtitle() {
+  const { categories = [] } = useCategories()
+  const { shops = [] } = useShops()
 
   const getSubtitle = useCallback(
     (item: InventoryItemView) => {

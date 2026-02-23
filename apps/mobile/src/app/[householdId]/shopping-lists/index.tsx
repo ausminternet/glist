@@ -7,6 +7,7 @@ import { useShoppingListItems } from '@/api/shopping-list-items'
 import { colors } from '@/components/colors'
 import { List } from '@/components/list.components'
 import { ShoppingListItem } from '@/components/shopping-list-item-view'
+import { useHouseholdId } from '@/hooks/use-household-id'
 
 export default function Index() {
   const { shopId, withNoShop } = useLocalSearchParams<{
@@ -15,11 +16,11 @@ export default function Index() {
   }>()
   const router = useRouter()
   const colorTheme = useColorScheme()
-  const { householdId } = useLocalSearchParams<{ householdId: string }>()
+  const householdId = useHouseholdId()
   const { shoppingListItems, getShoppingListItemsByShopId } =
-    useShoppingListItems(householdId)
+    useShoppingListItems()
 
-  useShoppingListEvents(householdId)
+  useShoppingListEvents()
 
   const filteredShoppingListItems = shopId
     ? getShoppingListItemsByShopId(shopId, withNoShop === 'true')

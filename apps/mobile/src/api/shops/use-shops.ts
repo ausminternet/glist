@@ -1,8 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
+import { useHouseholdId } from '@/hooks/use-household-id'
 import { queryKeys } from '../query-keys'
 import { getShops as getShopsApi } from './get-shops'
 
-export function useShops(householdId: string) {
+export function useShops() {
+  const householdId = useHouseholdId()
+
   const { data = [], ...rest } = useQuery({
     queryKey: queryKeys.shops(householdId),
     queryFn: () => getShopsApi(householdId),

@@ -13,12 +13,17 @@ interface LinkedInventoryInfoProps {
 export function LinkedInventoryInfo({
   inventoryItem,
 }: LinkedInventoryInfoProps) {
-  if (!!inventoryItem.targetStock && !!inventoryItem.basePriceCents) {
+  console.log(
+    '$$$ inventoryItem',
+    inventoryItem.targetStock,
+    inventoryItem.basePriceCents,
+  )
+  if (!inventoryItem.targetStock && !inventoryItem.basePriceCents) {
     return null
   }
 
   return (
-    <View style={{ paddingInline: 20, gap: 2, marginTop: 6 }}>
+    <View style={{ paddingInline: 34, gap: 2, marginTop: 6 }}>
       {!!inventoryItem.targetStock && (
         <Text
           style={{

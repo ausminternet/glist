@@ -1,9 +1,11 @@
 import type { ShoppingListItemView } from '@glist/views'
 import { useQuery } from '@tanstack/react-query'
+import { useHouseholdId } from '@/hooks/use-household-id'
 import { queryKeys } from '../query-keys'
 import { getShoppingListItems } from './get-shopping-list-items'
 
-export function useShoppingListItems(householdId: string) {
+export function useShoppingListItems() {
+  const householdId = useHouseholdId()
   const { data: shoppingListItems = [], ...rest } = useQuery<
     ShoppingListItemView[]
   >({

@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from 'expo-router'
+import { Stack } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
 import { PlatformColor, ScrollView } from 'react-native'
 import { useShops } from '@/api/shops'
@@ -7,8 +7,7 @@ import { ListItem } from '@/components/list-item.component'
 import { useShopsSelectionStore } from '@/stores/shops-selection'
 
 export default function SelectShop() {
-  const { householdId } = useLocalSearchParams<{ householdId: string }>()
-  const { shops } = useShops(householdId)
+  const { shops } = useShops()
   const { selectedShopIds, addShopId, removeShopId } = useShopsSelectionStore()
 
   const handleShopToggle = (shopId: string) => {

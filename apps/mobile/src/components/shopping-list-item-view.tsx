@@ -1,12 +1,12 @@
 import { getUnitLabel } from '@glist/shared'
 import type { ShoppingListItemView } from '@glist/views'
-import { useLocalSearchParams } from 'expo-router'
 import { PlatformColor, Text, View } from 'react-native'
 import {
   useCheckShoppingListItem,
   useUncheckShoppingListItem,
 } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
+import { useHouseholdId } from '@/hooks/use-household-id'
 import { colors } from './colors'
 import { ListItem } from './list-item.component'
 
@@ -17,11 +17,11 @@ export interface ShoppingListItemProps {
 }
 
 export function ShoppingListItem({ item }: ShoppingListItemProps) {
-  const { householdId } = useLocalSearchParams<{ householdId: string }>()
-  const { shops } = useShops(householdId)
+  const householdId = useHouseholdId()
+  const { shops } = useShops()
 
-  const { checkShoppingListItem } = useCheckShoppingListItem(householdId)
-  const { uncheckShoppingListItem } = useUncheckShoppingListItem(householdId)
+  const { checkShoppingListItem } = useCheckShoppingListItem()
+  const { uncheckShoppingListItem } = useUncheckShoppingListItem()
   // const { deleteShoppingListItem } = useDeleteShoppingListItem()
 
   const itemShops = shops?.filter((s) => item.shopIds?.includes(s.id))

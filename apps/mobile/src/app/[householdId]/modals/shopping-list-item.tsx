@@ -1,7 +1,14 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
 import { useEffect, useState } from 'react'
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native'
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useFindInventoryItems } from '@/api/inventory-items'
 import { useShoppingListItem } from '@/api/shopping-list-items/use-shopping-list-item'
@@ -17,98 +24,76 @@ import { ListItemInputContainer } from '@/components/list-item-input-container'
 import { NavbarCancelButton } from '@/components/navbar-cancel-button'
 import { UnitSelector } from '@/components/unit-selector'
 import { useSubmitShoppingListForm } from '@/hooks/use-handle-shopping-list-item-form-submit'
+import { useHouseholdId } from '@/hooks/use-household-id'
 import { useInventoryItemSubtitle } from '@/hooks/use-inventory-item-subtitle'
-import { useLinkedInventoryItem } from '@/hooks/use-linked-inventory-item'
 import { useShoppingListForm } from '@/hooks/use-shopping-list-item-form'
-import { useCategorySelectionStore } from '@/stores/category-selection'
-import { useShopsSelectionStore } from '@/stores/shops-selection'
-import { sameUuids } from '@/utils/same-uuids'
 
-export default function Modal() {
+export default function ShoppingListItemModal() {
+  const [preventModalRemove, setPreventModalRemove] = useState(false)
   const [search, setSearch] = useState<string | null>(null)
-  const router = useRouter()
-  const { itemId, householdId } = useLocalSearchParams<{
-    itemId: string
-    householdId: string
-  }>()
-  const { getSubtitle } = useInventoryItemSubtitle(householdId)
-  const [preventRemove, setPreventRemove] = useState(false)
-  const { shops } = useShops(householdId)
-  const { categories } = useCategories(householdId)
-  const { searchInventoryItems } = useFindInventoryItems(householdId)
 
-  const { reset, setValue, values, isValid, isDirty, setShoppingListItem } =
-    useShoppingListForm()
+  const router = useRouter()
+  const householdId = useHouseholdId()
+
+  const { itemId } = useLocalSearchParams<{ itemId: string }>()
+  const { getSubtitle } = useInventoryItemSubtitle()
+  const { shops } = useShops()
+  const { categories } = useCategories()
+  const { searchInventoryItems, findInventoryItemById } =
+    useFindInventoryItems()
+
+  const { shoppingListItem } = useShoppingListItem(itemId)
+
+  const { submit, isSubmitting } = useSubmitShoppingListForm({
+    setPreventRemove: setPreventModalRemove,
+  })
 
   const {
-    inventoryItem,
+    reset,
+    setValue,
+    values,
+    isValid,
+    isDirty,
+    setShoppingListItem,
     linkInventoryItem,
-    handleSelectInventoryItem,
-    handleUnselectInventoryItem,
-  } = useLinkedInventoryItem({ householdId, setValue })
-
-  const { findInventoryItemById } = useFindInventoryItems(householdId)
-
-  const { selectedCategoryId, setSelectedCategoryId, clearSelectedCategory } =
-    useCategorySelectionStore()
-  const { selectedShopIds, setSelectedShopIds, clearSelectedShops } =
-    useShopsSelectionStore()
+    unlinkInventoryItem,
+    inventoryItem,
+  } = useShoppingListForm(findInventoryItemById)
 
   const resetFormAndGoBack = () => {
-    clearSelectedCategory()
-    clearSelectedShops()
     reset()
     router.back()
   }
 
-  const { shoppingListItem } = useShoppingListItem(itemId, householdId)
-  const { submit, isSubmitting } = useSubmitShoppingListForm({
-    householdId,
-    setPreventRemove,
-    resetFormAndGoBack,
-  })
-
   useEffect(() => {
     if (shoppingListItem) {
       setShoppingListItem(shoppingListItem)
-      setSelectedCategoryId(shoppingListItem.categoryId)
-      setSelectedShopIds(shoppingListItem.shopIds)
-
-      if (!shoppingListItem.inventoryItemId) {
-        return
-      }
-
-      const inventoryItem = findInventoryItemById(
-        shoppingListItem.inventoryItemId,
-      )
-
-      if (inventoryItem) {
-        linkInventoryItem(inventoryItem)
-      }
     }
-  }, [
-    shoppingListItem,
-    setSelectedCategoryId,
-    setSelectedShopIds,
-    findInventoryItemById,
-    linkInventoryItem,
-    setShoppingListItem,
-  ])
+  }, [shoppingListItem, setShoppingListItem])
 
-  const hasChanges =
-    isDirty ||
-    selectedCategoryId !== shoppingListItem?.categoryId ||
-    (shoppingListItem
-      ? !sameUuids(selectedShopIds, shoppingListItem.shopIds)
-      : selectedShopIds.length > 0)
-
-  const canSubmit = !isSubmitting && isValid && hasChanges
+  const canSubmit = !isSubmitting && isValid && isDirty
 
   useEffect(() => {
-    setPreventRemove(hasChanges)
-  }, [hasChanges])
+    setPreventModalRemove(isDirty)
+  }, [isDirty])
 
   const searchResults = search ? searchInventoryItems(search) : []
+  const showSearchResults = !!search && searchResults?.length > 0
+
+  const handleUnselectInventoryItem = () => {
+    Alert.alert(
+      'Zurücksetzen',
+      'Möchtest du die Verknüpfung zum Vorrat auflösen?',
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Zurücksetzen',
+          style: 'destructive',
+          onPress: () => unlinkInventoryItem(),
+        },
+      ],
+    )
+  }
 
   return (
     <>
@@ -119,7 +104,7 @@ export default function Modal() {
           headerLeft: () => (
             <NavbarCancelButton
               onCancel={() => resetFormAndGoBack()}
-              preventRemove={preventRemove}
+              preventRemove={preventModalRemove}
             />
           ),
           unstable_headerRightItems: () => [
@@ -136,11 +121,10 @@ export default function Modal() {
                 submit(
                   {
                     values,
-                    shopIds: selectedShopIds,
-                    categoryId: selectedCategoryId,
                     inventoryItemId: inventoryItem?.id,
                   },
                   shoppingListItem?.id,
+                  resetFormAndGoBack,
                 )
               },
             },
@@ -185,7 +169,7 @@ export default function Modal() {
               ]}
             />
             {inventoryItem && (
-              <Pressable onPress={() => handleUnselectInventoryItem()}>
+              <Pressable onPress={handleUnselectInventoryItem}>
                 <SymbolView
                   name="personalhotspot.slash"
                   size={36}
@@ -195,12 +179,12 @@ export default function Modal() {
             )}
           </ListItemInputContainer>
 
-          {!inventoryItem && search && searchResults?.length && (
+          {showSearchResults && (
             <InventorySearchResults
               items={searchResults}
               onSelectItem={(item) => {
                 setSearch(null)
-                handleSelectInventoryItem(item)
+                linkInventoryItem(item)
               }}
               getSubtitle={getSubtitle}
             />
@@ -269,8 +253,8 @@ export default function Modal() {
             iconSize={24}
             href={`/${householdId}/modals/select-category`}
             right={
-              selectedCategoryId
-                ? categories.find((c) => c.id === selectedCategoryId)?.name
+              values.categoryId
+                ? categories.find((c) => c.id === values.categoryId)?.name
                 : 'Ohne'
             }
           >
@@ -281,8 +265,8 @@ export default function Modal() {
             iconSize={24}
             href={`/${householdId}/modals/select-shops`}
             right={
-              selectedShopIds && selectedShopIds.length > 0
-                ? selectedShopIds
+              values.shopIds && values.shopIds.length > 0
+                ? values.shopIds
                     .map((id) => shops.find((s) => s.id === id)?.name)
                     .filter(Boolean)
                     .join(', ')

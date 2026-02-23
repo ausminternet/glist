@@ -1,14 +1,13 @@
-import { Stack, useLocalSearchParams } from 'expo-router'
+import { Stack } from 'expo-router'
 import { Text, View } from 'react-native'
 import { useCategories } from '@/api/categories/use-categories'
 import { useInventoryItems } from '@/api/inventory-items/use-inventory-items'
 import { useShops } from '@/api/shops/use-shops'
 
 export default function Index() {
-  const { householdId } = useLocalSearchParams<{ householdId: string }>()
-  const { getShopName } = useShops(householdId)
-  const { getCategoryName } = useCategories(householdId)
-  const { inventoryItems } = useInventoryItems(householdId)
+  const { getShopName } = useShops()
+  const { getCategoryName } = useCategories()
+  const { inventoryItems } = useInventoryItems()
 
   return (
     <>

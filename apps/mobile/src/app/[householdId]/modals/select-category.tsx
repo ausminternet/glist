@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
+import { Stack, useRouter } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
 import { ScrollView } from 'react-native'
 import { useCategories } from '@/api/categories'
@@ -7,10 +7,9 @@ import { ListItem } from '@/components/list-item.component'
 import { useCategorySelectionStore } from '@/stores/category-selection'
 
 export default function SelectCategory() {
-  const { householdId } = useLocalSearchParams<{ householdId: string }>()
   const router = useRouter()
 
-  const { categories } = useCategories(householdId)
+  const { categories } = useCategories()
   const { selectedCategoryId, setSelectedCategoryId } =
     useCategorySelectionStore()
 

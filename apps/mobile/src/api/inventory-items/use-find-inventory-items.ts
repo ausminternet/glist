@@ -1,7 +1,7 @@
 import { useInventoryItems } from './use-inventory-items'
 
-export const useFindInventoryItems = (householdId: string) => {
-  const { inventoryItems } = useInventoryItems(householdId)
+export const useFindInventoryItems = () => {
+  const { inventoryItems } = useInventoryItems()
 
   const searchInventoryItems = (search: string) => {
     if (!search || search.length < 2) {

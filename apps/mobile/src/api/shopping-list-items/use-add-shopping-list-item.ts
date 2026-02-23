@@ -1,21 +1,14 @@
 import type { AddShoppingListItemInput } from '@glist/schemas'
 import type { ShoppingListItemView } from '@glist/views'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useHouseholdId } from '@/hooks/use-household-id'
 import { generateUUID } from '@/utils/generate-uuid'
 import { queryKeys } from '../query-keys'
 import { addShoppingListItem } from './add-shopping-list-item'
 
-// interface useSaveShoppingListItemOptions {
-//   onSuccess?: (itemId: string) => void
-//   onError?: (error: Error) => void
-// }
-
-export function useSaveShoppingListItem(
-  householdId: string,
-  // options: useSaveShoppingListItemOptions = {},
-) {
+export function useSaveShoppingListItem() {
   const queryClient = useQueryClient()
-  // const { onSuccess, onError } = options
+  const householdId = useHouseholdId()
 
   const { mutate, ...rest } = useMutation({
     mutationFn: (item: AddShoppingListItemInput) =>

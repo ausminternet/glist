@@ -1,8 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
+import { useHouseholdId } from '@/hooks/use-household-id'
 import { queryKeys } from '../query-keys'
 import { getCategories } from './get-categories'
 
-export function useCategories(householdId: string) {
+export function useCategories() {
+  const householdId = useHouseholdId()
+
   const { data = [], ...rest } = useQuery({
     queryKey: queryKeys.categories(householdId),
     queryFn: () => getCategories(householdId),
