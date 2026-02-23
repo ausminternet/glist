@@ -193,7 +193,7 @@ export default function ShoppingListItemModal() {
           <ListItemInput
             inputProps={{
               placeholder: 'Notizen',
-              onChangeText: (text) => setValue('description', text.trim()),
+              onChangeText: (text) => setValue('description', text),
               value: values.description,
               multiline: true,
             }}

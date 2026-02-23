@@ -32,6 +32,7 @@ export type SaveShoppingListItemArgs = {
 export function toAddShoppingListItemInput({
   values,
 }: SaveShoppingListItemArgs): AddShoppingListItemInput {
+  //TODO: Schema validieren
   return {
     name: values.name,
     description: values.description ?? null,
@@ -46,9 +47,10 @@ export function toAddShoppingListItemInput({
 export function toUpdateShoppingListItemInput({
   values,
 }: SaveShoppingListItemArgs): UpdateShoppingListItemInput {
+  //TODO: Schema validieren
   return {
     name: values.name,
-    description: values.description ?? null,
+    description: values.description?.trim() ?? null,
     quantity: values.quantity ?? null,
     quantityUnit: values.quantityUnit ?? null,
     inventoryItemId: values.inventoryItemId ?? null,

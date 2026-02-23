@@ -74,7 +74,7 @@ export const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
     <Pressable
       style={{
         backgroundColor:
-          pressed && shouldIndicatePress ? colors.gray.gray5 : 'transparent',
+          pressed && shouldIndicatePress ? colors.gray.gray4 : 'transparent',
         paddingInline: 16,
         paddingBlockStart: 1,
         marginBlockEnd: -1,
