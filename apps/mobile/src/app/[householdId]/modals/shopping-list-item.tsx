@@ -1,6 +1,11 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
+import {
+  Stack,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+} from 'expo-router'
 import { SymbolView } from 'expo-symbols'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Alert,
   Pressable,
@@ -29,6 +34,8 @@ import { useInventoryItemSubtitle } from '@/hooks/use-inventory-item-subtitle'
 import { useShoppingListForm } from '@/hooks/use-shopping-list-item-form'
 
 export default function ShoppingListItemModal() {
+  const navigation = useNavigation()
+
   const [preventModalRemove, setPreventModalRemove] = useState(false)
   const [search, setSearch] = useState<string | null>(null)
 
@@ -64,6 +71,14 @@ export default function ShoppingListItemModal() {
     reset()
     router.back()
   }
+
+  useEffect(() => {
+    const sub = navigation.addListener('beforeRemove', () => {
+      reset()
+    })
+
+    return sub
+  }, [navigation, reset])
 
   useEffect(() => {
     if (shoppingListItem) {
