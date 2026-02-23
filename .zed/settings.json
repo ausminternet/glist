@@ -4,8 +4,8 @@
     "!angular",
     "!typescript-language-server",
     "!eslint",
-    "!vtsls",
-    "tsgo",
+    // "!vtsls",
+    // "tsgo",
     "...",
   ],
   "languages": {

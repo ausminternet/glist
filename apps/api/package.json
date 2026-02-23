@@ -14,6 +14,7 @@
   "dependencies": {
     "@glist/views": "workspace:*",
     "@glist/shared": "workspace:*",
+    "@glist/schemas": "workspace:*",
     "@hono/zod-validator": "^0.7.6",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.11.9",

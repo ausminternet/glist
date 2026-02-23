@@ -3,19 +3,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../query-keys'
 import { uncheckShoppingListItem } from './uncheck-shopping-list-item'
 
-type UncheckShoppingListItemParams = {
-  householdId: string
-  itemId: string
-}
-
-export function useUncheckShoppingListItem() {
+export function useUncheckShoppingListItem(householdId: string) {
   const queryClient = useQueryClient()
 
   const { mutate, ...rest } = useMutation({
-    mutationFn: ({ householdId, itemId }: UncheckShoppingListItemParams) =>
+    mutationFn: (itemId: string) =>
       uncheckShoppingListItem(householdId, itemId),
 
-    onMutate: async ({ householdId, itemId }) => {
+    onMutate: async (itemId) => {
       const queryKey = queryKeys.shoppingListItems(householdId)
 
       await queryClient.cancelQueries({ queryKey })
@@ -38,7 +33,7 @@ export function useUncheckShoppingListItem() {
       }
     },
 
-    onSettled: (_data, _error, { householdId }) => {
+    onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.shoppingListItems(householdId),
       })

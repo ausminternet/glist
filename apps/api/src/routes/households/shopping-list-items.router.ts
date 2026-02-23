@@ -1,4 +1,7 @@
-import { unitTypes } from '@glist/shared'
+import {
+  addShoppingListItemSchema,
+  updateShoppingListItemSchema,
+} from '@glist/schemas'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
@@ -8,10 +11,9 @@ import { CheckShoppingListItemCommandHandler } from '@/application/commands/chec
 import { ClearCheckedItemsCommandHandler } from '@/application/commands/clear-checked-items'
 import { DeleteShoppingListItemCommandHandler } from '@/application/commands/delete-shopping-list-item'
 import { DeleteShoppingListItemPhotoCommandHandler } from '@/application/commands/delete-shopping-list-item-photo'
-import { ReplaceShoppingListItemCommandHandler } from '@/application/commands/replace-shopping-list-item'
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
+import { UpdateShoppingListItemCommandHandler } from '@/application/commands/update-shopping-list-item'
 import { UploadShoppingListItemPhotoCommandHandler } from '@/application/commands/upload-shopping-list-item-photo'
-
 import { broadcastShoppingListEvent } from '@/infrastructure/events/event-broadcaster'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
@@ -35,19 +37,10 @@ shoppingListItemsRouter.get('/', async (c) => {
   return c.json({ success: true, data: items })
 })
 
-const AddShoppingListItemCommandSchema = z.object({
-  name: z.string().trim().min(1, 'Name cannot be empty'),
-  description: z.string().trim().optional(),
-  categoryId: z.uuid().optional(),
-  quantity: z.number().positive().optional(),
-  quantityUnit: z.enum(unitTypes).optional(),
-  shopIds: z.array(z.uuid()).optional(),
-})
-
 // Add a new item to a shopping list
 shoppingListItemsRouter.post(
   '/',
-  zValidator('json', AddShoppingListItemCommandSchema),
+  zValidator('json', addShoppingListItemSchema),
   async (c) => {
     const householdId = c.get('householdId')
     const input = c.req.valid('json')
@@ -204,19 +197,10 @@ shoppingListItemsRouter.post('/clear-checked', async (c) => {
   return c.json({ success: true })
 })
 
-const ReplaceShoppingListItemCommandSchema = z.object({
-  name: z.string().trim().min(1, 'Name cannot be empty'),
-  description: z.string().trim().nullable(),
-  categoryId: z.uuid().nullable(),
-  quantity: z.number().positive().nullable(),
-  quantityUnit: z.enum(unitTypes).nullable(),
-  shopIds: z.array(z.uuid()),
-})
-
 // Replace/update a shopping list item
 shoppingListItemsRouter.put(
   '/:itemId',
-  zValidator('json', ReplaceShoppingListItemCommandSchema),
+  zValidator('json', updateShoppingListItemSchema),
   async (c) => {
     const householdId = c.get('householdId')
     const itemId = c.req.param('itemId')
@@ -224,7 +208,7 @@ shoppingListItemsRouter.put(
 
     const db = createDb(c.env.glist_db)
     const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
-    const command = new ReplaceShoppingListItemCommandHandler(
+    const command = new UpdateShoppingListItemCommandHandler(
       shoppingListItemRepository,
     )
 
@@ -255,7 +239,7 @@ shoppingListItemsRouter.put(
 
     await broadcastShoppingListEvent(c.env, result.value.event)
 
-    return c.json({ success: true })
+    return c.json({ success: true, data: { id: result.value } })
   },
 )
 

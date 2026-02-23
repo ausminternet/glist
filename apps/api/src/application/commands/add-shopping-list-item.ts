@@ -12,11 +12,11 @@ import type { RequestContext } from '../shared/request-context'
 
 export type AddShoppingListItemCommand = {
   name: string
-  description?: string
-  categoryId?: string
-  quantity?: number
-  quantityUnit?: string
-  shopIds?: string[]
+  description: string | null
+  categoryId: string | null
+  quantity: number | null
+  quantityUnit: string | null
+  shopIds: string[]
 }
 
 export type AddShoppingListItemError = CreateShoppingListItemError
@@ -39,10 +39,10 @@ export class AddShoppingListItemCommandHandler {
       description: command.description,
       categoryId: command.categoryId
         ? parseCategoryId(command.categoryId)
-        : undefined,
+        : null,
       quantity: command.quantity,
       quantityUnit: command.quantityUnit,
-      shopIds: command.shopIds ? parseShopIds(command.shopIds) : undefined,
+      shopIds: command.shopIds ? parseShopIds(command.shopIds) : [],
     })
 
     if (!itemResult.ok) {

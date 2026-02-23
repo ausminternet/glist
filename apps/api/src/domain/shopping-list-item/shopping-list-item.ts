@@ -11,11 +11,11 @@ import type { ShoppingListItemId } from './shopping-list-item-id'
 export type NewShoppingListItemInput = {
   householdId: HouseholdId
   name: string
-  description?: string
-  categoryId?: CategoryId
-  quantity?: number
-  quantityUnit?: string
-  shopIds?: ShopId[]
+  description: string | null
+  categoryId: CategoryId | null
+  quantity: number | null
+  quantityUnit: string | null
+  shopIds: ShopId[]
 }
 
 export type ShoppingListItemProps = {

@@ -1,4 +1,4 @@
-import { unitTypes } from '@glist/shared'
+import { UNIT_TYPES } from '@glist/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
@@ -33,9 +33,9 @@ const CreateInventoryItemCommandSchema = z.object({
   description: z.string().trim().optional(),
   categoryId: z.uuid().optional(),
   targetStock: z.number().positive().optional(),
-  targetStockUnit: z.enum(unitTypes).optional(),
+  targetStockUnit: z.enum(UNIT_TYPES).optional(),
   basePriceCents: z.number().int().positive().optional(),
-  basePriceUnit: z.enum(unitTypes).optional(),
+  basePriceUnit: z.enum(UNIT_TYPES).optional(),
   shopIds: z.array(z.uuid()).optional(),
 })
 
@@ -78,9 +78,9 @@ const ReplaceInventoryItemCommandSchema = z.object({
   description: z.string().trim().nullable(),
   categoryId: z.uuid().nullable(),
   targetStock: z.number().positive().nullable(),
-  targetStockUnit: z.enum(unitTypes).nullable(),
+  targetStockUnit: z.enum(UNIT_TYPES).nullable(),
   basePriceCents: z.number().int().positive().nullable(),
-  basePriceUnit: z.enum(unitTypes).nullable(),
+  basePriceUnit: z.enum(UNIT_TYPES).nullable(),
   shopIds: z.array(z.uuid()),
 })
 

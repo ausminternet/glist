@@ -1,6 +1,6 @@
 import { Link, Stack, useRouter } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
-import { ScrollView, Text, View } from 'react-native'
+import { ScrollView, Text } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import * as DropdownMenu from 'zeego/dropdown-menu'
 import { colors } from '@/components/colors'

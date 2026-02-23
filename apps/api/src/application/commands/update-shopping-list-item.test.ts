@@ -7,13 +7,13 @@ import {
   createTestShoppingListItem,
 } from '@/test'
 import {
-  type ReplaceShoppingListItemCommand,
-  ReplaceShoppingListItemCommandHandler,
-} from './replace-shopping-list-item'
+  type UpdateShoppingListItemCommand,
+  UpdateShoppingListItemCommandHandler,
+} from './update-shopping-list-item'
 
 const householdId = generateHouseholdId()
 
-const validCommand: Omit<ReplaceShoppingListItemCommand, 'itemId'> = {
+const validCommand: Omit<UpdateShoppingListItemCommand, 'itemId'> = {
   name: 'Updated Milk',
   description: 'Updated description',
   quantity: 2,
@@ -25,12 +25,12 @@ const validCommand: Omit<ReplaceShoppingListItemCommand, 'itemId'> = {
 describe('ReplaceShoppingListItemCommandHandler', () => {
   let item: ShoppingListItem
   let repository: ShoppingListItemRepository
-  let handler: ReplaceShoppingListItemCommandHandler
+  let handler: UpdateShoppingListItemCommandHandler
 
   beforeEach(() => {
     item = createTestShoppingListItem({ householdId, name: 'Milk' })
     repository = createMockShoppingListItemRepository([item])
-    handler = new ReplaceShoppingListItemCommandHandler(repository)
+    handler = new UpdateShoppingListItemCommandHandler(repository)
   })
 
   test('replaces item successfully', async () => {
@@ -57,7 +57,7 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
   })
 
   test('clears optional fields when set to null', async () => {
-    const command: ReplaceShoppingListItemCommand = {
+    const command: UpdateShoppingListItemCommand = {
       itemId: item.id,
       name: 'Simple Item',
       description: null,

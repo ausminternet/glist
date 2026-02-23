@@ -10,62 +10,65 @@ import type {
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import type { RequestContext } from '../shared/request-context'
 
-export type ReplaceShoppingListItemCommand = {
+export type UpdateShoppingListItemCommand = {
   itemId: string
-  name: string
-  description: string | null
-  categoryId: string | null
-  quantity: number | null
-  quantityUnit: string | null
-  shopIds: string[]
+  name?: string
+  description?: string | null
+  categoryId?: string | null
+  quantity?: number | null
+  quantityUnit?: string | null
+  shopIds?: string[]
 }
 
-export type ReplaceShoppingListItemError =
+export type UpdateShoppingListItemError =
   | ShoppingListItemNotFoundError
   | ChangeNameError
   | ChangeQuantityError
 
 type ReplaceShoppingListItemResult = Result<
   { value: undefined; event: ItemUpdatedEvent },
-  ReplaceShoppingListItemError
+  UpdateShoppingListItemError
 >
 
-export class ReplaceShoppingListItemCommandHandler {
+export class UpdateShoppingListItemCommandHandler {
   constructor(private shoppingListItemRepository: ShoppingListItemRepository) {}
 
   async execute(
-    command: ReplaceShoppingListItemCommand,
+    command: UpdateShoppingListItemCommand,
     context: RequestContext,
   ): Promise<ReplaceShoppingListItemResult> {
     const item = await this.shoppingListItemRepository.findById(command.itemId)
 
     if (!item || item.householdId !== context.householdId) {
-      return err({
-        type: 'SHOPPING_LIST_ITEM_NOT_FOUND',
-        id: command.itemId,
-      })
+      return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })
     }
 
-    const nameResult = item.changeName(command.name)
-    if (!nameResult.ok) {
-      return err(nameResult.error)
+    if (command.name !== undefined) {
+      const nameResult = item.changeName(command.name)
+      if (!nameResult.ok) return err(nameResult.error)
     }
 
-    item.changeDescription(command.description)
-
-    item.changeCategory(
-      command.categoryId ? parseCategoryId(command.categoryId) : null,
-    )
-
-    const quantityResult = item.changeQuantity(
-      command.quantity,
-      command.quantityUnit,
-    )
-    if (!quantityResult.ok) {
-      return err(quantityResult.error)
+    if (command.description !== undefined) {
+      item.changeDescription(command.description)
     }
 
-    item.changeShops(parseShopIds(command.shopIds))
+    if (command.categoryId !== undefined) {
+      item.changeCategory(
+        command.categoryId ? parseCategoryId(command.categoryId) : null,
+      )
+    }
+
+    if (command.quantity !== undefined || command.quantityUnit !== undefined) {
+      const quantityResult = item.changeQuantity(
+        command.quantity ?? null,
+        command.quantityUnit ?? null,
+      )
+      if (!quantityResult.ok) return err(quantityResult.error)
+    }
+
+    if (command.shopIds !== undefined) {
+      item.changeShops(parseShopIds(command.shopIds))
+    }
 
     await this.shoppingListItemRepository.save(item)
 
