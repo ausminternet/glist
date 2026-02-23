@@ -48,12 +48,12 @@ export function toUpdateShoppingListItemInput({
 }: SaveShoppingListItemArgs): UpdateShoppingListItemInput {
   return {
     name: values.name,
-    description: values.description,
-    quantity: values.quantity,
-    quantityUnit: values.quantityUnit,
-    inventoryItemId: values.inventoryItemId,
+    description: values.description ?? null,
+    quantity: values.quantity ?? null,
+    quantityUnit: values.quantityUnit ?? null,
+    inventoryItemId: values.inventoryItemId ?? null,
     shopIds: values.shopIds,
-    categoryId: values.categoryId,
+    categoryId: values.categoryId ?? null,
   }
 }
 

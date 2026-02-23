@@ -149,7 +149,7 @@ export default function ShoppingListItemModal() {
                 // onBlur noch einmal das Feld flushed und mit einem alten Wert
                 // befuekllt
                 if (inventoryItem) return
-                setValue('name', text)
+                setValue('name', text.trim())
                 setSearch(text)
               }}
               value={values.name}
@@ -193,8 +193,8 @@ export default function ShoppingListItemModal() {
           <ListItemInput
             inputProps={{
               placeholder: 'Notizen',
-              onChangeText: (text) => setValue('description', text),
-              value: values.description ?? undefined,
+              onChangeText: (text) => setValue('description', text.trim()),
+              value: values.description,
               multiline: true,
             }}
           />

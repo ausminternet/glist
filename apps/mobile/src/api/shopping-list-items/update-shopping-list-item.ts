@@ -9,7 +9,7 @@ export async function updateShoppingListItem(
   const response = await apiClient<{ id: string }>(
     `/households/${householdId}/shopping-list-items/${itemId}`,
     {
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify(item),
     },
   )

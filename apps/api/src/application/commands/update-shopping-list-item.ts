@@ -12,12 +12,12 @@ import type { RequestContext } from '../shared/request-context'
 
 export type UpdateShoppingListItemCommand = {
   itemId: string
-  name?: string
-  description?: string | null
-  categoryId?: string | null
-  quantity?: number | null
-  quantityUnit?: string | null
-  shopIds?: string[]
+  name: string
+  description: string | null
+  categoryId: string | null
+  quantity: number | null
+  quantityUnit: string | null
+  shopIds: string[]
 }
 
 export type UpdateShoppingListItemError =
@@ -43,32 +43,22 @@ export class UpdateShoppingListItemCommandHandler {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })
     }
 
-    if (command.name !== undefined) {
-      const nameResult = item.changeName(command.name)
-      if (!nameResult.ok) return err(nameResult.error)
-    }
+    const nameResult = item.changeName(command.name)
+    if (!nameResult.ok) return err(nameResult.error)
 
-    if (command.description !== undefined) {
-      item.changeDescription(command.description)
-    }
+    item.changeDescription(command.description)
 
-    if (command.categoryId !== undefined) {
-      item.changeCategory(
-        command.categoryId ? parseCategoryId(command.categoryId) : null,
-      )
-    }
+    item.changeCategory(
+      command.categoryId ? parseCategoryId(command.categoryId) : null,
+    )
 
-    if (command.quantity !== undefined || command.quantityUnit !== undefined) {
-      const quantityResult = item.changeQuantity(
-        command.quantity ?? null,
-        command.quantityUnit ?? null,
-      )
-      if (!quantityResult.ok) return err(quantityResult.error)
-    }
+    const quantityResult = item.changeQuantity(
+      command.quantity ?? null,
+      command.quantityUnit ?? null,
+    )
+    if (!quantityResult.ok) return err(quantityResult.error)
 
-    if (command.shopIds !== undefined) {
-      item.changeShops(parseShopIds(command.shopIds))
-    }
+    item.changeShops(parseShopIds(command.shopIds))
 
     await this.shoppingListItemRepository.save(item)
 
