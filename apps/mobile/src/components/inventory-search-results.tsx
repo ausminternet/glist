@@ -18,7 +18,7 @@ export function InventorySearchResults({
     <>
       {items.map((item) => {
         const subtitle = getSubtitle(item)
-        const showSubtitle = subtitle && item.description
+        const showSubtitle = subtitle || item.description
         return (
           <ListItem
             compact
