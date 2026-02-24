@@ -1,12 +1,18 @@
-import { Stack } from 'expo-router'
-import { Text, View } from 'react-native'
-import { useCategories } from '@/api/categories/use-categories'
-import { useInventoryItems } from '@/api/inventory-items/use-inventory-items'
-import { useShops } from '@/api/shops/use-shops'
+import { useRouter } from 'expo-router'
+import { Stack } from 'expo-router/stack'
+import { useColorScheme } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
+import { useInventoryItems } from '@/api/inventory-items'
+import { colors } from '@/components/colors'
+import { InventoryItem } from '@/components/inventory-item-view'
+import { List } from '@/components/list.components'
+import { useHouseholdId } from '@/hooks/use-household-id'
 
 export default function Index() {
-  const { getShopName } = useShops()
-  const { getCategoryName } = useCategories()
+  const router = useRouter()
+  const colorTheme = useColorScheme()
+  const householdId = useHouseholdId()
+
   const { inventoryItems } = useInventoryItems()
 
   return (
@@ -16,24 +22,39 @@ export default function Index() {
           title: 'Vorräte',
           headerBackButtonDisplayMode: 'minimal',
           headerLargeTitleEnabled: true,
+          contentStyle: {
+            backgroundColor:
+              colorTheme === 'dark' ? 'black' : colors.background.tertiary,
+          },
+          unstable_headerRightItems: () => [
+            {
+              type: 'button',
+              label: 'Neuer Eintrag',
+              icon: {
+                type: 'sfSymbol',
+                name: 'plus',
+              },
+              variant: 'prominent',
+              onPress: () => {
+                router.push(`/${householdId}/modals/inventory-item`)
+              },
+            },
+          ],
         }}
       />
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          gap: 24,
+          flexDirection: 'column',
         }}
       >
-        {inventoryItems.map((item) => (
-          <Text key={item.id}>
-            {item.name}, Shops:{' '}
-            {item.shopIds.map((shopId) => getShopName(shopId)).join(', ')}
-            Category:{' '}
-            {item.categoryId ? getCategoryName(item.categoryId) : 'N/A'}
-          </Text>
-        ))}
-      </View>
+        <List type="plain" backgroundColor="transparent">
+          {inventoryItems.map((item) => (
+            <InventoryItem item={item} key={item.id} />
+          ))}
+        </List>
+      </ScrollView>
     </>
   )
 }

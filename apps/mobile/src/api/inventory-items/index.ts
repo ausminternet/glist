@@ -1,2 +1,7 @@
+export * from './add-inventory-item'
+export * from './edit-inventory-item'
+export * from './use-add-inventory-item'
+export * from './use-edit-inventory-item'
 export * from './use-find-inventory-items'
+export * from './use-inventory-item'
 export * from './use-inventory-items'

@@ -2,10 +2,10 @@ import { UNIT_TYPES } from '@glist/shared'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { CreateInventoryItemCommandHandler } from '@/application/commands/create-inventory-item'
+import { AddInventoryItemCommandHandler } from '@/application/commands/add-inventory-item'
 import { DeleteInventoryItemCommandHandler } from '@/application/commands/delete-inventory-item'
 import { DeleteInventoryItemPhotoCommandHandler } from '@/application/commands/delete-inventory-item-photo'
-import { ReplaceInventoryItemCommandHandler } from '@/application/commands/replace-inventory-item'
+import { EditInventoryItemCommandHandler } from '@/application/commands/edit-inventory-item'
 import { UploadInventoryItemPhotoCommandHandler } from '@/application/commands/upload-inventory-item-photo'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemQueryRepository } from '@/infrastructure/repositories/drizzle-inventory-item-query-repository'
@@ -30,13 +30,13 @@ inventoryItemsRouter.get('/', async (c) => {
 
 const CreateInventoryItemCommandSchema = z.object({
   name: z.string().trim().min(1, 'Name cannot be empty'),
-  description: z.string().trim().optional(),
-  categoryId: z.uuid().optional(),
-  targetStock: z.number().positive().optional(),
-  targetStockUnit: z.enum(UNIT_TYPES).optional(),
-  basePriceCents: z.number().int().positive().optional(),
-  basePriceUnit: z.enum(UNIT_TYPES).optional(),
-  shopIds: z.array(z.uuid()).optional(),
+  description: z.string().trim().nullable(),
+  categoryId: z.uuid().nullable(),
+  targetStock: z.number().positive().nullable(),
+  targetStockUnit: z.enum(UNIT_TYPES).nullable(),
+  basePriceCents: z.number().int().positive().nullable(),
+  basePriceUnit: z.enum(UNIT_TYPES).nullable(),
+  shopIds: z.array(z.uuid()),
 })
 
 inventoryItemsRouter.post(
@@ -48,7 +48,7 @@ inventoryItemsRouter.post(
 
     const db = createDb(c.env.glist_db)
     const repository = new DrizzleInventoryItemRepository(db)
-    const command = new CreateInventoryItemCommandHandler(repository)
+    const command = new AddInventoryItemCommandHandler(repository)
 
     const result = await command.execute(input, { householdId })
 
@@ -73,7 +73,7 @@ inventoryItemsRouter.post(
   },
 )
 
-const ReplaceInventoryItemCommandSchema = z.object({
+const editInventoryItemCommandSchema = z.object({
   name: z.string().trim().min(1, 'Name cannot be empty'),
   description: z.string().trim().nullable(),
   categoryId: z.uuid().nullable(),
@@ -84,9 +84,9 @@ const ReplaceInventoryItemCommandSchema = z.object({
   shopIds: z.array(z.uuid()),
 })
 
-inventoryItemsRouter.put(
-  '/:id',
-  zValidator('json', ReplaceInventoryItemCommandSchema),
+inventoryItemsRouter.patch(
+  '/:id/edit',
+  zValidator('json', editInventoryItemCommandSchema),
   async (c) => {
     const householdId = c.get('householdId')
     const id = c.req.param('id')
@@ -94,10 +94,10 @@ inventoryItemsRouter.put(
 
     const db = createDb(c.env.glist_db)
     const repository = new DrizzleInventoryItemRepository(db)
-    const command = new ReplaceInventoryItemCommandHandler(repository)
+    const command = new EditInventoryItemCommandHandler(repository)
 
     const result = await command.execute(
-      { ...input, inventoryItemId: id },
+      { ...input, itemId: id },
       { householdId },
     )
 

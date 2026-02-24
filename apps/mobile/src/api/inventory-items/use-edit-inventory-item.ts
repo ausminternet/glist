@@ -1,38 +1,38 @@
-import type { EditShoppingListItemInput } from '@glist/schemas'
-import type { ShoppingListItemView } from '@glist/views'
+import type { EditInventoryItemInput } from '@glist/schemas'
+import type { InventoryItemView } from '@glist/views'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { queryKeys } from '../query-keys'
-import { editShoppingListItem } from './edit-shopping-list-item'
+import { editInventoryItem } from './edit-inventory-item'
 
 interface MutateProps {
   itemId: string
-  payload: EditShoppingListItemInput
+  payload: EditInventoryItemInput
 }
 
-export function useEditShoppingListItem() {
+export function useEditInventoryItem() {
   const householdId = useHouseholdId()
   const queryClient = useQueryClient()
 
   const { mutate, ...rest } = useMutation({
     mutationFn: (variables: MutateProps) =>
-      editShoppingListItem(variables.itemId, variables.payload, householdId),
+      editInventoryItem(variables.itemId, variables.payload, householdId),
     onMutate: async (variables) => {
-      const queryKey = queryKeys.shoppingListItems(householdId)
+      const queryKey = queryKeys.inventoryItems(householdId)
 
       await queryClient.cancelQueries({ queryKey })
 
       const previousItems =
-        queryClient.getQueryData<ShoppingListItemView[]>(queryKey)
+        queryClient.getQueryData<InventoryItemView[]>(queryKey)
 
-      queryClient.setQueryData<ShoppingListItemView[]>(queryKey, (old) => {
+      queryClient.setQueryData<InventoryItemView[]>(queryKey, (old) => {
         const oldItem = old?.find((item) => item.id === variables.itemId)
 
         if (!oldItem) {
           throw new Error('Item to edit was not found in query cache')
         }
 
-        const newItem: ShoppingListItemView = {
+        const newItem: InventoryItemView = {
           ...oldItem,
           ...variables.payload,
         }
@@ -49,10 +49,10 @@ export function useEditShoppingListItem() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.shoppingListItems(householdId),
+        queryKey: queryKeys.inventoryItems(householdId),
       })
     },
   })
 
-  return { editShoppingListItem: mutate, ...rest }
+  return { editInventoryItem: mutate, ...rest }
 }

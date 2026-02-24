@@ -28,10 +28,10 @@ import { DefaultInputStyles, ListItemInput } from '@/components/list-item-input'
 import { ListItemInputContainer } from '@/components/list-item-input-container'
 import { NavbarCancelButton } from '@/components/navbar-cancel-button'
 import { UnitSelector } from '@/components/unit-selector'
-import { useSubmitShoppingListForm } from '@/hooks/use-handle-shopping-list-item-form-submit'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { useInventoryItemSubtitle } from '@/hooks/use-inventory-item-subtitle'
 import { useShoppingListForm } from '@/hooks/use-shopping-list-item-form'
+import { useSubmitShoppingListItemForm } from '@/hooks/use-submit-shopping-list-item-form-submit'
 
 export default function ShoppingListItemModal() {
   const navigation = useNavigation()
@@ -51,7 +51,7 @@ export default function ShoppingListItemModal() {
 
   const { shoppingListItem } = useShoppingListItem(itemId)
 
-  const { submit, isSubmitting } = useSubmitShoppingListForm({
+  const { submit, isSubmitting } = useSubmitShoppingListItemForm({
     setPreventRemove: setPreventModalRemove,
   })
 

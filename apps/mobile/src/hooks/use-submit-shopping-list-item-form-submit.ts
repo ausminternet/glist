@@ -10,13 +10,13 @@ import {
   toEditShoppingListItemInput,
 } from '@/hooks/use-shopping-list-item-form'
 
-interface UseSubmitShoppingListFormProps {
+interface UseSubmitShoppingListItemFormProps {
   setPreventRemove: (value: boolean) => void
 }
 
-export function useSubmitShoppingListForm({
+export function useSubmitShoppingListItemForm({
   setPreventRemove,
-}: UseSubmitShoppingListFormProps) {
+}: UseSubmitShoppingListItemFormProps) {
   const { addShoppingListItem } = useSaveShoppingListItem()
   const { editShoppingListItem: updateShoppingListItem } =
     useEditShoppingListItem()

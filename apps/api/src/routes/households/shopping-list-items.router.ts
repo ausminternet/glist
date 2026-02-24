@@ -239,7 +239,7 @@ shoppingListItemsRouter.patch(
 
     await broadcastShoppingListEvent(c.env, result.value.event)
 
-    return c.json({ success: true, data: { id: result.value } })
+    return c.json({ success: true })
   },
 )
 

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { shoppingListItemBaseFields } from './shopping-list-item-fields'
+import { shoppingListItemBaseFields } from './shopping-list-item-base-fields'
 
 export const editShoppingListItemSchema = z.object({
   name: shoppingListItemBaseFields.name,

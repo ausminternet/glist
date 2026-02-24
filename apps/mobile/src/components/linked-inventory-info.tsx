@@ -1,23 +1,15 @@
 import { getUnitLabel } from '@glist/shared'
 import type { InventoryItemView } from '@glist/views'
 import { PlatformColor, Text, View } from 'react-native'
+import { formatEuro } from '@/utils/currency'
 
 interface LinkedInventoryInfoProps {
   inventoryItem: InventoryItemView
 }
 
-/**
- * Displays additional information about a linked inventory item.
- * Shows target stock and base price if available.
- */
 export function LinkedInventoryInfo({
   inventoryItem,
 }: LinkedInventoryInfoProps) {
-  console.log(
-    '$$$ inventoryItem',
-    inventoryItem.targetStock,
-    inventoryItem.basePriceCents,
-  )
   if (!inventoryItem.targetStock && !inventoryItem.basePriceCents) {
     return null
   }
@@ -42,12 +34,9 @@ export function LinkedInventoryInfo({
             color: PlatformColor('secondaryLabel'),
           }}
         >
-          {`Basispreis: ${inventoryItem.basePriceCents
-            .toString()
-            .replace('.', ',')} € / ${getUnitLabel(
-            inventoryItem.basePriceUnit,
-            1,
-          )}`}
+          {`Basispreis: ${formatEuro(
+            inventoryItem.basePriceCents,
+          )} € / ${getUnitLabel(inventoryItem.basePriceUnit, 1)}`}
         </Text>
       )}
     </View>

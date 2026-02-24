@@ -1,12 +1,12 @@
-import type { AddShoppingListItemInput } from '@glist/schemas'
+import type { AddInventoryItemInput } from '@glist/schemas'
 import { apiClient } from '../client'
 
-export async function addShoppingListItem(
-  item: AddShoppingListItemInput,
+export async function addInventoryItem(
+  item: AddInventoryItemInput,
   householdId: string,
 ): Promise<string> {
   const response = await apiClient<{ id: string }>(
-    `/households/${householdId}/shopping-list-items`,
+    `/households/${householdId}/inventory-items`,
     {
       method: 'POST',
       body: JSON.stringify(item),
@@ -14,7 +14,7 @@ export async function addShoppingListItem(
   )
 
   if (!response.success) {
-    throw new Error(`Failed to add shopping list item: ${response.error}`)
+    throw new Error(`Failed to add inventory item: ${response.error}`)
   }
 
   return response.data.id

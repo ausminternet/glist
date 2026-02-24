@@ -1,6 +1,6 @@
 import { getUnitLabel } from '@glist/shared'
 import type { ShoppingListItemView } from '@glist/views'
-import { PlatformColor, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 import {
   useCheckShoppingListItem,
   useUncheckShoppingListItem,
@@ -52,18 +52,17 @@ export function ShoppingListItem({ item }: ShoppingListItemProps) {
             gap: 6,
           }}
         >
-          <Text
-            style={{
-              fontSize: 17,
-              color: PlatformColor('secondaryLabelColor'),
-            }}
-          >
-            {item.quantity &&
-              `${item.quantity.toLocaleString('de-DE')} ${getUnitLabel(
-                item.quantityUnit,
-                item.quantity,
-              )}`}
-          </Text>
+          {item.quantity && (
+            <Text
+              style={{
+                fontSize: 17,
+                color: colors.label.secondary,
+              }}
+            >
+              {item.quantity.toLocaleString('de-DE')}{' '}
+              {getUnitLabel(item.quantityUnit, item.quantity)}
+            </Text>
+          )}
           {shopNames && (
             <Text
               numberOfLines={1}

@@ -10,22 +10,22 @@ import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-
 import { parseShopIds } from '@/domain/shop/shop-id'
 import type { RequestContext } from '../shared/request-context'
 
-export type CreateInventoryItemCommand = {
+export type AddInventoryItemCommand = {
   name: string
-  description?: string
-  categoryId?: string
-  targetStock?: number
-  targetStockUnit?: string
-  basePriceCents?: number
-  basePriceUnit?: string
-  shopIds?: string[]
+  description: string | null
+  categoryId: string | null
+  targetStock: number | null
+  targetStockUnit: string | null
+  basePriceCents: number | null
+  basePriceUnit: string | null
+  shopIds: string[]
 }
 
-export class CreateInventoryItemCommandHandler {
+export class AddInventoryItemCommandHandler {
   constructor(private repository: InventoryItemRepository) {}
 
   async execute(
-    command: CreateInventoryItemCommand,
+    command: AddInventoryItemCommand,
     context: RequestContext,
   ): Promise<Result<string, CreateInventoryItemError>> {
     const householdId = parseHouseholdId(context.householdId)
@@ -38,12 +38,12 @@ export class CreateInventoryItemCommandHandler {
         description: command.description,
         categoryId: command.categoryId
           ? parseCategoryId(command.categoryId)
-          : undefined,
+          : null,
         targetStock: command.targetStock,
         targetStockUnit: command.targetStockUnit,
         basePriceCents: command.basePriceCents,
         basePriceUnit: command.basePriceUnit,
-        shopIds: command.shopIds ? parseShopIds(command.shopIds) : undefined,
+        shopIds: command.shopIds ? parseShopIds(command.shopIds) : [],
       },
     )
 

@@ -39,7 +39,7 @@ export class EditShoppingListItemCommandHandler {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })
     }
 
-    item.edit({
+    const result = item.edit({
       name: command.name,
       description: command.description,
       categoryId: command.categoryId
@@ -49,6 +49,10 @@ export class EditShoppingListItemCommandHandler {
       quantityUnit: command.quantityUnit,
       shopIds: parseShopIds(command.shopIds),
     })
+
+    if (!result.ok) {
+      return err(result.error)
+    }
 
     await this.shoppingListItemRepository.save(item)
 
