@@ -89,6 +89,7 @@ export default function InventoryItemModal() {
                 name: 'checkmark',
               },
               variant: 'prominent',
+              tintColor: colors.system.mint,
               disabled: !canSubmit,
               onPress: () => {
                 submit(values, inventoryItem?.id, resetFormAndGoBack)

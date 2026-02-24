@@ -35,6 +35,7 @@ export default function Index() {
                 name: 'plus',
               },
               variant: 'prominent',
+              tintColor: colors.system.mint,
               onPress: () => {
                 router.push(`/${householdId}/modals/inventory-item`)
               },

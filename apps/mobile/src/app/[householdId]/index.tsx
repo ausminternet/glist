@@ -35,10 +35,9 @@ export default function Index() {
     getShoppingListItemCountByShopId,
     itemCounts,
     isPending: shoppingListPending,
-  } = useShoppingListItems(householdId)
-  const { inventoryItems, isPending: inventoryPending } =
-    useInventoryItems(householdId)
-  const { shops } = useShops(householdId)
+  } = useShoppingListItems()
+  const { inventoryItems, isPending: inventoryPending } = useInventoryItems()
+  const { shops } = useShops()
   const { household } = useHousehold(householdId)
   const { isRunning, run } = useMinDuration()
   const queryClient = useQueryClient()

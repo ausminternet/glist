@@ -1,6 +1,7 @@
 import type { InventoryItemView } from '@glist/views'
 import { SymbolView } from 'expo-symbols'
 import { PlatformColor, Text, View } from 'react-native'
+import { colors } from './colors'
 import { ListItem } from './list-item.component'
 
 interface InventorySearchResultsProps {
@@ -26,7 +27,11 @@ export function InventorySearchResults({
             onPress={() => onSelectItem(item)}
             right={
               <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                <SymbolView name="arrow.up.backward.circle" size={20} />
+                <SymbolView
+                  name="arrow.up.backward.circle"
+                  size={20}
+                  tintColor={colors.system.mint}
+                />
               </View>
             }
             subtitle={
@@ -37,7 +42,7 @@ export function InventorySearchResults({
                       style={{
                         fontSize: 15,
                         maxWidth: 200,
-                        color: PlatformColor('secondaryLabelColor'),
+                        color: colors.label.secondary,
                       }}
                     >
                       {subtitle}
@@ -48,7 +53,7 @@ export function InventorySearchResults({
                       style={{
                         fontSize: 15,
                         maxWidth: 200,
-                        color: PlatformColor('secondaryLabelColor'),
+                        color: colors.label.secondary,
                       }}
                     >
                       {item.description}
