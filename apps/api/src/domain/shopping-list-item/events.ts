@@ -18,8 +18,8 @@ export type ItemRemovedEvent = {
   householdId: string
   itemId: string
 }
-export type ItemUpdatedEvent = {
-  type: 'item-updated'
+export type ItemEditedEvent = {
+  type: 'item-edited'
   householdId: string
   itemId: string
 }
@@ -29,4 +29,4 @@ export type ShoppingListDomainEvent =
   | ItemUncheckedEvent
   | ItemAddedEvent
   | ItemRemovedEvent
-  | ItemUpdatedEvent
+  | ItemEditedEvent

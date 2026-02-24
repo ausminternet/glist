@@ -16,7 +16,7 @@ export function toSSEEvent(
       return { type: 'item-added', itemId: domainEvent.itemId }
     case 'item-removed':
       return { type: 'item-removed', itemId: domainEvent.itemId }
-    case 'item-updated':
+    case 'item-edited':
       return { type: 'item-updated', itemId: domainEvent.itemId }
   }
 }

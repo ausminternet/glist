@@ -18,6 +18,8 @@ export type NewShoppingListItemInput = {
   shopIds: ShopId[]
 }
 
+type EditShoppingListItemInput = Omit<NewShoppingListItemInput, 'householdId'>
+
 export type ShoppingListItemProps = {
   id: ShoppingListItemId
   householdId: HouseholdId
@@ -35,9 +37,7 @@ export type ShoppingListItemProps = {
 
 export type CreateShoppingListItemError = InvalidNameError | QuantityError
 
-export type ChangeNameError = InvalidNameError
-
-export type ChangeQuantityError = QuantityError
+export type EditShoppingListItemError = InvalidNameError | QuantityError
 
 export class ShoppingListItem {
   constructor(private props: ShoppingListItemProps) {}
@@ -104,6 +104,28 @@ export class ShoppingListItem {
     })
   }
 
+  edit(
+    input: EditShoppingListItemInput,
+  ): Result<void, EditShoppingListItemError> {
+    if (isBlank(input.name)) {
+      return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
+    }
+
+    const quantityResult = Quantity.create(input.quantity, input.quantityUnit)
+    if (!quantityResult.ok) {
+      return err(quantityResult.error)
+    }
+
+    this.props.name = input.name
+    this.props.description = input.description
+    this.props.categoryId = input.categoryId
+    this.props.quantity = quantityResult.value
+    this.props.shopIds = [...input.shopIds]
+    this.props.updatedAt = new Date()
+
+    return ok(undefined)
+  }
+
   get id(): ShoppingListItemId {
     return this.props.id
   }
@@ -154,47 +176,6 @@ export class ShoppingListItem {
 
   get inventoryItemId(): InventoryItemId | null {
     return this.props.inventoryItemId
-  }
-
-  changeName(name: string): Result<void, ChangeNameError> {
-    if (isBlank(name)) {
-      return err({ type: 'INVALID_NAME', reason: 'Name cannot be empty' })
-    }
-    this.props.name = name
-    this.props.updatedAt = new Date()
-
-    return ok(undefined)
-  }
-
-  changeDescription(description: string | null): void {
-    this.props.description = description
-    this.props.updatedAt = new Date()
-  }
-
-  changeQuantity(
-    quantity: number | null,
-    quantityUnit: string | null,
-  ): Result<void, ChangeQuantityError> {
-    const quantityResult = Quantity.create(quantity, quantityUnit)
-
-    if (!quantityResult.ok) {
-      return err(quantityResult.error)
-    }
-
-    this.props.quantity = quantityResult.value
-    this.props.updatedAt = new Date()
-
-    return ok(undefined)
-  }
-
-  changeCategory(categoryId: CategoryId | null): void {
-    this.props.categoryId = categoryId
-    this.props.updatedAt = new Date()
-  }
-
-  changeShops(shopIds: ShopId[]): void {
-    this.props.shopIds = [...shopIds]
-    this.props.updatedAt = new Date()
   }
 
   toggleChecked(): void {

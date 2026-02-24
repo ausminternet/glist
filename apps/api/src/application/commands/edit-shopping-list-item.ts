@@ -2,15 +2,12 @@ import { err, okWithEvent, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
 import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
-import type { ItemUpdatedEvent } from '@/domain/shopping-list-item/events'
-import type {
-  ChangeNameError,
-  ChangeQuantityError,
-} from '@/domain/shopping-list-item/shopping-list-item'
+import type { ItemEditedEvent } from '@/domain/shopping-list-item/events'
+import type { EditShoppingListItemError as EditShoppingListItemAggregateError } from '@/domain/shopping-list-item/shopping-list-item'
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import type { RequestContext } from '../shared/request-context'
 
-export type UpdateShoppingListItemCommand = {
+export type EditShoppingListItemCommand = {
   itemId: string
   name: string
   description: string | null
@@ -20,50 +17,43 @@ export type UpdateShoppingListItemCommand = {
   shopIds: string[]
 }
 
-export type UpdateShoppingListItemError =
+export type EditShoppingListItemError =
   | ShoppingListItemNotFoundError
-  | ChangeNameError
-  | ChangeQuantityError
+  | EditShoppingListItemAggregateError
 
-type ReplaceShoppingListItemResult = Result<
-  { value: undefined; event: ItemUpdatedEvent },
-  UpdateShoppingListItemError
+type EditShoppingListItemResult = Result<
+  { value: undefined; event: ItemEditedEvent },
+  EditShoppingListItemError
 >
 
-export class UpdateShoppingListItemCommandHandler {
+export class EditShoppingListItemCommandHandler {
   constructor(private shoppingListItemRepository: ShoppingListItemRepository) {}
 
   async execute(
-    command: UpdateShoppingListItemCommand,
+    command: EditShoppingListItemCommand,
     context: RequestContext,
-  ): Promise<ReplaceShoppingListItemResult> {
+  ): Promise<EditShoppingListItemResult> {
     const item = await this.shoppingListItemRepository.findById(command.itemId)
 
     if (!item || item.householdId !== context.householdId) {
       return err({ type: 'SHOPPING_LIST_ITEM_NOT_FOUND', id: command.itemId })
     }
 
-    const nameResult = item.changeName(command.name)
-    if (!nameResult.ok) return err(nameResult.error)
-
-    item.changeDescription(command.description)
-
-    item.changeCategory(
-      command.categoryId ? parseCategoryId(command.categoryId) : null,
-    )
-
-    const quantityResult = item.changeQuantity(
-      command.quantity ?? null,
-      command.quantityUnit ?? null,
-    )
-    if (!quantityResult.ok) return err(quantityResult.error)
-
-    item.changeShops(parseShopIds(command.shopIds))
+    item.edit({
+      name: command.name,
+      description: command.description,
+      categoryId: command.categoryId
+        ? parseCategoryId(command.categoryId)
+        : null,
+      quantity: command.quantity,
+      quantityUnit: command.quantityUnit,
+      shopIds: parseShopIds(command.shopIds),
+    })
 
     await this.shoppingListItemRepository.save(item)
 
     return okWithEvent(undefined, {
-      type: 'item-updated',
+      type: 'item-edited',
       householdId: item.householdId,
       itemId: command.itemId,
     })

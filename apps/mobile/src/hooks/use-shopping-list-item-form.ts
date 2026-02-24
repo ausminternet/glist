@@ -1,7 +1,7 @@
 import {
   type AddShoppingListItemInput,
+  type EditShoppingListItemInput,
   shoppingListItemBaseFields,
-  type UpdateShoppingListItemInput,
 } from '@glist/schemas'
 import type { InventoryItemView, ShoppingListItemView } from '@glist/views'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -24,14 +24,9 @@ export type ShoppingListItemFormValues = z.infer<
   typeof shoppingListItemFormSchema
 >
 
-export type SaveShoppingListItemArgs = {
-  values: ShoppingListItemFormValues
-  inventoryItemId?: string | null
-}
-
-export function toAddShoppingListItemInput({
-  values,
-}: SaveShoppingListItemArgs): AddShoppingListItemInput {
+export function toAddShoppingListItemInput(
+  values: ShoppingListItemFormValues,
+): AddShoppingListItemInput {
   //TODO: Schema validieren
   return {
     name: values.name,
@@ -44,9 +39,9 @@ export function toAddShoppingListItemInput({
   }
 }
 
-export function toUpdateShoppingListItemInput({
-  values,
-}: SaveShoppingListItemArgs): UpdateShoppingListItemInput {
+export function toEditShoppingListItemInput(
+  values: ShoppingListItemFormValues,
+): EditShoppingListItemInput {
   //TODO: Schema validieren
   return {
     name: values.name,

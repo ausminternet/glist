@@ -1,6 +1,6 @@
 import {
   addShoppingListItemSchema,
-  updateShoppingListItemSchema,
+  editShoppingListItemSchema,
 } from '@glist/schemas'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
@@ -11,8 +11,8 @@ import { CheckShoppingListItemCommandHandler } from '@/application/commands/chec
 import { ClearCheckedItemsCommandHandler } from '@/application/commands/clear-checked-items'
 import { DeleteShoppingListItemCommandHandler } from '@/application/commands/delete-shopping-list-item'
 import { DeleteShoppingListItemPhotoCommandHandler } from '@/application/commands/delete-shopping-list-item-photo'
+import { EditShoppingListItemCommandHandler } from '@/application/commands/edit-shopping-list-item'
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
-import { UpdateShoppingListItemCommandHandler } from '@/application/commands/update-shopping-list-item'
 import { UploadShoppingListItemPhotoCommandHandler } from '@/application/commands/upload-shopping-list-item-photo'
 import { broadcastShoppingListEvent } from '@/infrastructure/events/event-broadcaster'
 import { createDb } from '@/infrastructure/persistence'
@@ -198,9 +198,9 @@ shoppingListItemsRouter.post('/clear-checked', async (c) => {
 })
 
 // Replace/update a shopping list item
-shoppingListItemsRouter.put(
-  '/:itemId',
-  zValidator('json', updateShoppingListItemSchema),
+shoppingListItemsRouter.patch(
+  '/:itemId/edit',
+  zValidator('json', editShoppingListItemSchema),
   async (c) => {
     const householdId = c.get('householdId')
     const itemId = c.req.param('itemId')
@@ -208,7 +208,7 @@ shoppingListItemsRouter.put(
 
     const db = createDb(c.env.glist_db)
     const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
-    const command = new UpdateShoppingListItemCommandHandler(
+    const command = new EditShoppingListItemCommandHandler(
       shoppingListItemRepository,
     )
 

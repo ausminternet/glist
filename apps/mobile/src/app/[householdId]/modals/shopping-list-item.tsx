@@ -5,7 +5,7 @@ import {
   useRouter,
 } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Alert,
   Pressable,
@@ -114,7 +114,7 @@ export default function ShoppingListItemModal() {
     <>
       <Stack.Screen
         options={{
-          title: 'Neuer Eintrag',
+          title: shoppingListItem ? 'Bearbeiten' : 'Neuer Eintrag',
           headerTransparent: true,
           headerLeft: () => (
             <NavbarCancelButton
@@ -133,14 +133,7 @@ export default function ShoppingListItemModal() {
               variant: 'prominent',
               disabled: !canSubmit,
               onPress: () => {
-                submit(
-                  {
-                    values,
-                    inventoryItemId: inventoryItem?.id,
-                  },
-                  shoppingListItem?.id,
-                  resetFormAndGoBack,
-                )
+                submit(values, shoppingListItem?.id, resetFormAndGoBack)
               },
             },
           ],

@@ -1,13 +1,13 @@
-import type { UpdateShoppingListItemInput } from '@glist/schemas'
+import type { EditShoppingListItemInput } from '@glist/schemas'
 import { apiClient } from '../client'
 
-export async function updateShoppingListItem(
+export async function editShoppingListItem(
   itemId: string,
-  item: UpdateShoppingListItemInput,
+  item: EditShoppingListItemInput,
   householdId: string,
 ): Promise<string> {
   const response = await apiClient<{ id: string }>(
-    `/households/${householdId}/shopping-list-items/${itemId}`,
+    `/households/${householdId}/shopping-list-items/${itemId}/edit`,
     {
       method: 'PATCH',
       body: JSON.stringify(item),

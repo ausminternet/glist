@@ -1,17 +1,17 @@
 meta {
-  name: PUT replace
+  name: PATCH edit
   type: http
   seq: 6
 }
 
 put {
-  url: {{base_url}}/households/:householdId/shopping-list-items/:itemId
+  url: {{base_url}}/households/:householdId/shopping-list-items/:itemId/edit
   body: json
   auth: inherit
 }
 
 params:path {
-  householdId: d80457d8-c534-4d7f-9c2c-51ece5f1e319
+  householdId:
   itemId:
 }
 

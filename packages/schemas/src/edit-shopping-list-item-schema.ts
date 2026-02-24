@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { shoppingListItemBaseFields } from './shopping-list-item-fields'
 
-export const updateShoppingListItemSchema = z.object({
+export const editShoppingListItemSchema = z.object({
   name: shoppingListItemBaseFields.name,
   description: shoppingListItemBaseFields.description.nullable(),
   categoryId: shoppingListItemBaseFields.categoryId.nullable(),
@@ -12,6 +12,6 @@ export const updateShoppingListItemSchema = z.object({
   inventoryItemId: shoppingListItemBaseFields.inventoryItemId.nullable(),
 })
 
-export type UpdateShoppingListItemInput = z.infer<
-  typeof updateShoppingListItemSchema
+export type EditShoppingListItemInput = z.infer<
+  typeof editShoppingListItemSchema
 >

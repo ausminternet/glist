@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Alert } from 'react-native'
 import {
+  useEditShoppingListItem,
   useSaveShoppingListItem,
-  useUpdateShoppingListItem,
 } from '@/api/shopping-list-items'
 import {
-  type SaveShoppingListItemArgs,
+  type ShoppingListItemFormValues,
   toAddShoppingListItemInput,
-  toUpdateShoppingListItemInput,
+  toEditShoppingListItemInput,
 } from '@/hooks/use-shopping-list-item-form'
 
 interface UseSubmitShoppingListFormProps {
@@ -18,10 +18,11 @@ export function useSubmitShoppingListForm({
   setPreventRemove,
 }: UseSubmitShoppingListFormProps) {
   const { addShoppingListItem } = useSaveShoppingListItem()
-  const { updateShoppingListItem } = useUpdateShoppingListItem()
+  const { editShoppingListItem: updateShoppingListItem } =
+    useEditShoppingListItem()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const add = (input: SaveShoppingListItemArgs, onSuccess?: () => void) => {
+  const add = (input: ShoppingListItemFormValues, onSuccess?: () => void) => {
     const payload = toAddShoppingListItemInput(input)
     setPreventRemove(false)
     addShoppingListItem(payload, {
@@ -36,12 +37,12 @@ export function useSubmitShoppingListForm({
     })
   }
 
-  const update = (
+  const edit = (
     shoppingListItemId: string,
-    input: SaveShoppingListItemArgs,
+    input: ShoppingListItemFormValues,
     onSuccess?: () => void,
   ) => {
-    const payload = toUpdateShoppingListItemInput(input)
+    const payload = toEditShoppingListItemInput(input)
     setPreventRemove(false)
     updateShoppingListItem(
       { itemId: shoppingListItemId, payload },
@@ -52,7 +53,7 @@ export function useSubmitShoppingListForm({
         onError: (error) => {
           setPreventRemove(true)
           Alert.alert('Fehler', 'Das Item konnte nicht angelegt werden.')
-          console.error('Error adding shopping list item:', error)
+          console.error('Error editing shopping list item:', error)
         },
         onSettled: () => {
           setIsSubmitting(false)
@@ -62,13 +63,18 @@ export function useSubmitShoppingListForm({
   }
 
   const submit = (
-    payload: SaveShoppingListItemArgs,
+    payload: ShoppingListItemFormValues,
     shoppingListItemId?: string,
     onSuccess?: () => void,
   ) => {
     setIsSubmitting(true)
+    console.log(
+      'Submitting shopping list item with payload:',
+      payload,
+      shoppingListItemId,
+    )
     if (shoppingListItemId) {
-      update(shoppingListItemId, payload, onSuccess)
+      edit(shoppingListItemId, payload, onSuccess)
     } else {
       add(payload, onSuccess)
     }
