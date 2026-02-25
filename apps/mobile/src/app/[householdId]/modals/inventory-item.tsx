@@ -16,7 +16,6 @@ import {
 } from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useDeleteInventoryItem, useInventoryItem } from '@/api/inventory-items'
-import { deleteInventoryItem } from '@/api/inventory-items/delete-inventory-item'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
 import { DecimalInput } from '@/components/decimal-input'
