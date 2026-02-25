@@ -60,12 +60,13 @@ export default function InventoryItemModal() {
   }
 
   useEffect(() => {
+    if (preventModalRemove) return
     const sub = navigation.addListener('beforeRemove', () => {
       reset()
     })
 
     return sub
-  }, [navigation, reset])
+  }, [navigation, reset, preventModalRemove])
 
   useEffect(() => {
     if (inventoryItem) {
