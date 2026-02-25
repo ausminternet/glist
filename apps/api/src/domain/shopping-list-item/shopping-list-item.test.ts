@@ -22,6 +22,7 @@ describe('ShoppingListItem', () => {
         quantity: 2,
         quantityUnit: 'l',
         shopIds,
+        inventoryItemId: generateInventoryItemId(),
       })
 
       expect(result.ok).toBe(true)

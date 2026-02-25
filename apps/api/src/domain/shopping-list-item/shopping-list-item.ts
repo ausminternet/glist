@@ -16,6 +16,7 @@ export type NewShoppingListItemInput = {
   quantity: number | null
   quantityUnit: string | null
   shopIds: ShopId[]
+  inventoryItemId: InventoryItemId | null
 }
 
 type EditShoppingListItemInput = Omit<NewShoppingListItemInput, 'householdId'>
@@ -72,7 +73,7 @@ export class ShoppingListItem {
         photoKey: null,
         createdAt: new Date(),
         updatedAt: null,
-        inventoryItemId: null,
+        inventoryItemId: input.inventoryItemId,
       }),
     )
   }
@@ -122,6 +123,7 @@ export class ShoppingListItem {
     this.props.quantity = quantityResult.value
     this.props.shopIds = [...input.shopIds]
     this.props.updatedAt = new Date()
+    this.props.inventoryItemId = input.inventoryItemId
 
     return ok(undefined)
   }

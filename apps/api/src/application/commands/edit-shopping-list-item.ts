@@ -1,5 +1,6 @@
 import { err, okWithEvent, type Result } from '@glist/shared'
 import { parseCategoryId } from '@/domain/category/category-id'
+import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import { parseShopIds } from '@/domain/shop/shop-id'
 import type { ShoppingListItemNotFoundError } from '@/domain/shopping-list-item/errors'
 import type { ItemEditedEvent } from '@/domain/shopping-list-item/events'
@@ -15,6 +16,7 @@ export type EditShoppingListItemCommand = {
   quantity: number | null
   quantityUnit: string | null
   shopIds: string[]
+  inventoryItemId: string | null
 }
 
 export type EditShoppingListItemError =
@@ -48,6 +50,9 @@ export class EditShoppingListItemCommandHandler {
       quantity: command.quantity,
       quantityUnit: command.quantityUnit,
       shopIds: parseShopIds(command.shopIds),
+      inventoryItemId: command.inventoryItemId
+        ? parseInventoryItemId(command.inventoryItemId)
+        : null,
     })
 
     if (!result.ok) {
