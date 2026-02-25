@@ -14,7 +14,10 @@ export function InventoryItem({ item }: InventoryItemProps) {
   const householdId = useHouseholdId()
   const { shops } = useShops()
 
-  const shopNames = shops.map((s) => s.name).join(', ')
+  const shopNames = shops
+    .filter((shop) => item.shopIds.includes(shop.id))
+    .map((s) => s.name)
+    .join(', ')
 
   return (
     <ListItem
