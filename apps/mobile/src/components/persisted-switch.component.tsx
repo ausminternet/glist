@@ -17,10 +17,16 @@ export function PersistedSwitch({
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
+    if (isLoaded) {
+      return
+    }
+
     AsyncStorage.getItem(storageKey)
       .then((storedValue) => {
         if (storedValue !== null) {
-          setValue(storedValue === 'true')
+          const parsedValue = storedValue === 'true'
+          setValue(parsedValue)
+          onValueChange?.(parsedValue)
         }
       })
       .catch((error) => {
@@ -29,7 +35,7 @@ export function PersistedSwitch({
       .finally(() => {
         setIsLoaded(true)
       })
-  }, [storageKey])
+  }, [storageKey, onValueChange, isLoaded])
 
   const handleValueChange = (newValue: boolean) => {
     setValue(newValue)
