@@ -157,7 +157,7 @@ export default function ShoppingListItemModal() {
                 // onBlur noch einmal das Feld flushed und mit einem alten Wert
                 // befuekllt
                 if (inventoryItem) return
-                setValue('name', text.trim())
+                setValue('name', text)
                 setSearch(text)
               }}
               value={values.name}
