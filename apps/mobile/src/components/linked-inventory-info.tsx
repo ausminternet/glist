@@ -1,7 +1,7 @@
 import { getUnitLabel } from '@glist/shared'
 import type { InventoryItemView } from '@glist/views'
 import { PlatformColor, Text, View } from 'react-native'
-import { formatEuro } from '@/utils/currency'
+import { formatEuroCents } from '@/utils/currency'
 
 interface LinkedInventoryInfoProps {
   inventoryItem: InventoryItemView
@@ -34,9 +34,9 @@ export function LinkedInventoryInfo({
             color: PlatformColor('secondaryLabel'),
           }}
         >
-          {`Basispreis: ${formatEuro(
+          {`Basispreis: ${formatEuroCents(
             inventoryItem.basePriceCents,
-          )} € / ${getUnitLabel(inventoryItem.basePriceUnit, 1)}`}
+          )} / ${getUnitLabel(inventoryItem.basePriceUnit, 1)}`}
         </Text>
       )}
     </View>

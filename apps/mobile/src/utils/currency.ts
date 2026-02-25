@@ -11,7 +11,13 @@ export function euroToCents(euro?: number | null) {
   return Math.round(euro * 100)
 }
 
-export function formatEuro(value?: number): string {
-  if (value == null || Number.isNaN(value)) return ''
-  return value.toFixed(2).replace('.', ',')
+const numberFormatter = new Intl.NumberFormat('de-DE', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  style: 'currency',
+  currency: 'EUR',
+})
+
+export function formatEuroCents(value: number): string {
+  return numberFormatter.format(centsToEuro(value))
 }
