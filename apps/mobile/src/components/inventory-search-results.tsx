@@ -1,6 +1,6 @@
 import type { InventoryItemView } from '@glist/views'
 import { SymbolView } from 'expo-symbols'
-import { PlatformColor, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 import { colors } from './colors'
 import { ListItem } from './list-item.component'
 
