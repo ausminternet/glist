@@ -85,7 +85,7 @@ function shallowEqualForm(
 
 const initialValues: ShoppingListItemFormValues = {
   name: '',
-  description: undefined,
+  description: '',
   quantity: undefined,
   quantityUnit: undefined,
   shopIds: [],
