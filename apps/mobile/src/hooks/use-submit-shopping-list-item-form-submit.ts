@@ -68,11 +68,6 @@ export function useSubmitShoppingListItemForm({
     onSuccess?: () => void,
   ) => {
     setIsSubmitting(true)
-    console.log(
-      'Submitting shopping list item with payload:',
-      payload,
-      shoppingListItemId,
-    )
     if (shoppingListItemId) {
       edit(shoppingListItemId, payload, onSuccess)
     } else {

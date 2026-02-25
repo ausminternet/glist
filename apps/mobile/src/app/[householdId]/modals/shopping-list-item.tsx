@@ -8,6 +8,7 @@ import { SymbolView } from 'expo-symbols'
 import { useEffect, useState } from 'react'
 import {
   Alert,
+  Button,
   Pressable,
   ScrollView,
   Text,
@@ -16,6 +17,7 @@ import {
 } from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useFindInventoryItems } from '@/api/inventory-items'
+import { useDeleteShoppingListItem } from '@/api/shopping-list-items'
 import { useShoppingListItem } from '@/api/shopping-list-items/use-shopping-list-item'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
@@ -48,6 +50,8 @@ export default function ShoppingListItemModal() {
   const { categories } = useCategories()
   const { searchInventoryItems, findInventoryItemById } =
     useFindInventoryItems()
+  const { deleteShoppingListItem, isPending: isDeletePending } =
+    useDeleteShoppingListItem()
 
   const { shoppingListItem } = useShoppingListItem(itemId)
 
@@ -110,14 +114,44 @@ export default function ShoppingListItemModal() {
     )
   }
 
+  const handleDelete = () => {
+    Alert.alert(
+      'Eintrag löschen',
+      'Möchtest du diesen Eintrag wirklich löschen?',
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Löschen',
+          style: 'destructive',
+          onPress: () => {
+            if (!shoppingListItem) return
+            deleteShoppingListItem(shoppingListItem.id, {
+              onSuccess: () => resetFormAndGoBack(),
+              onError: () => {
+                Alert.alert(
+                  'Fehler',
+                  'Der Eintrag konnte nicht gelöscht werden. Bitte versuche es später erneut.',
+                )
+              },
+            })
+          },
+        },
+      ],
+    )
+  }
+
   return (
     <>
       <Stack.Screen
         options={{
-          title: shoppingListItem ? 'Bearbeiten' : 'Neuer Eintrag',
+          title:
+            shoppingListItem || isDeletePending
+              ? 'Bearbeiten'
+              : 'Neuer Eintrag',
           headerTransparent: true,
           headerLeft: () => (
             <NavbarCancelButton
+              disabled={isSubmitting || isDeletePending}
               onCancel={() => resetFormAndGoBack()}
               preventRemove={preventModalRemove}
             />
@@ -131,7 +165,7 @@ export default function ShoppingListItemModal() {
                 name: 'checkmark',
               },
               variant: 'prominent',
-              disabled: !canSubmit,
+              disabled: !canSubmit || isDeletePending,
               onPress: () => {
                 submit(values, shoppingListItem?.id, resetFormAndGoBack)
               },
@@ -284,6 +318,10 @@ export default function ShoppingListItemModal() {
             Geschäfte
           </ListItem>
         </List>
+
+        {shoppingListItem && (
+          <Button title="Eintrag löschen" color="red" onPress={handleDelete} />
+        )}
       </ScrollView>
     </>
   )

@@ -9,11 +9,13 @@ import { colors } from './colors'
 export interface NavbarCancelProps {
   preventRemove: boolean
   onCancel: () => void
+  disabled?: boolean
 }
 
 export const NavbarCancelButton: FC<NavbarCancelProps> = ({
   preventRemove,
   onCancel,
+  disabled,
 }) => {
   const [_preventRemove, _setPreventRemove] = useState(preventRemove)
 
@@ -49,7 +51,7 @@ export const NavbarCancelButton: FC<NavbarCancelProps> = ({
   if (preventRemove) {
     return (
       <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
+        <DropdownMenu.Trigger disabled={disabled}>
           <Pressable>
             <SymbolView
               name="multiply"
@@ -84,7 +86,7 @@ export const NavbarCancelButton: FC<NavbarCancelProps> = ({
     )
   } else {
     return (
-      <Pressable onPress={handleOnCancel}>
+      <Pressable onPress={handleOnCancel} disabled={disabled}>
         <SymbolView
           name="multiply"
           size={24}
