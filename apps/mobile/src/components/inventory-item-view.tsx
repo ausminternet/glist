@@ -17,6 +17,11 @@ export function InventoryItem({ item }: InventoryItemProps) {
   const router = useRouter()
   const { shops } = useShops()
   const { deleteInventoryItem } = useDeleteInventoryItem()
+  const { shoppingListItems } = useShoppingListItems()
+
+  const isOnShoppingList = shoppingListItems.some(
+    (shoppingListItem) => shoppingListItem.inventoryItemId === item.id,
+  )
 
   const shopNames = shops
     .filter((shop) => item.shopIds.includes(shop.id))
@@ -61,6 +66,10 @@ export function InventoryItem({ item }: InventoryItemProps) {
 
   return (
     <ListItem
+      icon={isOnShoppingList ? 'cart.fill' : 'cart'}
+      iconTintColor={
+        isOnShoppingList ? colors.system.blue : colors.label.tertiary
+      }
       onLongPress={handleOnLongPress}
       right={
         <View
