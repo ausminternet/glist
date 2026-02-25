@@ -16,6 +16,7 @@ type BaseListItemProps = {
   afterTitle?: ReactNode
   subtitle?: string | ReactNode
   onPress?: () => void
+  onLongPress?: () => void
   href?: Href
   icon?: SFSymbol
   right?: ReactNode
@@ -44,6 +45,7 @@ export const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
   afterTitle,
   subtitle,
   onPress,
+  onLongPress,
   href,
   right,
   left,
@@ -83,6 +85,7 @@ export const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
       onPress={handleOnPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
+      onLongPress={onLongPress}
     >
       <View
         style={{

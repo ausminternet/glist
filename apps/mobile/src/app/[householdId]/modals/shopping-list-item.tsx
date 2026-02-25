@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 import {
   Alert,
   Button,
+  KeyboardAvoidingView,
   Pressable,
   ScrollView,
   Text,
@@ -44,7 +45,10 @@ export default function ShoppingListItemModal() {
   const router = useRouter()
   const householdId = useHouseholdId()
 
-  const { itemId } = useLocalSearchParams<{ itemId: string }>()
+  const { itemId, inventoryItemId } = useLocalSearchParams<{
+    itemId: string
+    inventoryItemId?: string
+  }>()
   const { getSubtitle } = useInventoryItemSubtitle()
   const { shops } = useShops()
   const { categories } = useCategories()
@@ -89,6 +93,15 @@ export default function ShoppingListItemModal() {
       setShoppingListItem(shoppingListItem)
     }
   }, [shoppingListItem, setShoppingListItem])
+
+  useEffect(() => {
+    if (inventoryItemId) {
+      const item = findInventoryItemById(inventoryItemId)
+      if (item) {
+        linkInventoryItem(item)
+      }
+    }
+  }, [inventoryItemId, findInventoryItemById, linkInventoryItem])
 
   const canSubmit = !isSubmitting && isValid && isDirty
 
@@ -140,14 +153,18 @@ export default function ShoppingListItemModal() {
     )
   }
 
+  let title =
+    shoppingListItem || isDeletePending ? 'Bearbeiten' : 'Neuer Eintrag'
+
+  if (inventoryItem) {
+    title = 'Vorrat einkaufen'
+  }
+
   return (
     <>
       <Stack.Screen
         options={{
-          title:
-            shoppingListItem || isDeletePending
-              ? 'Bearbeiten'
-              : 'Neuer Eintrag',
+          title,
           headerTransparent: true,
           headerLeft: () => (
             <NavbarCancelButton
@@ -173,156 +190,165 @@ export default function ShoppingListItemModal() {
           ],
         }}
       />
-
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
+      <KeyboardAvoidingView
         style={{ flex: 1 }}
-        contentContainerStyle={{
-          gap: 24,
-          flexDirection: 'column',
-        }}
+        behavior="padding"
+        keyboardVerticalOffset={64}
       >
-        <List>
-          <ListItemInputContainer>
-            <TextInput
-              placeholder="Milch"
-              onChangeText={(text) => {
-                // Das verhindert, dass die async Eventqueue von RN nach dem
-                // onBlur noch einmal das Feld flushed und mit einem alten Wert
-                // befuekllt
-                if (inventoryItem) return
-                setValue('name', text)
-                setSearch(text)
-              }}
-              value={values.name}
-              autoCorrect={false}
-              autoCapitalize="none"
-              autoFocus
-              editable={!inventoryItem}
-              style={[
-                DefaultInputStyles.input,
-                {
-                  fontSize: 23,
-                  fontWeight: 'bold',
-                  color: inventoryItem
-                    ? colors.system.teal
-                    : colors.label.primary,
-                },
-              ]}
-            />
-            {inventoryItem && (
-              <Pressable onPress={handleUnselectInventoryItem}>
-                <SymbolView
-                  name="personalhotspot.slash"
-                  size={36}
-                  tintColor={colors.system.red}
-                />
-              </Pressable>
-            )}
-          </ListItemInputContainer>
-
-          {showSearchResults && (
-            <InventorySearchResults
-              items={searchResults}
-              onSelectItem={(item) => {
-                setSearch(null)
-                linkInventoryItem(item)
-              }}
-              getSubtitle={getSubtitle}
-            />
-          )}
-
-          <ListItemInput
-            inputProps={{
-              placeholder: 'Notizen',
-              onChangeText: (text) => setValue('description', text),
-              value: values.description,
-              multiline: true,
-            }}
-          />
-        </List>
-
-        <View>
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            gap: 24,
+            flexDirection: 'column',
+          }}
+        >
           <List>
-            <ListItemInputContainer icon="plusminus" iconSize={24}>
-              <Text
-                style={{
-                  fontSize: 17,
-                  color: colors.label.primary,
-                  flexGrow: 1,
+            <ListItemInputContainer>
+              <TextInput
+                placeholder="Milch"
+                onChangeText={(text) => {
+                  // Das verhindert, dass die async Eventqueue von RN nach dem
+                  // onBlur noch einmal das Feld flushed und mit einem alten Wert
+                  // befuekllt
+                  if (inventoryItem) return
+                  setValue('name', text)
+                  setSearch(text)
                 }}
-              >
-                Menge
-              </Text>
-
-              <DecimalInput
-                placeholder="3"
-                keyboardType="decimal-pad"
-                value={values.quantity}
-                onChange={(value) => setValue('quantity', value)}
-                style={{
-                  marginInlineStart: 'auto',
-                  flexGrow: 0,
-                  minWidth: 60,
-                  backgroundColor: colors.groupedBackground.primary,
-                  borderWidth: 1,
-                  borderColor: colors.separator.default,
-                  borderRadius: 8,
-                  paddingHorizontal: 8,
-                  paddingVertical: 6,
-                  textAlign: 'center',
-                  fontSize: 17,
-                  color: colors.label.primary,
-                }}
+                value={values.name}
+                autoCorrect={false}
+                autoCapitalize="none"
+                autoFocus
+                editable={!inventoryItem}
+                style={[
+                  DefaultInputStyles.input,
+                  {
+                    fontSize: 23,
+                    fontWeight: 'bold',
+                    color: inventoryItem
+                      ? colors.system.teal
+                      : colors.label.primary,
+                  },
+                ]}
               />
-
-              <UnitSelector
-                value={values.quantityUnit}
-                onChange={(value) => setValue('quantityUnit', value)}
-                label="singular"
-              />
+              {inventoryItem && (
+                <Pressable onPress={handleUnselectInventoryItem}>
+                  <SymbolView
+                    name="personalhotspot.slash"
+                    size={36}
+                    tintColor={colors.system.red}
+                  />
+                </Pressable>
+              )}
             </ListItemInputContainer>
+
+            {showSearchResults && (
+              <InventorySearchResults
+                items={searchResults}
+                onSelectItem={(item) => {
+                  setSearch(null)
+                  linkInventoryItem(item)
+                }}
+                getSubtitle={getSubtitle}
+              />
+            )}
+
+            <ListItemInput
+              inputProps={{
+                placeholder: 'Notizen',
+                onChangeText: (text) => setValue('description', text),
+                value: values.description,
+                multiline: true,
+              }}
+            />
           </List>
 
-          {inventoryItem && (
-            <LinkedInventoryInfo inventoryItem={inventoryItem} />
+          <View>
+            <List>
+              <ListItemInputContainer icon="plusminus" iconSize={24}>
+                <Text
+                  style={{
+                    fontSize: 17,
+                    color: colors.label.primary,
+                    flexGrow: 1,
+                  }}
+                >
+                  Menge
+                </Text>
+
+                <DecimalInput
+                  placeholder="3"
+                  keyboardType="decimal-pad"
+                  value={values.quantity}
+                  onChange={(value) => setValue('quantity', value)}
+                  style={{
+                    marginInlineStart: 'auto',
+                    flexGrow: 0,
+                    minWidth: 60,
+                    backgroundColor: colors.groupedBackground.primary,
+                    borderWidth: 1,
+                    borderColor: colors.separator.default,
+                    borderRadius: 8,
+                    paddingHorizontal: 8,
+                    paddingVertical: 6,
+                    textAlign: 'center',
+                    fontSize: 17,
+                    color: colors.label.primary,
+                  }}
+                />
+
+                <UnitSelector
+                  value={values.quantityUnit}
+                  onChange={(value) => setValue('quantityUnit', value)}
+                  label="singular"
+                />
+              </ListItemInputContainer>
+            </List>
+
+            {inventoryItem && (
+              <LinkedInventoryInfo inventoryItem={inventoryItem} />
+            )}
+          </View>
+
+          <List>
+            <ListItem
+              icon="square.grid.2x2"
+              iconSize={24}
+              href={`/${householdId}/modals/select-category`}
+              right={
+                values.categoryId
+                  ? categories.find((c) => c.id === values.categoryId)?.name
+                  : 'Ohne'
+              }
+            >
+              Kategorie
+            </ListItem>
+            <ListItem
+              icon="storefront"
+              iconSize={24}
+              href={`/${householdId}/modals/select-shops`}
+              right={
+                values.shopIds && values.shopIds.length > 0
+                  ? values.shopIds
+                      .map((id) => shops.find((s) => s.id === id)?.name)
+                      .filter(Boolean)
+                      .join(', ')
+                  : 'Ohne'
+              }
+            >
+              Geschäfte
+            </ListItem>
+          </List>
+
+          {shoppingListItem && (
+            <Button
+              title="Eintrag löschen"
+              color="red"
+              onPress={handleDelete}
+            />
           )}
-        </View>
-
-        <List>
-          <ListItem
-            icon="square.grid.2x2"
-            iconSize={24}
-            href={`/${householdId}/modals/select-category`}
-            right={
-              values.categoryId
-                ? categories.find((c) => c.id === values.categoryId)?.name
-                : 'Ohne'
-            }
-          >
-            Kategorie
-          </ListItem>
-          <ListItem
-            icon="storefront"
-            iconSize={24}
-            href={`/${householdId}/modals/select-shops`}
-            right={
-              values.shopIds && values.shopIds.length > 0
-                ? values.shopIds
-                    .map((id) => shops.find((s) => s.id === id)?.name)
-                    .filter(Boolean)
-                    .join(', ')
-                : 'Ohne'
-            }
-          >
-            Geschäfte
-          </ListItem>
-        </List>
-
-        {shoppingListItem && (
-          <Button title="Eintrag löschen" color="red" onPress={handleDelete} />
-        )}
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </>
   )
 }

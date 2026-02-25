@@ -5,9 +5,18 @@ import {
   useRouter,
 } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { ScrollView, Text, TextInput, View } from 'react-native'
+import {
+  Alert,
+  Button,
+  KeyboardAvoidingView,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native'
 import { useCategories } from '@/api/categories'
-import { useInventoryItem } from '@/api/inventory-items'
+import { useDeleteInventoryItem, useInventoryItem } from '@/api/inventory-items'
+import { deleteInventoryItem } from '@/api/inventory-items/delete-inventory-item'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
 import { DecimalInput } from '@/components/decimal-input'
@@ -40,6 +49,8 @@ export default function InventoryItemModal() {
     setPreventRemove: setPreventModalRemove,
   })
 
+  const { deleteInventoryItem } = useDeleteInventoryItem()
+
   const { reset, setValue, values, isValid, isDirty, setInventoryItem } =
     useInventoryItemForm()
 
@@ -67,6 +78,32 @@ export default function InventoryItemModal() {
   useEffect(() => {
     setPreventModalRemove(isDirty)
   }, [isDirty])
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Eintrag löschen',
+      'Möchtest du diesen Eintrag wirklich löschen?',
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Löschen',
+          style: 'destructive',
+          onPress: () => {
+            if (!inventoryItem) return
+            deleteInventoryItem(inventoryItem.id, {
+              onSuccess: () => resetFormAndGoBack(),
+              onError: () => {
+                Alert.alert(
+                  'Fehler',
+                  'Der Eintrag konnte nicht gelöscht werden. Bitte versuche es später erneut.',
+                )
+              },
+            })
+          },
+        },
+      ],
+    )
+  }
 
   return (
     <>
@@ -98,184 +135,197 @@ export default function InventoryItemModal() {
           ],
         }}
       />
-
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
+      <KeyboardAvoidingView
         style={{ flex: 1 }}
-        contentContainerStyle={{
-          gap: 24,
-          flexDirection: 'column',
-        }}
+        behavior="padding"
+        keyboardVerticalOffset={64}
       >
-        <List>
-          <ListItemInputContainer>
-            <TextInput
-              placeholder="Milch"
-              onChangeText={(text) => {
-                setValue('name', text.trim())
-              }}
-              value={values.name}
-              autoCorrect={false}
-              autoCapitalize="none"
-              autoFocus
-              style={[
-                DefaultInputStyles.input,
-                {
-                  fontSize: 23,
-                  fontWeight: 'bold',
-                  color: colors.label.primary,
-                },
-              ]}
-            />
-          </ListItemInputContainer>
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            gap: 24,
+            flexDirection: 'column',
+          }}
+        >
+          <List>
+            <ListItemInputContainer>
+              <TextInput
+                placeholder="Milch"
+                onChangeText={(text) => {
+                  setValue('name', text)
+                }}
+                value={values.name}
+                autoCorrect={false}
+                autoCapitalize="none"
+                autoFocus
+                style={[
+                  DefaultInputStyles.input,
+                  {
+                    fontSize: 23,
+                    fontWeight: 'bold',
+                    color: colors.label.primary,
+                  },
+                ]}
+              />
+            </ListItemInputContainer>
 
-          <ListItemInput
-            inputProps={{
-              placeholder: 'Notizen',
-              onChangeText: (text) => setValue('description', text),
-              value: values.description,
-              multiline: true,
-            }}
-          />
-        </List>
-
-        <List>
-          <ListItemInputContainer icon="plusminus" iconSize={24}>
-            <Text
-              style={{
-                fontSize: 17,
-                color: colors.label.primary,
-                flexGrow: 1,
-              }}
-            >
-              Sollmenge
-            </Text>
-
-            <DecimalInput
-              placeholder="3"
-              keyboardType="decimal-pad"
-              value={values.targetStock}
-              onChange={(value) => setValue('targetStock', value)}
-              style={{
-                marginInlineStart: 'auto',
-                flexGrow: 0,
-                minWidth: 60,
-                backgroundColor: colors.groupedBackground.primary,
-                borderWidth: 1,
-                borderColor: colors.separator.default,
-                borderRadius: 8,
-                paddingHorizontal: 8,
-                paddingVertical: 6,
-                textAlign: 'center',
-                fontSize: 17,
-                color: colors.label.primary,
+            <ListItemInput
+              inputProps={{
+                placeholder: 'Notizen',
+                onChangeText: (text) => setValue('description', text),
+                value: values.description,
+                multiline: true,
               }}
             />
+          </List>
 
-            <UnitSelector
-              value={values.targetStockUnit}
-              onChange={(value) => setValue('targetStockUnit', value)}
-              label="singular"
-            />
-          </ListItemInputContainer>
-          <ListItemInputContainer icon="eurosign" iconSize={24}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexGrow: 1,
-              }}
-            >
+          <List>
+            <ListItemInputContainer icon="plusminus" iconSize={24}>
               <Text
                 style={{
                   fontSize: 17,
                   color: colors.label.primary,
+                  flexGrow: 1,
                 }}
               >
-                Grundpreis
+                Sollmenge
               </Text>
 
+              <DecimalInput
+                placeholder="3"
+                keyboardType="decimal-pad"
+                value={values.targetStock}
+                onChange={(value) => setValue('targetStock', value)}
+                style={{
+                  marginInlineStart: 'auto',
+                  flexGrow: 0,
+                  minWidth: 60,
+                  backgroundColor: colors.groupedBackground.primary,
+                  borderWidth: 1,
+                  borderColor: colors.separator.default,
+                  borderRadius: 8,
+                  paddingHorizontal: 8,
+                  paddingVertical: 6,
+                  textAlign: 'center',
+                  fontSize: 17,
+                  color: colors.label.primary,
+                }}
+              />
+
+              <UnitSelector
+                value={values.targetStockUnit}
+                onChange={(value) => setValue('targetStockUnit', value)}
+                label="singular"
+              />
+            </ListItemInputContainer>
+            <ListItemInputContainer icon="eurosign" iconSize={24}>
               <View
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexGrow: 1,
                 }}
               >
-                <DecimalInput
-                  placeholder="1,79"
-                  keyboardType="decimal-pad"
-                  normalize
-                  value={centsToEuro(values.basePriceCents)}
-                  onChange={(value) => {
-                    setValue('basePriceCents', euroToCents(value))
-                  }}
-                  style={{
-                    marginInlineStart: 'auto',
-                    flexGrow: 0,
-                    minWidth: 60,
-                    backgroundColor: colors.groupedBackground.primary,
-                    borderWidth: 1,
-                    borderColor: colors.separator.default,
-                    borderRadius: 8,
-                    paddingHorizontal: 8,
-                    paddingVertical: 6,
-                    textAlign: 'center',
-                    fontSize: 17,
-                    color: colors.label.primary,
-                  }}
-                />
-
                 <Text
                   style={{
                     fontSize: 17,
-                    marginInline: 6,
-                    color: colors.label.secondary,
+                    color: colors.label.primary,
                   }}
                 >
-                  /
+                  Grundpreis
                 </Text>
 
-                <UnitSelector
-                  value={values.basePriceUnit}
-                  onChange={(value) => setValue('basePriceUnit', value)}
-                  label="singular"
-                />
-              </View>
-            </View>
-          </ListItemInputContainer>
-        </List>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  <DecimalInput
+                    placeholder="1,79"
+                    keyboardType="decimal-pad"
+                    normalize
+                    value={centsToEuro(values.basePriceCents)}
+                    onChange={(value) => {
+                      setValue('basePriceCents', euroToCents(value))
+                    }}
+                    style={{
+                      marginInlineStart: 'auto',
+                      flexGrow: 0,
+                      minWidth: 60,
+                      backgroundColor: colors.groupedBackground.primary,
+                      borderWidth: 1,
+                      borderColor: colors.separator.default,
+                      borderRadius: 8,
+                      paddingHorizontal: 8,
+                      paddingVertical: 6,
+                      textAlign: 'center',
+                      fontSize: 17,
+                      color: colors.label.primary,
+                    }}
+                  />
 
-        <List>
-          <ListItem
-            icon="square.grid.2x2"
-            iconSize={24}
-            href={`/${householdId}/modals/select-category`}
-            right={
-              values.categoryId
-                ? categories.find((c) => c.id === values.categoryId)?.name
-                : 'Ohne'
-            }
-          >
-            Kategorie
-          </ListItem>
-          <ListItem
-            icon="storefront"
-            iconSize={24}
-            href={`/${householdId}/modals/select-shops`}
-            right={
-              values.shopIds && values.shopIds.length > 0
-                ? values.shopIds
-                    .map((id) => shops.find((s) => s.id === id)?.name)
-                    .filter(Boolean)
-                    .join(', ')
-                : 'Ohne'
-            }
-          >
-            Geschäfte
-          </ListItem>
-        </List>
-      </ScrollView>
+                  <Text
+                    style={{
+                      fontSize: 17,
+                      marginInline: 6,
+                      color: colors.label.secondary,
+                    }}
+                  >
+                    /
+                  </Text>
+
+                  <UnitSelector
+                    value={values.basePriceUnit}
+                    onChange={(value) => setValue('basePriceUnit', value)}
+                    label="singular"
+                  />
+                </View>
+              </View>
+            </ListItemInputContainer>
+          </List>
+
+          <List>
+            <ListItem
+              icon="square.grid.2x2"
+              iconSize={24}
+              href={`/${householdId}/modals/select-category`}
+              right={
+                values.categoryId
+                  ? categories.find((c) => c.id === values.categoryId)?.name
+                  : 'Ohne'
+              }
+            >
+              Kategorie
+            </ListItem>
+            <ListItem
+              icon="storefront"
+              iconSize={24}
+              href={`/${householdId}/modals/select-shops`}
+              right={
+                values.shopIds && values.shopIds.length > 0
+                  ? values.shopIds
+                      .map((id) => shops.find((s) => s.id === id)?.name)
+                      .filter(Boolean)
+                      .join(', ')
+                  : 'Ohne'
+              }
+            >
+              Geschäfte
+            </ListItem>
+          </List>
+
+          {inventoryItem && (
+            <Button
+              title="Eintrag löschen"
+              color="red"
+              onPress={handleDelete}
+            />
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </>
   )
 }

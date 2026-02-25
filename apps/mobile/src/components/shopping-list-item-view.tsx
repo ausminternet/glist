@@ -1,8 +1,10 @@
 import { getUnitLabel } from '@glist/shared'
 import type { ShoppingListItemView } from '@glist/views'
-import { Text, View } from 'react-native'
+import { useRouter } from 'expo-router'
+import { ActionSheetIOS, Alert, Text, View } from 'react-native'
 import {
   useCheckShoppingListItem,
+  useDeleteShoppingListItem,
   useUncheckShoppingListItem,
 } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
@@ -18,31 +20,58 @@ export interface ShoppingListItemProps {
 
 export function ShoppingListItem({ item }: ShoppingListItemProps) {
   const householdId = useHouseholdId()
+  const router = useRouter()
   const { shops } = useShops()
 
   const { checkShoppingListItem } = useCheckShoppingListItem()
   const { uncheckShoppingListItem } = useUncheckShoppingListItem()
-  // const { deleteShoppingListItem } = useDeleteShoppingListItem()
+  const { deleteShoppingListItem } = useDeleteShoppingListItem()
 
   const itemShops = shops?.filter((s) => item.shopIds?.includes(s.id))
 
-  // const handleOnDelete = () => {
-  //   Alert.alert('Löschen', 'Möchten Sie diesen Eintrag wirklich löschen?', [
-  //     { text: 'Abbrechen', style: 'cancel' },
-  //     {
-  //       text: 'Löschen',
-  //       style: 'destructive',
-  //       onPress: () => deleteShoppingListItem(item),
-  //     },
-  //   ])
-  // }
-  //
-  //
+  const itemEditUrl =
+    `/${householdId}/modals/shopping-list-item?itemId=${item.id}` as const
+
+  const handleOnDelete = () => {
+    Alert.alert(
+      'Eintrag Löschen',
+      `Möchtest du ${item.name} wirklich von der Einkaufliste löschen?`,
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Löschen',
+          style: 'destructive',
+          onPress: () => deleteShoppingListItem(item.id),
+        },
+      ],
+    )
+  }
+
+  const handleOnToggle = (checked: boolean) => {
+    checked ? checkShoppingListItem(item.id) : uncheckShoppingListItem(item.id)
+  }
+
+  const handleOnLongPress = () => {
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        title: item.name,
+        options: ['Abbrechen', 'Bearbeiten', 'Löschen'],
+        cancelButtonIndex: 0,
+        destructiveButtonIndex: 2,
+      },
+      (buttonIndex) => {
+        if (buttonIndex === 1) router.push(itemEditUrl)
+        if (buttonIndex === 2) handleOnDelete()
+      },
+    )
+  }
 
   const shopNames = itemShops.map((s) => s.name).join(', ')
 
   return (
     <ListItem
+      onPress={() => handleOnToggle(!item.checked)}
+      onLongPress={handleOnLongPress}
       right={
         <View
           style={{
@@ -78,13 +107,8 @@ export function ShoppingListItem({ item }: ShoppingListItemProps) {
         </View>
       }
       subtitle={item.description}
-      onToggleCheckbox={(checked: boolean) =>
-        checked
-          ? checkShoppingListItem(item.id)
-          : uncheckShoppingListItem(item.id)
-      }
+      onToggleCheckbox={handleOnToggle}
       checked={item.checked}
-      href={`/${householdId}/modals/shopping-list-item?itemId=${item.id}`}
       chevron={false}
     >
       {item.name}
