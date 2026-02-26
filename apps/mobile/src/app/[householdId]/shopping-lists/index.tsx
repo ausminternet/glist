@@ -9,6 +9,7 @@ import { useShoppingListItems } from '@/api/shopping-list-items'
 import { CategorySectionList } from '@/components/category-section-list'
 import { colors } from '@/components/colors'
 import { List } from '@/components/list.components'
+import { ListEmptyComponent } from '@/components/list-empty-component'
 import { ShoppingListItem } from '@/components/shopping-list-item-view'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { groupItemsByCategory } from '@/utils/group-items-by-category'
@@ -75,6 +76,12 @@ export default function Index() {
         sections={shoppingListSectionData}
         renderItem={({ item }) => (
           <ShoppingListItem item={item} currentShopId={shopId} />
+        )}
+        ListEmptyItem={() => (
+          <ListEmptyComponent
+            title="Alles eingekauft"
+            message="Tippe auf + um einen Eintrag hinzuzufügen"
+          />
         )}
       />
       {/*<List type="plain" backgroundColor="transparent">

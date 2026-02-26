@@ -5,14 +5,18 @@ import {
   Text,
   View,
 } from 'react-native'
-import { ListEmptyComponent } from '@/components/list-empty-component'
+
+type CategorySectionListProps<T> = SectionListProps<
+  T,
+  { title: string; data: T[]; categoryId: string }
+> & {
+  ListEmptyItem: React.ComponentType
+}
 
 export function CategorySectionList<
   T extends { categoryId: string | null; id: string },
->(
-  props: SectionListProps<T, { title: string; data: T[]; categoryId: string }>,
-) {
-  const { sections, renderItem, ...rest } = props
+>(props: CategorySectionListProps<T>) {
+  const { sections, renderItem, ListEmptyItem, ...rest } = props
   const renderSectionHeader = ({
     section,
   }: {
@@ -52,12 +56,7 @@ export function CategorySectionList<
       automaticallyAdjustContentInsets={true}
       stickyHeaderHiddenOnScroll
       stickySectionHeadersEnabled={false}
-      ListEmptyComponent={() => (
-        <ListEmptyComponent
-          title="Alles eingekauft"
-          message="Tippe auf + um einen Eintrag hinzuzufügen"
-        />
-      )}
+      ListEmptyComponent={ListEmptyItem}
       {...rest}
     />
   )

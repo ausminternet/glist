@@ -7,6 +7,7 @@ import { useInventoryItems } from '@/api/inventory-items'
 import { CategorySectionList } from '@/components/category-section-list'
 import { colors } from '@/components/colors'
 import { InventoryItem } from '@/components/inventory-item-view'
+import { ListEmptyComponent } from '@/components/list-empty-component'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { groupItemsByCategory } from '@/utils/group-items-by-category'
 
@@ -55,6 +56,12 @@ export default function Index() {
       <CategorySectionList
         sections={InventorySectionData}
         renderItem={({ item }) => <InventoryItem inventoryItem={item} />}
+        ListEmptyItem={() => (
+          <ListEmptyComponent
+            title="Leerer Vorratsschrank"
+            message="Tippe auf + um einen Eintrag hinzuzufügen"
+          />
+        )}
       />
     </>
   )
