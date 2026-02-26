@@ -158,7 +158,7 @@ export default function InventoryItemModal() {
                 value={values.name}
                 autoCorrect={false}
                 autoCapitalize="none"
-                autoFocus
+                autoFocus={!inventoryItem}
                 style={[
                   DefaultInputStyles.input,
                   {

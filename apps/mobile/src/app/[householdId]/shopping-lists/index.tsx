@@ -1,13 +1,17 @@
+import type { ShoppingListItemView } from '@glist/views'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Stack } from 'expo-router/stack'
 import { useColorScheme } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
+import { useCategories } from '@/api/categories'
 import { useShoppingListEvents } from '@/api/events'
 import { useShoppingListItems } from '@/api/shopping-list-items'
+import { CategorySectionList } from '@/components/category-section-list'
 import { colors } from '@/components/colors'
 import { List } from '@/components/list.components'
 import { ShoppingListItem } from '@/components/shopping-list-item-view'
 import { useHouseholdId } from '@/hooks/use-household-id'
+import { groupItemsByCategory } from '@/utils/group-items-by-category'
 
 export default function Index() {
   const { shopId, withNoShop } = useLocalSearchParams<{
@@ -17,14 +21,21 @@ export default function Index() {
   const router = useRouter()
   const colorTheme = useColorScheme()
   const householdId = useHouseholdId()
-  const { shoppingListItems, getShoppingListItemsByShopId } =
-    useShoppingListItems()
+  const { shoppingListItems } = useShoppingListItems()
+
+  const { categories } = useCategories()
 
   useShoppingListEvents()
 
-  const filteredShoppingListItems = shopId
-    ? getShoppingListItemsByShopId(shopId, withNoShop === 'true')
-    : shoppingListItems
+  // const filteredShoppingListItems = shopId
+  //   ? getShoppingListItemsByShopId(shopId, withNoShop === 'true')
+  //   : shoppingListItems
+
+  const shoppingListSectionData = groupItemsByCategory<ShoppingListItemView>(
+    shoppingListItems,
+    categories,
+    true,
+  )
 
   return (
     <>
@@ -53,19 +64,25 @@ export default function Index() {
           ],
         }}
       />
-      <ScrollView
+      {/*<ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           gap: 24,
           flexDirection: 'column',
         }}
-      >
-        <List type="plain" backgroundColor="transparent">
+      >*/}
+      <CategorySectionList
+        sections={shoppingListSectionData}
+        renderItem={({ item }) => (
+          <ShoppingListItem item={item} currentShopId={shopId} />
+        )}
+      />
+      {/*<List type="plain" backgroundColor="transparent">
           {filteredShoppingListItems.map((item) => (
             <ShoppingListItem item={item} key={item.id} />
           ))}
-        </List>
-      </ScrollView>
+        </List>*/}
+      {/*</ScrollView>*/}
     </>
   )
 }

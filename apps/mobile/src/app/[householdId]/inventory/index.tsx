@@ -1,12 +1,14 @@
+import type { InventoryItemView } from '@glist/views'
 import { useRouter } from 'expo-router'
 import { Stack } from 'expo-router/stack'
 import { useColorScheme } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
+import { useCategories } from '@/api/categories'
 import { useInventoryItems } from '@/api/inventory-items'
+import { CategorySectionList } from '@/components/category-section-list'
 import { colors } from '@/components/colors'
 import { InventoryItem } from '@/components/inventory-item-view'
-import { List } from '@/components/list.components'
 import { useHouseholdId } from '@/hooks/use-household-id'
+import { groupItemsByCategory } from '@/utils/group-items-by-category'
 
 export default function Index() {
   const router = useRouter()
@@ -14,6 +16,13 @@ export default function Index() {
   const householdId = useHouseholdId()
 
   const { inventoryItems } = useInventoryItems()
+  const { categories } = useCategories()
+
+  const InventorySectionData = groupItemsByCategory<InventoryItemView>(
+    inventoryItems,
+    categories,
+    true,
+  )
 
   return (
     <>
@@ -43,19 +52,10 @@ export default function Index() {
           ],
         }}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{
-          gap: 24,
-          flexDirection: 'column',
-        }}
-      >
-        <List type="plain" backgroundColor="transparent">
-          {inventoryItems.map((item) => (
-            <InventoryItem item={item} key={item.id} />
-          ))}
-        </List>
-      </ScrollView>
+      <CategorySectionList
+        sections={InventorySectionData}
+        renderItem={({ item }) => <InventoryItem inventoryItem={item} />}
+      />
     </>
   )
 }

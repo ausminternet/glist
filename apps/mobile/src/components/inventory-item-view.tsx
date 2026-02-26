@@ -1,8 +1,7 @@
 import { getUnitLabel } from '@glist/shared'
 import type { InventoryItemView } from '@glist/views'
 import { useRouter } from 'expo-router'
-import { ActionSheetIOS, Alert, Text, View } from 'react-native'
-import { useDeleteInventoryItem } from '@/api/inventory-items'
+import { Text, View } from 'react-native'
 import { useShoppingListItems } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
 import { useHouseholdId } from '@/hooks/use-household-id'
@@ -10,59 +9,66 @@ import { colors } from './colors'
 import { ListItem } from './list-item.component'
 
 export interface InventoryItemProps {
-  item: InventoryItemView
+  inventoryItem: InventoryItemView
 }
 
-export function InventoryItem({ item }: InventoryItemProps) {
+export function InventoryItem({ inventoryItem }: InventoryItemProps) {
   const householdId = useHouseholdId()
   const router = useRouter()
   const { shops } = useShops()
-  const { deleteInventoryItem } = useDeleteInventoryItem()
+  // const { deleteInventoryItem } = useDeleteInventoryItem()
   const { shoppingListItems } = useShoppingListItems()
 
-  const isOnShoppingList = shoppingListItems.some(
-    (shoppingListItem) => shoppingListItem.inventoryItemId === item.id,
+  const shoppingListItem = shoppingListItems.find(
+    (shoppingListItem) => shoppingListItem.inventoryItemId === inventoryItem.id,
   )
 
+  const isOnShoppingList = shoppingListItem && !shoppingListItem.checked
+
   const shopNames = shops
-    .filter((shop) => item.shopIds.includes(shop.id))
+    .filter((shop) => inventoryItem.shopIds.includes(shop.id))
     .map((s) => s.name)
     .join(', ')
 
   const itemEditUrl =
-    `/${householdId}/modals/inventory-item?itemId=${item.id}` as const
-  const addToShoppingListUrl =
-    `/${householdId}/modals/shopping-list-item?inventoryItemId=${item.id}` as const
+    `/${householdId}/modals/inventory-item?itemId=${inventoryItem.id}` as const
 
-  const handleOnDelete = () => {
-    Alert.alert(
-      'Vorrat Löschen',
-      `Möchtest du ${item.name} wirklich aus dem Vorrat löschen?`,
-      [
-        { text: 'Abbrechen', style: 'cancel' },
-        {
-          text: 'Löschen',
-          style: 'destructive',
-          onPress: () => deleteInventoryItem(item.id),
-        },
-      ],
-    )
-  }
+  const shoppingListItemUrl =
+    `/${householdId}/modals/shopping-list-item?itemId=${shoppingListItem?.id}` as const
+
+  const addToShoppingListUrl =
+    `/${householdId}/modals/shopping-list-item?inventoryItemId=${inventoryItem.id}` as const
+
+  // const handleOnDelete = () => {
+  //   Alert.alert(
+  //     'Vorrat Löschen',
+  //     `Möchtest du ${inventoryItem.name} wirklich aus dem Vorrat löschen?`,
+  //     [
+  //       { text: 'Abbrechen', style: 'cancel' },
+  //       {
+  //         text: 'Löschen',
+  //         style: 'destructive',
+  //         onPress: () => deleteInventoryItem(inventoryItem.id),
+  //       },
+  //     ],
+  //   )
+  // }
 
   const handleOnLongPress = () => {
-    ActionSheetIOS.showActionSheetWithOptions(
-      {
-        title: item.name,
-        options: ['Abbrechen', 'Einkaufen', 'Bearbeiten', 'Löschen'],
-        cancelButtonIndex: 0,
-        destructiveButtonIndex: 3,
-      },
-      (buttonIndex) => {
-        if (buttonIndex === 1) router.push(addToShoppingListUrl)
-        if (buttonIndex === 2) router.push(itemEditUrl)
-        if (buttonIndex === 3) handleOnDelete()
-      },
-    )
+    router.push(itemEditUrl)
+    //   ActionSheetIOS.showActionSheetWithOptions(
+    //     {
+    //       title: inventoryItem.name,
+    //       options: ['Abbrechen', 'Einkaufen', 'Bearbeiten', 'Löschen'],
+    //       cancelButtonIndex: 0,
+    //       destructiveButtonIndex: 3,
+    //     },
+    //     (buttonIndex) => {
+    //       if (buttonIndex === 1) router.push(addToShoppingListUrl)
+    //       if (buttonIndex === 2) router.push(itemEditUrl)
+    //       if (buttonIndex === 3) handleOnDelete()
+    //     },
+    //   )
   }
 
   return (
@@ -71,6 +77,7 @@ export function InventoryItem({ item }: InventoryItemProps) {
       iconTintColor={
         isOnShoppingList ? colors.system.blue : colors.label.tertiary
       }
+      iconSize={24}
       onLongPress={handleOnLongPress}
       right={
         <View
@@ -81,15 +88,18 @@ export function InventoryItem({ item }: InventoryItemProps) {
             gap: 6,
           }}
         >
-          {item.targetStock !== null && (
+          {inventoryItem.targetStock !== null && (
             <Text
               style={{
                 fontSize: 17,
                 color: colors.label.secondary,
               }}
             >
-              {item.targetStock.toLocaleString('de-DE')}{' '}
-              {getUnitLabel(item.targetStockUnit, item.targetStock)}
+              {inventoryItem.targetStock.toLocaleString('de-DE')}{' '}
+              {getUnitLabel(
+                inventoryItem.targetStockUnit,
+                inventoryItem.targetStock,
+              )}
             </Text>
           )}
           {shopNames && (
@@ -106,11 +116,11 @@ export function InventoryItem({ item }: InventoryItemProps) {
           )}
         </View>
       }
-      subtitle={item.description}
-      href={addToShoppingListUrl}
+      subtitle={inventoryItem.description}
+      href={isOnShoppingList ? shoppingListItemUrl : addToShoppingListUrl}
       chevron={false}
     >
-      {item.name}
+      {inventoryItem.name}
     </ListItem>
   )
 }

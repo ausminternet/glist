@@ -219,7 +219,7 @@ export default function ShoppingListItemModal() {
                 value={values.name}
                 autoCorrect={false}
                 autoCapitalize="none"
-                autoFocus
+                autoFocus={!inventoryItem && !shoppingListItem}
                 editable={!inventoryItem}
                 style={[
                   DefaultInputStyles.input,
@@ -278,6 +278,7 @@ export default function ShoppingListItemModal() {
                 </Text>
 
                 <DecimalInput
+                  autoFocus={!values.quantity && !!inventoryItem}
                   placeholder="3"
                   keyboardType="decimal-pad"
                   value={values.quantity}
