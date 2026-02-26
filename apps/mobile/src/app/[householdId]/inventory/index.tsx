@@ -22,7 +22,6 @@ export default function Index() {
   const InventorySectionData = groupItemsByCategory<InventoryItemView>(
     inventoryItems,
     categories,
-    true,
   )
 
   return (

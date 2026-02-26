@@ -161,6 +161,9 @@ export default function ShoppingListItemModal() {
     title = 'Vorrat einkaufen'
   }
 
+  const focusName = !values.name
+  const focusQuantity = !!values.name && !values.quantity
+
   return (
     <>
       <Stack.Screen
@@ -219,7 +222,7 @@ export default function ShoppingListItemModal() {
                 value={values.name}
                 autoCorrect={false}
                 autoCapitalize="none"
-                autoFocus={!inventoryItem && !shoppingListItem}
+                autoFocus={focusName}
                 editable={!inventoryItem}
                 style={[
                   DefaultInputStyles.input,
@@ -278,7 +281,7 @@ export default function ShoppingListItemModal() {
                 </Text>
 
                 <DecimalInput
-                  autoFocus={!values.quantity && !!inventoryItem}
+                  autoFocus={focusQuantity}
                   placeholder="3"
                   keyboardType="decimal-pad"
                   value={values.quantity}
