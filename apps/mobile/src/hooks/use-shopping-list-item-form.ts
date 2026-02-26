@@ -68,6 +68,20 @@ export function toShoppingListItemsFormValues(
   }
 }
 
+function inventoryItemToFormValues(
+  item: InventoryItemView,
+): ShoppingListItemFormValues {
+  return {
+    name: item.name,
+    description: item.description ?? undefined,
+    quantity: item.targetStock ?? undefined,
+    quantityUnit: item.targetStockUnit ?? undefined,
+    shopIds: item.shopIds,
+    categoryId: item.categoryId ?? undefined,
+    inventoryItemId: item.id,
+  }
+}
+
 function shallowEqualForm(
   a: ShoppingListItemFormValues,
   b: ShoppingListItemFormValues,
@@ -164,12 +178,20 @@ export const useShoppingListForm = (
   }, [findInventoryItemById, values.inventoryItemId])
 
   const isDirty = useMemo(() => {
+    // Edit-Fall
     if (existingItem) {
       return !shallowEqualForm(values, existingItem)
-    } else {
-      return !shallowEqualForm(values, initialValues)
     }
-  }, [existingItem, values])
+
+    // Create-Fall mit verlinktem Inventory-Item
+    if (inventoryItem) {
+      const baseline = inventoryItemToFormValues(inventoryItem)
+      return !shallowEqualForm(values, baseline)
+    }
+
+    // Reines neues Item
+    return !shallowEqualForm(values, initialValues)
+  }, [existingItem, inventoryItem, values])
 
   return {
     setValue,
