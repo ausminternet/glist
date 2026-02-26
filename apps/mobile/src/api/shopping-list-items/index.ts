@@ -1,5 +1,6 @@
 export * from './use-add-shopping-list-item'
 export * from './use-check-shopping-list-item'
+export * from './use-clear-checked-shopping-list-items'
 export * from './use-delete-shopping-list-item'
 export * from './use-edit-shopping-list-item'
 export * from './use-shopping-list-items'

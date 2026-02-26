@@ -1,10 +1,13 @@
 import type { ShoppingListItemView } from '@glist/views'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Stack } from 'expo-router/stack'
-import { useColorScheme } from 'react-native'
+import { Alert, useColorScheme } from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useShoppingListEvents } from '@/api/events'
-import { useShoppingListItems } from '@/api/shopping-list-items'
+import {
+  useClearCheckedShoppingListItems,
+  useShoppingListItems,
+} from '@/api/shopping-list-items'
 import { CategorySectionList } from '@/components/category-section-list'
 import { colors } from '@/components/colors'
 import { ListEmptyComponent } from '@/components/list-empty-component'
@@ -23,6 +26,8 @@ export default function Index() {
   const { shoppingListItems, getShoppingListItemsByShopId } =
     useShoppingListItems()
 
+  const { clearCheckedShoppingListItems } = useClearCheckedShoppingListItems()
+
   const { categories } = useCategories()
 
   useShoppingListEvents()
@@ -37,6 +42,30 @@ export default function Index() {
     true,
   )
 
+  const disableClearChecked = !filteredShoppingListItems.some(
+    (item) => item.checked,
+  )
+
+  const handleOnClearAllCheckedShoppingListItems = () => {
+    Alert.alert(
+      'Abgehakte Einträge löschen',
+      `Möchtest du wirklich alle abgehakten Einträge löschen?`,
+      [
+        {
+          text: 'Abbrechen',
+          style: 'cancel',
+        },
+        {
+          text: 'Löschen',
+          style: 'destructive',
+          onPress: () => {
+            clearCheckedShoppingListItems()
+          },
+        },
+      ],
+    )
+  }
+
   return (
     <>
       <Stack.Screen
@@ -49,6 +78,17 @@ export default function Index() {
               colorTheme === 'dark' ? 'black' : colors.background.tertiary,
           },
           unstable_headerRightItems: () => [
+            {
+              type: 'button',
+              label: 'gekaufte Items löschen',
+              icon: {
+                type: 'sfSymbol',
+                name: 'checkmark.circle.badge.xmark',
+              },
+              variant: 'plain',
+              onPress: handleOnClearAllCheckedShoppingListItems,
+              disabled: disableClearChecked,
+            },
             {
               type: 'button',
               label: 'Neuer Eintrag',
