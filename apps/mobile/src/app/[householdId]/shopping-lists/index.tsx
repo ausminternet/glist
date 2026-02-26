@@ -22,18 +22,19 @@ export default function Index() {
   const router = useRouter()
   const colorTheme = useColorScheme()
   const householdId = useHouseholdId()
-  const { shoppingListItems } = useShoppingListItems()
+  const { shoppingListItems, getShoppingListItemsByShopId } =
+    useShoppingListItems()
 
   const { categories } = useCategories()
 
   useShoppingListEvents()
 
-  // const filteredShoppingListItems = shopId
-  //   ? getShoppingListItemsByShopId(shopId, withNoShop === 'true')
-  //   : shoppingListItems
+  const filteredShoppingListItems = shopId
+    ? getShoppingListItemsByShopId(shopId, withNoShop === 'true')
+    : shoppingListItems
 
   const shoppingListSectionData = groupItemsByCategory<ShoppingListItemView>(
-    shoppingListItems,
+    filteredShoppingListItems,
     categories,
     true,
   )
@@ -65,13 +66,7 @@ export default function Index() {
           ],
         }}
       />
-      {/*<ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{
-          gap: 24,
-          flexDirection: 'column',
-        }}
-      >*/}
+
       <CategorySectionList
         sections={shoppingListSectionData}
         renderItem={({ item }) => (
@@ -84,12 +79,6 @@ export default function Index() {
           />
         )}
       />
-      {/*<List type="plain" backgroundColor="transparent">
-          {filteredShoppingListItems.map((item) => (
-            <ShoppingListItem item={item} key={item.id} />
-          ))}
-        </List>*/}
-      {/*</ScrollView>*/}
     </>
   )
 }

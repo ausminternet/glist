@@ -51,7 +51,6 @@ export default function HouseholdsScreen() {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          padding: 16,
           gap: 24,
           flexDirection: 'column',
         }}
@@ -66,7 +65,6 @@ export default function HouseholdsScreen() {
           <View
             style={{
               backgroundColor: '#fee2e2',
-              padding: 16,
               borderRadius: 24,
               marginBottom: 20,
             }}
@@ -76,6 +74,18 @@ export default function HouseholdsScreen() {
             </Text>
           </View>
         )}
+
+        <List>
+          {households.map((household) => (
+            <ListItem
+              key={household.id}
+              onPress={() => handleOnHouseHoldSelect(household.id)}
+              subtitle={household.id}
+            >
+              {household.name}
+            </ListItem>
+          ))}
+        </List>
 
         {__DEV__ && (
           <View
@@ -92,18 +102,6 @@ export default function HouseholdsScreen() {
             />
           </View>
         )}
-
-        <List>
-          {households.map((household) => (
-            <ListItem
-              key={household.id}
-              onPress={() => handleOnHouseHoldSelect(household.id)}
-              subtitle={household.id}
-            >
-              {household.name}
-            </ListItem>
-          ))}
-        </List>
       </ScrollView>
     </>
   )
