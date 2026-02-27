@@ -20,6 +20,8 @@ node_modules/
 .env.production
 .dev.vars
 
+worker-configuration.d.ts
+
 # bruno secrets
 bruno/environments/secrets.bru
 
