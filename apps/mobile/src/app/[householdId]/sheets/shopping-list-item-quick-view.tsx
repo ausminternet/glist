@@ -1,13 +1,7 @@
 import { getUnitLabel } from '@glist/shared'
 import * as Haptics from 'expo-haptics'
-import {
-  Stack,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from 'expo-router'
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
-import { useEffect, useState } from 'react'
 import { Alert, Button, Pressable, Text, View } from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useFindInventoryItems } from '@/api/inventory-items'
@@ -20,109 +14,34 @@ import { useShoppingListItem } from '@/api/shopping-list-items/use-shopping-list
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
 import { useHouseholdId } from '@/hooks/use-household-id'
-import { useInventoryItemSubtitle } from '@/hooks/use-inventory-item-subtitle'
-import { useShoppingListForm } from '@/hooks/use-shopping-list-item-form'
-import { useSubmitShoppingListItemForm } from '@/hooks/use-submit-shopping-list-item-form-submit'
 import { formatEuroCents } from '@/utils/currency'
 
 export default function ShoppingListItemModal() {
-  const navigation = useNavigation()
-
-  const [preventModalRemove, setPreventModalRemove] = useState(false)
-  const [search, setSearch] = useState<string | null>(null)
-
   const router = useRouter()
   const householdId = useHouseholdId()
 
-  const { itemId, inventoryItemId } = useLocalSearchParams<{
+  const { itemId } = useLocalSearchParams<{
     itemId: string
-    inventoryItemId?: string
   }>()
-  const { getSubtitle } = useInventoryItemSubtitle()
+
   const { shops } = useShops()
   const { categories } = useCategories()
-  const { searchInventoryItems, findInventoryItemById } =
-    useFindInventoryItems()
-  const { deleteShoppingListItem, isPending: isDeletePending } =
-    useDeleteShoppingListItem()
-
+  const { deleteShoppingListItem } = useDeleteShoppingListItem()
   const { shoppingListItem, isSuccess } = useShoppingListItem(itemId)
-
-  const { submit, isSubmitting } = useSubmitShoppingListItemForm({
-    setPreventRemove: setPreventModalRemove,
-  })
-
+  const { findInventoryItemById } = useFindInventoryItems()
   const { checkShoppingListItem } = useCheckShoppingListItem()
   const { uncheckShoppingListItem } = useUncheckShoppingListItem()
 
-  const {
-    reset,
-    setValue,
-    values,
-    isValid,
-    isDirty,
-    setShoppingListItem,
-    linkInventoryItem,
-    unlinkInventoryItem,
-    inventoryItem,
-  } = useShoppingListForm(findInventoryItemById)
+  const inventoryItem = shoppingListItem?.inventoryItemId
+    ? findInventoryItemById(shoppingListItem.inventoryItemId)
+    : undefined
 
-  const resetFormAndGoBack = () => {
-    reset()
-    router.back()
-  }
-
-  useEffect(() => {
-    if (preventModalRemove) return
-    const sub = navigation.addListener('beforeRemove', () => {
-      reset()
-    })
-
-    return sub
-  }, [navigation, reset, preventModalRemove])
-
-  useEffect(() => {
-    if (shoppingListItem) {
-      setShoppingListItem(shoppingListItem)
-    }
-  }, [shoppingListItem, setShoppingListItem])
-
-  useEffect(() => {
-    if (inventoryItemId) {
-      const item = findInventoryItemById(inventoryItemId)
-      if (item) {
-        linkInventoryItem(item)
-      }
-    }
-  }, [inventoryItemId, findInventoryItemById, linkInventoryItem])
-
-  const canSubmit = !isSubmitting && isValid && isDirty
-
-  useEffect(() => {
-    setPreventModalRemove(isDirty)
-  }, [isDirty])
-
-  const searchResults = search ? searchInventoryItems(search) : []
-  const showSearchResults = !!search && searchResults?.length > 0
-
-  const handleUnselectInventoryItem = () => {
-    Alert.alert(
-      'Zurücksetzen',
-      'Möchtest du die Verknüpfung zum Vorrat auflösen?',
-      [
-        { text: 'Abbrechen', style: 'cancel' },
-        {
-          text: 'Zurücksetzen',
-          style: 'destructive',
-          onPress: () => unlinkInventoryItem(),
-        },
-      ],
-    )
-  }
+  const itemEditUrl =
+    `/${householdId}/modals/shopping-list-item?itemId=${shoppingListItem?.id}` as const
 
   const deleteItem = (id: string) => {
     deleteShoppingListItem(id, {
-      onSuccess: () => resetFormAndGoBack(),
+      onSuccess: () => router.back(),
       onError: () => {
         Alert.alert(
           'Fehler',
@@ -155,19 +74,6 @@ export default function ShoppingListItemModal() {
     )
   }
 
-  let title =
-    shoppingListItem || isDeletePending ? 'Bearbeiten' : 'Neuer Eintrag'
-
-  if (inventoryItem) {
-    title = 'Vorrat einkaufen'
-  }
-
-  const focusName = !values.name
-  const focusQuantity = !!values.name && !values.quantity
-
-  const itemEditUrl =
-    `/${householdId}/modals/shopping-list-item?itemId=${shoppingListItem?.id}` as const
-
   if (isSuccess && !shoppingListItem) {
     return (
       <View
@@ -197,6 +103,9 @@ export default function ShoppingListItemModal() {
     <>
       <Stack.Screen
         options={{
+          contentStyle: {
+            backgroundColor: 'transparent',
+          },
           unstable_headerRightItems: () => [
             {
               type: 'button',
@@ -264,7 +173,7 @@ export default function ShoppingListItemModal() {
           </Text>
         </View>
 
-        {inventoryItem?.description && (
+        {shoppingListItem.description && (
           <Text
             style={{
               fontSize: 18,
@@ -272,7 +181,7 @@ export default function ShoppingListItemModal() {
               fontStyle: 'italic',
             }}
           >
-            {inventoryItem?.description}
+            {shoppingListItem.description}
           </Text>
         )}
 
@@ -289,7 +198,7 @@ export default function ShoppingListItemModal() {
           </View>
         )}
 
-        {values.categoryId && (
+        {shoppingListItem.categoryId && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <SymbolView
               name="square.grid.2x2"
@@ -297,12 +206,15 @@ export default function ShoppingListItemModal() {
               tintColor={colors.label.primary}
             />
             <Text style={{ fontSize: 18, color: colors.label.primary }}>
-              {categories.find((c) => c.id === values.categoryId)?.name}
+              {
+                categories.find((c) => c.id === shoppingListItem.categoryId)
+                  ?.name
+              }
             </Text>
           </View>
         )}
 
-        {values.shopIds?.length > 0 && (
+        {shoppingListItem.shopIds?.length > 0 && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <SymbolView
               name="storefront"
@@ -310,7 +222,7 @@ export default function ShoppingListItemModal() {
               tintColor={colors.label.primary}
             />
             <Text style={{ fontSize: 18, color: colors.label.primary }}>
-              {values.shopIds
+              {shoppingListItem.shopIds
                 .map((id) => shops.find((s) => s.id === id)?.name)
                 .filter(Boolean)
                 .join(', ')}
@@ -319,178 +231,104 @@ export default function ShoppingListItemModal() {
         )}
       </View>
 
-      <View style={{ flex: 1, gap: 12, paddingTop: 24, paddingInline: 24 }}>
+      <View
+        style={{
+          flex: 1,
+          gap: 10,
+          paddingTop: 24,
+          paddingInline: 24,
+          flexDirection: 'row',
+          width: '100%',
+        }}
+      >
+        <Pressable
+          onPress={() => {
+            shoppingListItem.checked
+              ? uncheckShoppingListItem(shoppingListItem.id)
+              : checkShoppingListItem(shoppingListItem.id)
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+          }}
+          style={{
+            backgroundColor: colors.system.blue,
+            borderRadius: 20,
+            paddingInline: 6,
+            paddingBlock: 8,
+            gap: 3,
+            flex: 1,
+            flexBasis: 0,
+            alignItems: 'center',
+          }}
+        >
+          <SymbolView
+            name={shoppingListItem.checked ? 'checkmark.circle.fill' : 'circle'}
+            size={22}
+            tintColor="white"
+          />
+          <Text
+            style={{
+              color: 'white',
+              textAlign: 'center',
+              fontSize: 13,
+              fontWeight: 'bold',
+            }}
+          >
+            {shoppingListItem.checked ? 'Auspacken' : 'Kaufen'}
+          </Text>
+        </Pressable>
         <Pressable
           onPress={() => router.dismissTo(itemEditUrl)}
           style={{
-            backgroundColor: colors.label.primary,
-            borderRadius: 100,
-            padding: 16,
+            backgroundColor: 'rgba(0, 122, 255, 0.1)',
+            borderRadius: 20,
+            paddingInline: 6,
+            paddingBlock: 8,
+            gap: 3,
+            flex: 1,
+            flexBasis: 0,
+            alignItems: 'center',
           }}
         >
+          <SymbolView
+            name="square.and.pencil"
+            size={22}
+            tintColor={colors.system.blue}
+          />
           <Text
             style={{
-              color: colors.background.primary,
+              color: colors.system.blue,
               textAlign: 'center',
-              fontSize: 18,
+              fontSize: 13,
+              fontWeight: 'bold',
             }}
           >
             Bearbeiten
           </Text>
         </Pressable>
-
-        <Button
-          color="red"
-          title={`${shoppingListItem.name} löschen`}
+        <Pressable
           onPress={handleDelete}
-        />
-
-        {/*<List>
-            <ListItemInputContainer>
-              <TextInput
-                placeholder="Milch"
-                onChangeText={(text) => {
-                  // Das verhindert, dass die async Eventqueue von RN nach dem
-                  // onBlur noch einmal das Feld flushed und mit einem alten Wert
-                  // befuekllt
-                  if (inventoryItem) return
-                  setValue('name', text)
-                  setSearch(text)
-                }}
-                value={values.name}
-                autoCorrect={false}
-                autoCapitalize="none"
-                autoFocus={focusName}
-                editable={!inventoryItem}
-                style={[
-                  DefaultInputStyles.input,
-                  {
-                    fontSize: 23,
-                    fontWeight: 'bold',
-                    color: inventoryItem
-                      ? colors.system.teal
-                      : colors.label.primary,
-                  },
-                ]}
-              />
-              {inventoryItem && (
-                <Pressable onPress={handleUnselectInventoryItem}>
-                  <SymbolView
-                    name="personalhotspot.slash"
-                    size={36}
-                    tintColor={colors.system.red}
-                  />
-                </Pressable>
-              )}
-            </ListItemInputContainer>
-
-            {showSearchResults && (
-              <InventorySearchResults
-                items={searchResults}
-                onSelectItem={(item) => {
-                  setSearch(null)
-                  linkInventoryItem(item)
-                }}
-                getSubtitle={getSubtitle}
-              />
-            )}
-
-            <ListItemInput
-              inputProps={{
-                placeholder: 'Notizen',
-                onChangeText: (text) => setValue('description', text),
-                value: values.description,
-                multiline: true,
-              }}
-            />
-          </List>
-
-          <View>
-            <List>
-              <ListItemInputContainer icon="plusminus" iconSize={24}>
-                <Text
-                  style={{
-                    fontSize: 17,
-                    color: colors.label.primary,
-                    flexGrow: 1,
-                  }}
-                >
-                  Menge
-                </Text>
-
-                <DecimalInput
-                  autoFocus={focusQuantity}
-                  placeholder="3"
-                  keyboardType="decimal-pad"
-                  value={values.quantity}
-                  onChange={(value) => setValue('quantity', value)}
-                  style={{
-                    marginInlineStart: 'auto',
-                    flexGrow: 0,
-                    minWidth: 60,
-                    backgroundColor: colors.groupedBackground.primary,
-                    borderWidth: 1,
-                    borderColor: colors.separator.default,
-                    borderRadius: 8,
-                    paddingHorizontal: 8,
-                    paddingVertical: 6,
-                    textAlign: 'center',
-                    fontSize: 17,
-                    color: colors.label.primary,
-                  }}
-                />
-
-                <UnitSelector
-                  value={values.quantityUnit}
-                  onChange={(value) => setValue('quantityUnit', value)}
-                  label="singular"
-                />
-              </ListItemInputContainer>
-            </List>
-
-            {inventoryItem && (
-              <LinkedInventoryInfo inventoryItem={inventoryItem} />
-            )}
-          </View>
-
-          <List>
-            <ListItem
-              icon="square.grid.2x2"
-              iconSize={24}
-              href={`/${householdId}/modals/select-category`}
-              right={
-                values.categoryId
-                  ? categories.find((c) => c.id === values.categoryId)?.name
-                  : 'Ohne'
-              }
-            >
-              Kategorie
-            </ListItem>
-            <ListItem
-              icon="storefront"
-              iconSize={24}
-              href={`/${householdId}/modals/select-shops`}
-              right={
-                values.shopIds && values.shopIds.length > 0
-                  ? values.shopIds
-                      .map((id) => shops.find((s) => s.id === id)?.name)
-                      .filter(Boolean)
-                      .join(', ')
-                  : 'Ohne'
-              }
-            >
-              Geschäfte
-            </ListItem>
-          </List>
-
-          {shoppingListItem && (
-            <Button
-              title="Eintrag löschen"
-              color="red"
-              onPress={handleDelete}
-            />
-          )}
-        */}
+          style={{
+            backgroundColor: 'rgba(255, 59, 48, 0.1)',
+            borderRadius: 20,
+            paddingInline: 6,
+            paddingBlock: 8,
+            flex: 1,
+            flexBasis: 0,
+            gap: 3,
+            alignItems: 'center',
+          }}
+        >
+          <SymbolView name="trash" size={22} tintColor={colors.system.red} />
+          <Text
+            style={{
+              color: colors.system.red,
+              textAlign: 'center',
+              fontSize: 13,
+              fontWeight: 'bold',
+            }}
+          >
+            Löschen
+          </Text>
+        </Pressable>
       </View>
     </>
   )

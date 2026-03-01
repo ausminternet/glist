@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Link, SplashScreen, Stack, useLocalSearchParams } from 'expo-router'
+import { SplashScreen, Stack, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 import { RefreshControl, ScrollView } from 'react-native-gesture-handler'

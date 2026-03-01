@@ -1,9 +1,4 @@
-import {
-  Stack,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from 'expo-router'
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
 import { useEffect, useState } from 'react'
 import {
@@ -19,7 +14,6 @@ import {
 import { useCategories } from '@/api/categories'
 import { useFindInventoryItems } from '@/api/inventory-items'
 import { useDeleteShoppingListItem } from '@/api/shopping-list-items'
-import { useShoppingListItem } from '@/api/shopping-list-items/use-shopping-list-item'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
 import { DecimalInput } from '@/components/decimal-input'
@@ -37,9 +31,8 @@ import { useShoppingListForm } from '@/hooks/use-shopping-list-item-form'
 import { useSubmitShoppingListItemForm } from '@/hooks/use-submit-shopping-list-item-form-submit'
 
 export default function ShoppingListItemModal() {
-  const navigation = useNavigation()
+  const [shouldClose, setShouldClose] = useState(false)
 
-  const [preventModalRemove, setPreventModalRemove] = useState(false)
   const [search, setSearch] = useState<string | null>(null)
 
   const router = useRouter()
@@ -52,64 +45,35 @@ export default function ShoppingListItemModal() {
   const { getSubtitle } = useInventoryItemSubtitle()
   const { shops } = useShops()
   const { categories } = useCategories()
-  const { searchInventoryItems, findInventoryItemById } =
-    useFindInventoryItems()
-  const { deleteShoppingListItem, isPending: isDeletePending } =
-    useDeleteShoppingListItem()
+  const { searchInventoryItems } = useFindInventoryItems()
+  const {
+    deleteShoppingListItem,
+    isPending: isDeletePending,
+    isError: isDeleteError,
+  } = useDeleteShoppingListItem()
 
-  const { shoppingListItem } = useShoppingListItem(itemId)
-
-  const { submit, isSubmitting } = useSubmitShoppingListItemForm({
-    setPreventRemove: setPreventModalRemove,
-  })
+  const { submit, isSubmitting } = useSubmitShoppingListItemForm()
 
   const {
-    reset,
     setValue,
     values,
-    isValid,
+    canSubmit,
+    commit,
     isDirty,
-    setShoppingListItem,
     linkInventoryItem,
     unlinkInventoryItem,
     inventoryItem,
-    needsConfirmOnCancel,
-  } = useShoppingListForm(findInventoryItemById)
-
-  const resetFormAndGoBack = () => {
-    reset()
-    router.back()
-  }
+    shoppingListItem,
+  } = useShoppingListForm(itemId, inventoryItemId)
 
   useEffect(() => {
-    if (preventModalRemove) return
-    const sub = navigation.addListener('beforeRemove', () => {
-      reset()
-    })
+    if (!isDeleteError) return
 
-    return sub
-  }, [navigation, reset, preventModalRemove])
+    Alert.alert('Fehler', 'Der Eintrag konnte nicht gelöscht werden.')
+  }, [isDeleteError])
 
-  useEffect(() => {
-    if (shoppingListItem) {
-      setShoppingListItem(shoppingListItem)
-    }
-  }, [shoppingListItem, setShoppingListItem])
-
-  useEffect(() => {
-    if (inventoryItemId) {
-      const item = findInventoryItemById(inventoryItemId)
-      if (item) {
-        linkInventoryItem(item, true)
-      }
-    }
-  }, [inventoryItemId, findInventoryItemById, linkInventoryItem])
-
-  const canSubmit = !isSubmitting && isValid && isDirty
-
-  useEffect(() => {
-    setPreventModalRemove(needsConfirmOnCancel)
-  }, [needsConfirmOnCancel])
+  const preventSubmit = isSubmitting || !canSubmit || isDeletePending
+  const preventRemove = isDirty || isSubmitting || isDeletePending
 
   const searchResults = search ? searchInventoryItems(search) : []
   const showSearchResults = !!search && searchResults?.length > 0
@@ -140,20 +104,37 @@ export default function ShoppingListItemModal() {
           style: 'destructive',
           onPress: () => {
             if (!shoppingListItem) return
-            deleteShoppingListItem(shoppingListItem.id, {
-              onSuccess: () => resetFormAndGoBack(),
-              onError: () => {
-                Alert.alert(
-                  'Fehler',
-                  'Der Eintrag konnte nicht gelöscht werden. Bitte versuche es später erneut.',
-                )
-              },
-            })
+            deleteShoppingListItem(shoppingListItem.id)
           },
         },
       ],
     )
   }
+
+  const handleSubmit = async () => {
+    const result = await submit(values, shoppingListItem?.id)
+
+    if (!result.ok) {
+      Alert.alert(
+        'Fehler',
+        result.error?.type === 'add'
+          ? 'Der Eintrag konnte nicht erstellt werden.'
+          : 'Der Eintrag konnte nicht aktualisiert werden.',
+      )
+
+      return
+    }
+
+    commit()
+    setShouldClose(true)
+  }
+
+  useEffect(() => {
+    if (!shouldClose) return
+    if (preventRemove) return
+
+    router.back()
+  }, [shouldClose, preventRemove, router])
 
   let title =
     shoppingListItem || isDeletePending ? 'Bearbeiten' : 'Neuer Eintrag'
@@ -174,8 +155,8 @@ export default function ShoppingListItemModal() {
           headerLeft: () => (
             <NavbarCancelButton
               disabled={isSubmitting || isDeletePending}
-              onCancel={() => resetFormAndGoBack()}
-              preventRemove={preventModalRemove}
+              onCancel={() => router.back()}
+              preventRemove={preventRemove}
             />
           ),
           unstable_headerRightItems: () => [
@@ -187,10 +168,8 @@ export default function ShoppingListItemModal() {
                 name: 'checkmark',
               },
               variant: 'prominent',
-              disabled: !canSubmit || isDeletePending,
-              onPress: () => {
-                submit(values, shoppingListItem?.id, resetFormAndGoBack)
-              },
+              disabled: preventSubmit,
+              onPress: handleSubmit,
             },
           ],
         }}

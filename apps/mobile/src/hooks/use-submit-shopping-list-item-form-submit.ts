@@ -1,77 +1,87 @@
+import type {
+  AddShoppingListItemInput,
+  EditShoppingListItemInput,
+} from '@glist/schemas'
+import { err, ok, type Result } from '@glist/shared'
 import { useState } from 'react'
-import { Alert } from 'react-native'
 import {
   useEditShoppingListItem,
   useSaveShoppingListItem,
 } from '@/api/shopping-list-items'
-import {
-  type ShoppingListItemFormValues,
-  toAddShoppingListItemInput,
-  toEditShoppingListItemInput,
-} from '@/hooks/use-shopping-list-item-form'
+import type { Snapshot } from '@/hooks/use-shopping-list-item-form'
 
-interface UseSubmitShoppingListItemFormProps {
-  setPreventRemove: (value: boolean) => void
+type SubmitError =
+  | { type: 'add'; error: Error }
+  | { type: 'edit'; error: Error }
+  | null
+
+export function toAddShoppingListItemInput(
+  values: Snapshot,
+): AddShoppingListItemInput {
+  //TODO: Schema validieren
+  return {
+    name: values.name,
+    description: values.description ?? null,
+    quantity: values.quantity ?? null,
+    quantityUnit: values.quantityUnit ?? null,
+    inventoryItemId: values.inventoryItemId ?? null,
+    shopIds: values.shopIds,
+    categoryId: values.categoryId ?? null,
+  }
 }
 
-export function useSubmitShoppingListItemForm({
-  setPreventRemove,
-}: UseSubmitShoppingListItemFormProps) {
-  const { addShoppingListItem } = useSaveShoppingListItem()
-  const { editShoppingListItem: updateShoppingListItem } =
-    useEditShoppingListItem()
+export function toEditShoppingListItemInput(
+  values: Snapshot,
+): EditShoppingListItemInput {
+  //TODO: Schema validieren
+  return {
+    name: values.name,
+    description: values.description?.trim() ?? null,
+    quantity: values.quantity ?? null,
+    quantityUnit: values.quantityUnit ?? null,
+    inventoryItemId: values.inventoryItemId ?? null,
+    shopIds: values.shopIds,
+    categoryId: values.categoryId ?? null,
+  }
+}
+
+export function useSubmitShoppingListItemForm() {
+  const { mutateAsync: addAsync } = useSaveShoppingListItem()
+  const { mutateAsync: editAsync } = useEditShoppingListItem()
+
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const add = (input: ShoppingListItemFormValues, onSuccess?: () => void) => {
-    const payload = toAddShoppingListItemInput(input)
-    setPreventRemove(false)
-    addShoppingListItem(payload, {
-      onSuccess: () => {
-        onSuccess?.()
-      },
-      onError: (error) => {
-        setPreventRemove(true)
-        Alert.alert('Fehler', 'Das Item konnte nicht gespeichert werden.')
-        console.error('Error adding shopping list item:', error)
-      },
-    })
-  }
-
-  const edit = (
-    shoppingListItemId: string,
-    input: ShoppingListItemFormValues,
-    onSuccess?: () => void,
-  ) => {
-    const payload = toEditShoppingListItemInput(input)
-    setPreventRemove(false)
-    updateShoppingListItem(
-      { itemId: shoppingListItemId, payload },
-      {
-        onSuccess: () => {
-          onSuccess?.()
-        },
-        onError: (error) => {
-          setPreventRemove(true)
-          Alert.alert('Fehler', 'Das Item konnte nicht angelegt werden.')
-          console.error('Error editing shopping list item:', error)
-        },
-        onSettled: () => {
-          setIsSubmitting(false)
-        },
-      },
-    )
-  }
-
-  const submit = (
-    payload: ShoppingListItemFormValues,
+  const submit = async (
+    values: Snapshot,
     shoppingListItemId?: string,
-    onSuccess?: () => void,
-  ) => {
+  ): Promise<Result<void, SubmitError>> => {
     setIsSubmitting(true)
-    if (shoppingListItemId) {
-      edit(shoppingListItemId, payload, onSuccess)
-    } else {
-      add(payload, onSuccess)
+
+    const isEdit = shoppingListItemId !== undefined
+
+    try {
+      if (isEdit) {
+        await editAsync({
+          itemId: shoppingListItemId,
+          payload: toEditShoppingListItemInput(values),
+        })
+      } else {
+        await addAsync(toAddShoppingListItemInput(values))
+      }
+
+      return ok(undefined)
+    } catch (unknownError) {
+      const error =
+        unknownError instanceof Error
+          ? unknownError
+          : new Error('Unknown error')
+
+      return err({
+        type: isEdit ? 'edit' : 'add',
+        error,
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 

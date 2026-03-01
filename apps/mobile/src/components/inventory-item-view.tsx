@@ -1,7 +1,5 @@
-import { getUnitLabel } from '@glist/shared'
 import type { InventoryItemView } from '@glist/views'
 import { useRouter } from 'expo-router'
-import { Text, View } from 'react-native'
 import { useShoppingListItems } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
 import { useHouseholdId } from '@/hooks/use-household-id'

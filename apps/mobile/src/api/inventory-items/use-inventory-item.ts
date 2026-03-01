@@ -1,9 +1,10 @@
 import { useInventoryItems } from './use-inventory-items'
 
-export function useInventoryItem(inventoryItemId: string | undefined) {
-  const { inventoryItems } = useInventoryItems()
+export function useInventoryItem(inventoryItemId?: string) {
+  const { inventoryItems, ...rest } = useInventoryItems()
 
-  return inventoryItemId
-    ? inventoryItems.find((item) => item.id === inventoryItemId)
-    : undefined
+  return {
+    inventoryItem: inventoryItems.find((item) => item.id === inventoryItemId),
+    ...rest,
+  }
 }

@@ -1,4 +1,4 @@
-import { usePreventRemove } from '@react-navigation/native'
+import { useNavigation, usePreventRemove } from '@react-navigation/native'
 import { SymbolView } from 'expo-symbols'
 import { type FC, useEffect, useState } from 'react'
 import { Alert, PlatformColor } from 'react-native'
@@ -15,19 +15,15 @@ export const NavbarCancelButton: FC<NavbarCancelProps> = ({
   onCancel,
   disabled,
 }) => {
-  const [_preventRemove, _setPreventRemove] = useState(preventRemove)
+  const navigation = useNavigation()
+  // const [_preventRemove, _setPreventRemove] = useState(preventRemove)
 
-  useEffect(() => {
-    _setPreventRemove(preventRemove)
-  }, [preventRemove])
+  // useEffect(() => {
+  //   _setPreventRemove(preventRemove)
+  // }, [preventRemove])
 
-  usePreventRemove(preventRemove, () => handleOnCancel())
-
-  const handleOnCancel = () => {
-    if (!_preventRemove) {
-      onCancel()
-      return
-    }
+  usePreventRemove(preventRemove, (event) => {
+    if (!preventRemove) return
 
     Alert.alert(
       'Änderungen löschen',
@@ -38,16 +34,15 @@ export const NavbarCancelButton: FC<NavbarCancelProps> = ({
           text: 'Ja',
           style: 'destructive',
           onPress: () => {
-            _setPreventRemove(false)
-            onCancel()
+            navigation.dispatch(event.data.action)
           },
         },
       ],
     )
-  }
+  })
 
   return (
-    <Pressable onPress={handleOnCancel} disabled={disabled}>
+    <Pressable onPress={onCancel} disabled={disabled}>
       <SymbolView
         name="multiply"
         size={24}
