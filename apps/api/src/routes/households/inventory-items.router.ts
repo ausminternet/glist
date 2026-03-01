@@ -56,10 +56,8 @@ inventoryItemsRouter.post(
       switch (result.error.type) {
         case 'INVALID_NAME':
         case 'INVALID_PRICE':
-        case 'PRICE_UNIT_WITHOUT_VALUE':
         case 'INVALID_QUANTITY':
         case 'INVALID_UNIT':
-        case 'UNIT_WITHOUT_VALUE':
           console.error('Failed to create inventory item', {
             input,
             householdId,
@@ -112,10 +110,8 @@ inventoryItemsRouter.patch(
           return c.json({ success: false, error: result.error }, 404)
         case 'INVALID_NAME':
         case 'INVALID_PRICE':
-        case 'PRICE_UNIT_WITHOUT_VALUE':
         case 'INVALID_QUANTITY':
         case 'INVALID_UNIT':
-        case 'UNIT_WITHOUT_VALUE':
           console.error('Failed to replace inventory item', {
             id,
             input,

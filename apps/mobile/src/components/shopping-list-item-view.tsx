@@ -1,4 +1,4 @@
-import { getUnitLabel } from '@glist/shared'
+import { getUnitAbbreviation } from '@glist/shared'
 import type { ShoppingListItemView } from '@glist/views'
 import { useRouter } from 'expo-router'
 import { Text, View } from 'react-native'
@@ -28,6 +28,8 @@ export function ShoppingListItem({ item }: ShoppingListItemProps) {
 
   const itemShops = shops?.filter((s) => item.shopIds?.includes(s.id))
 
+  const itemQuickViewUrl =
+    `/${householdId}/sheets/shopping-list-item-quick-view?itemId=${item.id}` as const
   const itemEditUrl =
     `/${householdId}/modals/shopping-list-item?itemId=${item.id}` as const
 
@@ -68,9 +70,15 @@ export function ShoppingListItem({ item }: ShoppingListItemProps) {
 
   const shopNames = itemShops.map((s) => s.name).join(', ')
 
+  let title = item.name
+
+  if (item.quantity) {
+    title = `${item.quantity.toLocaleString('de-DE')} ${getUnitAbbreviation(item.quantityUnit)} ${item.name}`
+  }
+
   return (
     <ListItem
-      onPress={() => handleOnToggle(!item.checked)}
+      onPress={() => router.push(itemQuickViewUrl)}
       onLongPress={handleOnLongPress}
       right={
         <View
@@ -81,17 +89,6 @@ export function ShoppingListItem({ item }: ShoppingListItemProps) {
             gap: 6,
           }}
         >
-          {item.quantity && (
-            <Text
-              style={{
-                fontSize: 17,
-                color: colors.label.secondary,
-              }}
-            >
-              {item.quantity.toLocaleString('de-DE')}{' '}
-              {getUnitLabel(item.quantityUnit, item.quantity)}
-            </Text>
-          )}
           {shopNames && (
             <Text
               numberOfLines={1}
@@ -111,7 +108,7 @@ export function ShoppingListItem({ item }: ShoppingListItemProps) {
       checked={item.checked}
       chevron={false}
     >
-      {item.name}
+      {title}
     </ListItem>
   )
 }

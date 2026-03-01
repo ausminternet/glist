@@ -74,7 +74,6 @@ function shallowEqualForm(
   a: InventoryItemFormValues,
   b: InventoryItemFormValues,
 ): boolean {
-  console.log('!!!!!!', a.basePriceCents === b.basePriceCents)
   return (
     a.name === b.name &&
     a.description === b.description &&
@@ -111,7 +110,7 @@ export const useInventoryItemForm = () => {
   const { selectedShopIds, setSelectedShopIds, clearSelectedShops } =
     useShopsSelectionStore()
 
-  const [existingItem, setExistingItem] =
+  const [existingInventoryItemItem, setExistingInventoryItem] =
     useState<InventoryItemFormValues | null>(null)
   const [values, setValues] = useState<InventoryItemFormValues>(initialValues)
 
@@ -127,38 +126,35 @@ export const useInventoryItemForm = () => {
     setValue('shopIds', selectedShopIds)
   }, [selectedShopIds, setValue])
 
-  const setInventoryItem = (item: InventoryItemView) => {
-    const formValues = toInventoryItemsFormValues(item)
+  const setInventoryItem = (inventoryItem: InventoryItemView) => {
+    const formValues = toInventoryItemsFormValues(inventoryItem)
     setValues(formValues)
-    setExistingItem(formValues)
-    setSelectedCategoryId(item.categoryId)
-    setSelectedShopIds(item.shopIds)
+    setExistingInventoryItem(formValues)
+    setSelectedCategoryId(inventoryItem.categoryId)
+    setSelectedShopIds(inventoryItem.shopIds)
   }
 
   const reset = () => {
     clearSelectedCategory()
     clearSelectedShops()
     setValues(initialValues)
-    setExistingItem(null)
+    setExistingInventoryItem(null)
   }
-
-  const validation = inventoryItemFormSchema.safeParse(values)
-  const isValid = validation.success
-
-  if (!validation.success) {
-    console.log('Validation errors:', validation.error)
-  }
-  console.log('Validation result:', isValid)
 
   const isDirty = useMemo(() => {
-    if (existingItem) {
-      return !shallowEqualForm(values, existingItem)
+    if (existingInventoryItemItem) {
+      return !shallowEqualForm(values, existingInventoryItemItem)
     } else {
       return !shallowEqualForm(values, initialValues)
     }
-  }, [existingItem, values])
+  }, [existingInventoryItemItem, values])
 
-  console.log(values.basePriceCents)
+  const isValid = useMemo(() => {
+    if (!isDirty) return true
+
+    const validation = inventoryItemFormSchema.safeParse(values)
+    return validation.success
+  }, [values, isDirty])
 
   return {
     setValue,

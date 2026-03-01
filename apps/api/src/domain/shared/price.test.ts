@@ -50,14 +50,6 @@ describe('Price', () => {
       expect(result3.error).toEqual({ type: 'INVALID_PRICE' })
     })
 
-    test('returns PRICE_UNIT_WITHOUT_VALUE error when unit provided without price', () => {
-      const result = Price.create(null, 'kg')
-
-      expect(result.ok).toBe(false)
-      if (result.ok) return
-      expect(result.error).toEqual({ type: 'PRICE_UNIT_WITHOUT_VALUE' })
-    })
-
     test('returns INVALID_UNIT error for invalid unit', () => {
       const result1 = Price.create(100, 'euros')
       expect(result1.ok).toBe(false)

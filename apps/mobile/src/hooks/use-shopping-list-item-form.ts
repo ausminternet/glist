@@ -117,12 +117,13 @@ export type SetShoppingListFormValue = <
 export const useShoppingListForm = (
   findInventoryItemById: (id: string) => InventoryItemView | undefined,
 ) => {
+  const [fromInventory, setFromInventory] = useState<boolean>(false)
   const { selectedCategoryId, setSelectedCategoryId, clearSelectedCategory } =
     useCategorySelectionStore()
   const { selectedShopIds, setSelectedShopIds, clearSelectedShops } =
     useShopsSelectionStore()
 
-  const [existingItem, setExistingItem] =
+  const [existingShoppingListItem, setExistingShoppingListItem] =
     useState<ShoppingListItemFormValues | null>(null)
   const [values, setValues] =
     useState<ShoppingListItemFormValues>(initialValues)
@@ -139,37 +140,39 @@ export const useShoppingListForm = (
     setValue('shopIds', selectedShopIds)
   }, [selectedShopIds, setValue])
 
-  const setShoppingListItem = (item: ShoppingListItemView) => {
-    const formValues = toShoppingListItemsFormValues(item)
+  const setShoppingListItem = (shoppingListItem: ShoppingListItemView) => {
+    const formValues = toShoppingListItemsFormValues(shoppingListItem)
     setValues(formValues)
-    setExistingItem(formValues)
-    setSelectedCategoryId(item.categoryId)
-    setSelectedShopIds(item.shopIds)
+    setExistingShoppingListItem(formValues)
+    setSelectedCategoryId(shoppingListItem.categoryId)
+    setSelectedShopIds(shoppingListItem.shopIds)
   }
 
-  const linkInventoryItem = (item: InventoryItemView) => {
-    setValue('inventoryItemId', item.id)
-    setValue('name', item.name)
-    setValue('description', item.description ?? undefined)
-    setValue('quantity', item.targetStock ?? undefined)
-    setValue('quantityUnit', item.targetStockUnit ?? undefined)
-    setSelectedCategoryId(item.categoryId)
-    setSelectedShopIds(item.shopIds)
+  const linkInventoryItem = (
+    inventoryItem: InventoryItemView,
+    _fromInventory: boolean = false,
+  ) => {
+    setValue('inventoryItemId', inventoryItem.id)
+    setValue('name', inventoryItem.name)
+    setValue('description', inventoryItem.description ?? undefined)
+    setValue('quantity', inventoryItem.targetStock ?? undefined)
+    setValue('quantityUnit', inventoryItem.targetStockUnit ?? undefined)
+    setSelectedCategoryId(inventoryItem.categoryId)
+    setSelectedShopIds(inventoryItem.shopIds)
+    setFromInventory(_fromInventory)
   }
 
   const unlinkInventoryItem = () => {
     setValue('inventoryItemId', undefined)
+    setFromInventory(false)
   }
 
   const reset = () => {
     clearSelectedCategory()
     clearSelectedShops()
     setValues(initialValues)
-    setExistingItem(null)
+    setExistingShoppingListItem(null)
   }
-
-  const validation = shoppingListItemFormSchema.safeParse(values)
-  const isValid = validation.success
 
   const inventoryItem = useMemo(() => {
     if (!values.inventoryItemId) return undefined
@@ -178,20 +181,40 @@ export const useShoppingListForm = (
   }, [findInventoryItemById, values.inventoryItemId])
 
   const isDirty = useMemo(() => {
-    // Edit-Fall
-    if (existingItem) {
-      return !shallowEqualForm(values, existingItem)
+    if (existingShoppingListItem) {
+      return !shallowEqualForm(values, existingShoppingListItem)
     }
 
-    // Create-Fall mit verlinktem Inventory-Item
     if (inventoryItem) {
+      if (fromInventory) {
+        return true
+      }
+
       const baseline = inventoryItemToFormValues(inventoryItem)
       return !shallowEqualForm(values, baseline)
     }
 
     // Reines neues Item
     return !shallowEqualForm(values, initialValues)
-  }, [existingItem, inventoryItem, values])
+  }, [existingShoppingListItem, inventoryItem, values, fromInventory])
+
+  const needsConfirmOnCancel = useMemo(() => {
+    if (inventoryItem && fromInventory) {
+      const baseline = inventoryItemToFormValues(inventoryItem)
+      return !shallowEqualForm(values, baseline)
+    }
+
+    return isDirty
+  }, [inventoryItem, fromInventory, values, isDirty])
+
+  const isValid = useMemo(() => {
+    if (!isDirty) return true
+
+    const validation = shoppingListItemFormSchema.safeParse(values)
+    return validation.success
+  }, [values, isDirty])
+
+  // Create-Fall mit verlinktem Inventory-Item
 
   return {
     setValue,
@@ -204,5 +227,6 @@ export const useShoppingListForm = (
     linkInventoryItem,
     unlinkInventoryItem,
     inventoryItem,
+    needsConfirmOnCancel,
   }
 }

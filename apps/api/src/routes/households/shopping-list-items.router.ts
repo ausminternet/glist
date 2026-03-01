@@ -58,7 +58,6 @@ shoppingListItemsRouter.post(
         case 'INVALID_NAME':
         case 'INVALID_QUANTITY':
         case 'INVALID_UNIT':
-        case 'UNIT_WITHOUT_VALUE':
           console.error('Failed to add shopping list item', {
             householdId,
             input,
@@ -226,7 +225,6 @@ shoppingListItemsRouter.patch(
         case 'INVALID_NAME':
         case 'INVALID_QUANTITY':
         case 'INVALID_UNIT':
-        case 'UNIT_WITHOUT_VALUE':
           console.error('Failed to replace shopping list item', {
             householdId,
             itemId,

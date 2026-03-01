@@ -8,7 +8,6 @@ import {
 
 export type QuantityError =
   | { type: 'INVALID_QUANTITY' }
-  | { type: 'UNIT_WITHOUT_VALUE' }
   | { type: 'INVALID_UNIT'; unit: string }
 
 export class Quantity {
@@ -23,10 +22,6 @@ export class Quantity {
   ): Result<Quantity, QuantityError> {
     if (value !== null && value <= 0) {
       return err({ type: 'INVALID_QUANTITY' })
-    }
-
-    if (unit !== null && value === null) {
-      return err({ type: 'UNIT_WITHOUT_VALUE' })
     }
 
     if (unit !== null && !isValidUnitType(unit)) {

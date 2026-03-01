@@ -8,7 +8,6 @@ import {
 
 export type PriceError =
   | { type: 'INVALID_PRICE' }
-  | { type: 'PRICE_UNIT_WITHOUT_VALUE' }
   | { type: 'INVALID_UNIT'; unit: string }
 
 export class Price {
@@ -23,10 +22,6 @@ export class Price {
   ): Result<Price, PriceError> {
     if (cents !== null && cents <= 0) {
       return err({ type: 'INVALID_PRICE' })
-    }
-
-    if (unit !== null && cents === null) {
-      return err({ type: 'PRICE_UNIT_WITHOUT_VALUE' })
     }
 
     if (unit !== null && !isValidUnitType(unit)) {

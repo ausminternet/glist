@@ -53,14 +53,6 @@ describe('Quantity', () => {
       expect(result2.error).toEqual({ type: 'INVALID_QUANTITY' })
     })
 
-    test('returns UNIT_WITHOUT_VALUE error when unit provided without value', () => {
-      const result = Quantity.create(null, 'kg')
-
-      expect(result.ok).toBe(false)
-      if (result.ok) return
-      expect(result.error).toEqual({ type: 'UNIT_WITHOUT_VALUE' })
-    })
-
     test('returns INVALID_UNIT error for invalid unit', () => {
       const result = Quantity.create(5, 'cats')
 

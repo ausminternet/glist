@@ -79,43 +79,7 @@ export function InventoryItem({ inventoryItem }: InventoryItemProps) {
       }
       iconSize={24}
       onLongPress={handleOnLongPress}
-      right={
-        <View
-          style={{
-            alignItems: 'flex-end',
-            flexDirection: 'column',
-            maxWidth: 150,
-            gap: 6,
-          }}
-        >
-          {inventoryItem.targetStock !== null && (
-            <Text
-              style={{
-                fontSize: 17,
-                color: colors.label.secondary,
-              }}
-            >
-              {inventoryItem.targetStock.toLocaleString('de-DE')}{' '}
-              {getUnitLabel(
-                inventoryItem.targetStockUnit,
-                inventoryItem.targetStock,
-              )}
-            </Text>
-          )}
-          {shopNames && (
-            <Text
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              style={{
-                fontSize: 15,
-                color: colors.label.tertiary,
-              }}
-            >
-              {shopNames}
-            </Text>
-          )}
-        </View>
-      }
+      right={shopNames}
       subtitle={inventoryItem.description}
       href={isOnShoppingList ? shoppingListItemUrl : addToShoppingListUrl}
       chevron={false}

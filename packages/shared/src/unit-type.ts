@@ -61,7 +61,7 @@ export function getUnitLabel(unit: UnitType | null, count: number | null) {
   return count === 1 ? label.singular : label.plural
 }
 
-export function getUnitAbbreviation(unit: UnitType | undefined) {
+export function getUnitAbbreviation(unit: UnitType | undefined | null) {
   if (!unit) return ''
 
   return UNIT_ABBREVIATIONS[unit]

@@ -1,3 +1,5 @@
+import { getUnitLabel } from '@glist/shared'
+import * as Haptics from 'expo-haptics'
 import {
   Stack,
   useLocalSearchParams,
@@ -6,35 +8,22 @@ import {
 } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
 import { useEffect, useState } from 'react'
-import {
-  Alert,
-  Button,
-  KeyboardAvoidingView,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from 'react-native'
+import { Alert, Button, Pressable, Text, View } from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useFindInventoryItems } from '@/api/inventory-items'
-import { useDeleteShoppingListItem } from '@/api/shopping-list-items'
+import {
+  useCheckShoppingListItem,
+  useDeleteShoppingListItem,
+  useUncheckShoppingListItem,
+} from '@/api/shopping-list-items'
 import { useShoppingListItem } from '@/api/shopping-list-items/use-shopping-list-item'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
-import { DecimalInput } from '@/components/decimal-input'
-import { InventorySearchResults } from '@/components/inventory-search-results'
-import { LinkedInventoryInfo } from '@/components/linked-inventory-info'
-import { List } from '@/components/list.components'
-import { ListItem } from '@/components/list-item.component'
-import { DefaultInputStyles, ListItemInput } from '@/components/list-item-input'
-import { ListItemInputContainer } from '@/components/list-item-input-container'
-import { NavbarCancelButton } from '@/components/navbar-cancel-button'
-import { UnitSelector } from '@/components/unit-selector'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { useInventoryItemSubtitle } from '@/hooks/use-inventory-item-subtitle'
 import { useShoppingListForm } from '@/hooks/use-shopping-list-item-form'
 import { useSubmitShoppingListItemForm } from '@/hooks/use-submit-shopping-list-item-form-submit'
+import { formatEuroCents } from '@/utils/currency'
 
 export default function ShoppingListItemModal() {
   const navigation = useNavigation()
@@ -57,11 +46,14 @@ export default function ShoppingListItemModal() {
   const { deleteShoppingListItem, isPending: isDeletePending } =
     useDeleteShoppingListItem()
 
-  const { shoppingListItem } = useShoppingListItem(itemId)
+  const { shoppingListItem, isSuccess } = useShoppingListItem(itemId)
 
   const { submit, isSubmitting } = useSubmitShoppingListItemForm({
     setPreventRemove: setPreventModalRemove,
   })
+
+  const { checkShoppingListItem } = useCheckShoppingListItem()
+  const { uncheckShoppingListItem } = useUncheckShoppingListItem()
 
   const {
     reset,
@@ -73,7 +65,6 @@ export default function ShoppingListItemModal() {
     linkInventoryItem,
     unlinkInventoryItem,
     inventoryItem,
-    needsConfirmOnCancel,
   } = useShoppingListForm(findInventoryItemById)
 
   const resetFormAndGoBack = () => {
@@ -100,7 +91,7 @@ export default function ShoppingListItemModal() {
     if (inventoryItemId) {
       const item = findInventoryItemById(inventoryItemId)
       if (item) {
-        linkInventoryItem(item, true)
+        linkInventoryItem(item)
       }
     }
   }, [inventoryItemId, findInventoryItemById, linkInventoryItem])
@@ -108,8 +99,8 @@ export default function ShoppingListItemModal() {
   const canSubmit = !isSubmitting && isValid && isDirty
 
   useEffect(() => {
-    setPreventModalRemove(needsConfirmOnCancel)
-  }, [needsConfirmOnCancel])
+    setPreventModalRemove(isDirty)
+  }, [isDirty])
 
   const searchResults = search ? searchInventoryItems(search) : []
   const showSearchResults = !!search && searchResults?.length > 0
@@ -129,7 +120,27 @@ export default function ShoppingListItemModal() {
     )
   }
 
+  const deleteItem = (id: string) => {
+    deleteShoppingListItem(id, {
+      onSuccess: () => resetFormAndGoBack(),
+      onError: () => {
+        Alert.alert(
+          'Fehler',
+          'Der Eintrag konnte nicht gelöscht werden. Bitte versuche es später erneut.',
+        )
+      },
+    })
+  }
+
   const handleDelete = () => {
+    if (!shoppingListItem) return
+
+    if (shoppingListItem.checked) {
+      deleteItem(shoppingListItem.id)
+
+      return
+    }
+
     Alert.alert(
       'Eintrag löschen',
       'Möchtest du diesen Eintrag wirklich löschen?',
@@ -138,18 +149,7 @@ export default function ShoppingListItemModal() {
         {
           text: 'Löschen',
           style: 'destructive',
-          onPress: () => {
-            if (!shoppingListItem) return
-            deleteShoppingListItem(shoppingListItem.id, {
-              onSuccess: () => resetFormAndGoBack(),
-              onError: () => {
-                Alert.alert(
-                  'Fehler',
-                  'Der Eintrag konnte nicht gelöscht werden. Bitte versuche es später erneut.',
-                )
-              },
-            })
-          },
+          onPress: () => deleteItem(shoppingListItem.id),
         },
       ],
     )
@@ -165,50 +165,187 @@ export default function ShoppingListItemModal() {
   const focusName = !values.name
   const focusQuantity = !!values.name && !values.quantity
 
+  const itemEditUrl =
+    `/${householdId}/modals/shopping-list-item?itemId=${shoppingListItem?.id}` as const
+
+  if (isSuccess && !shoppingListItem) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 12,
+        }}
+      >
+        <Text style={{ fontSize: 17, color: colors.label.primary }}>
+          Dieser Eintrag existiert nicht.
+        </Text>
+        <Button
+          title="Zurück zur Einkaufsliste"
+          onPress={() => router.back()}
+        />
+      </View>
+    )
+  }
+
+  if (!isSuccess || !shoppingListItem) {
+    return null
+  }
+
   return (
     <>
       <Stack.Screen
         options={{
-          title,
-          headerTransparent: true,
-          headerLeft: () => (
-            <NavbarCancelButton
-              disabled={isSubmitting || isDeletePending}
-              onCancel={() => resetFormAndGoBack()}
-              preventRemove={preventModalRemove}
-            />
-          ),
           unstable_headerRightItems: () => [
             {
               type: 'button',
-              label: shoppingListItem ? 'Speichern' : 'Erstellen',
+              label: 'bearbeiten',
               icon: {
                 type: 'sfSymbol',
-                name: 'checkmark',
+                name: 'pencil',
               },
-              variant: 'prominent',
-              disabled: !canSubmit || isDeletePending,
               onPress: () => {
-                submit(values, shoppingListItem?.id, resetFormAndGoBack)
+                router.dismissTo(itemEditUrl)
               },
             },
           ],
         }}
       />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior="padding"
-        keyboardVerticalOffset={64}
-      >
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            gap: 24,
-            flexDirection: 'column',
+
+      <View style={{ flex: 1, gap: 12, paddingTop: 24, paddingInline: 24 }}>
+        <View
+          style={{
+            gap: 0,
+            flexDirection: 'row',
+            alignItems: 'center',
           }}
         >
-          <List>
+          <Pressable
+            onPress={() => {
+              shoppingListItem.checked
+                ? uncheckShoppingListItem(shoppingListItem.id)
+                : checkShoppingListItem(shoppingListItem.id)
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+            }}
+            style={{
+              width: 52,
+              height: 40,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingInlineEnd: 8,
+              marginInlineStart: -8,
+            }}
+          >
+            <SymbolView
+              name={
+                shoppingListItem.checked ? 'checkmark.circle.fill' : 'circle'
+              }
+              size={32}
+              tintColor={
+                shoppingListItem.checked
+                  ? colors.system.blue
+                  : colors.label.tertiary
+              }
+            />
+          </Pressable>
+          <Text
+            style={{
+              fontSize: 28,
+              color: colors.label.primary,
+            }}
+          >
+            {shoppingListItem.quantity}{' '}
+            {getUnitLabel(
+              shoppingListItem.quantityUnit,
+              shoppingListItem.quantity,
+            )}{' '}
+            {shoppingListItem.name}
+          </Text>
+        </View>
+
+        {inventoryItem?.description && (
+          <Text
+            style={{
+              fontSize: 18,
+              color: colors.label.secondary,
+              fontStyle: 'italic',
+            }}
+          >
+            {inventoryItem?.description}
+          </Text>
+        )}
+
+        {inventoryItem?.basePriceCents && (
+          <View style={{ gap: 6 }}>
+            <Text style={{ fontSize: 18, color: colors.label.secondary }}>
+              Grundpreis: {formatEuroCents(inventoryItem.basePriceCents)}
+              {' / '}
+              {getUnitLabel(
+                inventoryItem.basePriceUnit,
+                inventoryItem.basePriceCents,
+              )}
+            </Text>
+          </View>
+        )}
+
+        {values.categoryId && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <SymbolView
+              name="square.grid.2x2"
+              size={32}
+              tintColor={colors.label.primary}
+            />
+            <Text style={{ fontSize: 18, color: colors.label.primary }}>
+              {categories.find((c) => c.id === values.categoryId)?.name}
+            </Text>
+          </View>
+        )}
+
+        {values.shopIds?.length > 0 && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <SymbolView
+              name="storefront"
+              size={32}
+              tintColor={colors.label.primary}
+            />
+            <Text style={{ fontSize: 18, color: colors.label.primary }}>
+              {values.shopIds
+                .map((id) => shops.find((s) => s.id === id)?.name)
+                .filter(Boolean)
+                .join(', ')}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      <View style={{ flex: 1, gap: 12, paddingTop: 24, paddingInline: 24 }}>
+        <Pressable
+          onPress={() => router.dismissTo(itemEditUrl)}
+          style={{
+            backgroundColor: colors.label.primary,
+            borderRadius: 100,
+            padding: 16,
+          }}
+        >
+          <Text
+            style={{
+              color: colors.background.primary,
+              textAlign: 'center',
+              fontSize: 18,
+            }}
+          >
+            Bearbeiten
+          </Text>
+        </Pressable>
+
+        <Button
+          color="red"
+          title={`${shoppingListItem.name} löschen`}
+          onPress={handleDelete}
+        />
+
+        {/*<List>
             <ListItemInputContainer>
               <TextInput
                 placeholder="Milch"
@@ -353,8 +490,8 @@ export default function ShoppingListItemModal() {
               onPress={handleDelete}
             />
           )}
-        </ScrollView>
-      </KeyboardAvoidingView>
+        */}
+      </View>
     </>
   )
 }
