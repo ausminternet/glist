@@ -1,9 +1,4 @@
-import {
-  Stack,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from 'expo-router'
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import {
   Alert,
@@ -15,7 +10,7 @@ import {
   View,
 } from 'react-native'
 import { useCategories } from '@/api/categories'
-import { useDeleteInventoryItem, useInventoryItem } from '@/api/inventory-items'
+import { useDeleteInventoryItem } from '@/api/inventory-items'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
 import { DecimalInput } from '@/components/decimal-input'
@@ -31,9 +26,7 @@ import { useSubmitInventoryItemForm } from '@/hooks/use-submit-inventory-item-fo
 import { centsToEuro, euroToCents } from '@/utils/currency'
 
 export default function InventoryItemModal() {
-  const navigation = useNavigation()
-
-  const [preventModalRemove, setPreventModalRemove] = useState(false)
+  const [shouldClose, setShouldClose] = useState(false)
 
   const router = useRouter()
   const householdId = useHouseholdId()
@@ -42,42 +35,24 @@ export default function InventoryItemModal() {
   const { shops } = useShops()
   const { categories } = useCategories()
 
-  const inventoryItem = useInventoryItem(itemId)
+  const {
+    deleteInventoryItem,
+    isPending: isDeletePending,
+    isError: isDeleteError,
+  } = useDeleteInventoryItem()
 
-  const { submit, isSubmitting } = useSubmitInventoryItemForm({
-    setPreventRemove: setPreventModalRemove,
-  })
+  const { submit, isSubmitting } = useSubmitInventoryItemForm()
 
-  const { deleteInventoryItem } = useDeleteInventoryItem()
-
-  const { reset, setValue, values, isValid, isDirty, setInventoryItem } =
-    useInventoryItemForm()
-
-  const resetFormAndGoBack = () => {
-    reset()
-    router.back()
-  }
+  const { setValue, values, canSubmit, commit, isDirty, inventoryItem } =
+    useInventoryItemForm(itemId)
 
   useEffect(() => {
-    if (preventModalRemove) return
-    const sub = navigation.addListener('beforeRemove', () => {
-      reset()
-    })
+    if (!isDeleteError) return
+    Alert.alert('Fehler', 'Der Eintrag konnte nicht gelöscht werden.')
+  }, [isDeleteError])
 
-    return sub
-  }, [navigation, reset, preventModalRemove])
-
-  useEffect(() => {
-    if (inventoryItem) {
-      setInventoryItem(inventoryItem)
-    }
-  }, [inventoryItem, setInventoryItem])
-
-  const canSubmit = !isSubmitting && isValid && isDirty
-
-  useEffect(() => {
-    setPreventModalRemove(isDirty)
-  }, [isDirty])
+  const preventSubmit = isSubmitting || !canSubmit || isDeletePending
+  const preventRemove = isDirty || isSubmitting || isDeletePending
 
   const handleDelete = () => {
     Alert.alert(
@@ -90,20 +65,39 @@ export default function InventoryItemModal() {
           style: 'destructive',
           onPress: () => {
             if (!inventoryItem) return
-            deleteInventoryItem(inventoryItem.id, {
-              onSuccess: () => resetFormAndGoBack(),
-              onError: () => {
-                Alert.alert(
-                  'Fehler',
-                  'Der Eintrag konnte nicht gelöscht werden. Bitte versuche es später erneut.',
-                )
-              },
-            })
+            deleteInventoryItem(inventoryItem.id)
+            // Hier auch den Modal Status anpassen, falls Erfolgreich gelöscht wird
+            // Das übernimmt normalerweise das invalidateQueries, aber für die Navbar ist es sauberer:
+            setShouldClose(true)
           },
         },
       ],
     )
   }
+
+  const handleSubmit = async () => {
+    const result = await submit(values, inventoryItem?.id)
+
+    if (!result.ok) {
+      Alert.alert(
+        'Fehler',
+        result.error?.type === 'add'
+          ? 'Der Vorrat konnte nicht erstellt werden.'
+          : 'Der Vorrat konnte nicht aktualisiert werden.',
+      )
+      return
+    }
+
+    commit()
+    setShouldClose(true)
+  }
+
+  useEffect(() => {
+    if (!shouldClose) return
+    if (preventRemove) return
+
+    router.back()
+  }, [shouldClose, preventRemove, router.back])
 
   return (
     <>
@@ -113,8 +107,9 @@ export default function InventoryItemModal() {
           headerTransparent: true,
           headerLeft: () => (
             <NavbarCancelButton
-              onCancel={() => resetFormAndGoBack()}
-              preventRemove={preventModalRemove}
+              disabled={isSubmitting || isDeletePending}
+              onCancel={() => router.back()}
+              preventRemove={preventRemove}
             />
           ),
           unstable_headerRightItems: () => [
@@ -127,10 +122,8 @@ export default function InventoryItemModal() {
               },
               variant: 'prominent',
               tintColor: colors.system.mint,
-              disabled: !canSubmit,
-              onPress: () => {
-                submit(values, inventoryItem?.id, resetFormAndGoBack)
-              },
+              disabled: preventSubmit,
+              onPress: handleSubmit,
             },
           ],
         }}

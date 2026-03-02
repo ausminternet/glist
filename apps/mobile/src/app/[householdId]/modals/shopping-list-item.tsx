@@ -137,9 +137,13 @@ export default function ShoppingListItemModal() {
   }, [shouldClose, preventRemove, router])
 
   let title =
-    shoppingListItem || isDeletePending ? 'Bearbeiten' : 'Neuer Eintrag'
+    shoppingListItem || isDeletePending ? 'Bearbeiten' : 'Neuer Einkauf'
 
-  if (inventoryItem) {
+  if (inventoryItem && shoppingListItem) {
+    title = 'Einkauf aktualisieren'
+  }
+
+  if (inventoryItem && !shoppingListItem) {
     title = 'Vorrat einkaufen'
   }
 

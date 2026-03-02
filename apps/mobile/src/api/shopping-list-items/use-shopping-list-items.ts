@@ -42,6 +42,12 @@ export function useShoppingListItems() {
     (item) => !item.checked,
   ).length
 
+  const findShoppingListItemByInventoryId = (inventoryItemId: string) => {
+    return shoppingListItems.find(
+      (item) => item.inventoryItemId === inventoryItemId,
+    )
+  }
+
   return {
     shoppingListItems,
     itemCounts: {
@@ -51,6 +57,7 @@ export function useShoppingListItems() {
     },
     getShoppingListItemsByShopId,
     getShoppingListItemCountByShopId,
+    findShoppingListItemByInventoryId,
     ...rest,
   }
 }

@@ -1,81 +1,87 @@
+import type {
+  AddInventoryItemInput,
+  EditInventoryItemInput,
+} from '@glist/schemas'
+import { err, ok, type Result } from '@glist/shared'
 import { useState } from 'react'
-import { Alert } from 'react-native'
 import {
   useAddInventoryItem,
   useEditInventoryItem,
 } from '@/api/inventory-items'
-import {
-  type InventoryItemFormValues,
-  toAddInventoryItemInput,
-  toEditInventoryItemInput,
-} from './use-inventory-item-form'
+import type { Snapshot } from '@/hooks/use-inventory-item-form'
 
-interface UseSubmitInventoryItemFormProps {
-  setPreventRemove: (value: boolean) => void
+type SubmitError =
+  | { type: 'add'; error: Error }
+  | { type: 'edit'; error: Error }
+  | null
+
+export function toAddInventoryItemInput(
+  values: Snapshot,
+): AddInventoryItemInput {
+  return {
+    name: values.name,
+    description: values.description?.trim() ?? null,
+    categoryId: values.categoryId ?? null,
+    targetStock: values.targetStock ?? null,
+    targetStockUnit: values.targetStockUnit ?? null,
+    basePriceCents: values.basePriceCents ?? null,
+    basePriceUnit: values.basePriceUnit ?? null,
+    shopIds: values.shopIds,
+  }
 }
 
-export function useSubmitInventoryItemForm({
-  setPreventRemove,
-}: UseSubmitInventoryItemFormProps) {
-  const { addInventoryItem } = useAddInventoryItem()
-  const { editInventoryItem } = useEditInventoryItem()
+export function toEditInventoryItemInput(
+  values: Snapshot,
+): EditInventoryItemInput {
+  return {
+    name: values.name,
+    description: values.description?.trim() ?? null,
+    categoryId: values.categoryId ?? null,
+    targetStock: values.targetStock ?? null,
+    targetStockUnit: values.targetStockUnit ?? null,
+    basePriceCents: values.basePriceCents ?? null,
+    basePriceUnit: values.basePriceUnit ?? null,
+    shopIds: values.shopIds,
+  }
+}
+
+export function useSubmitInventoryItemForm() {
+  const { mutateAsync: addAsync } = useAddInventoryItem()
+  const { mutateAsync: editAsync } = useEditInventoryItem()
+
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const add = (input: InventoryItemFormValues, onSuccess?: () => void) => {
-    const payload = toAddInventoryItemInput(input)
-    setPreventRemove(false)
-    addInventoryItem(payload, {
-      onSuccess: () => {
-        onSuccess?.()
-      },
-      onError: (error) => {
-        setPreventRemove(true)
-        Alert.alert('Fehler', 'Der Vorrat konnte nicht gespeichert werden.')
-        console.error('Error adding inventory item:', error)
-      },
-    })
-  }
-
-  const edit = (
-    inventoryItemId: string,
-    input: InventoryItemFormValues,
-    onSuccess?: () => void,
-  ) => {
-    const payload = toEditInventoryItemInput(input)
-    setPreventRemove(false)
-    editInventoryItem(
-      { itemId: inventoryItemId, payload },
-      {
-        onSuccess: () => {
-          onSuccess?.()
-        },
-        onError: (error) => {
-          setPreventRemove(true)
-          Alert.alert('Fehler', 'Der Vorrat konnte nicht gespeichert werden.')
-          console.error('Error editing inventory item:', error)
-        },
-        onSettled: () => {
-          setIsSubmitting(false)
-        },
-      },
-    )
-  }
-
-  const submit = (
-    payload: InventoryItemFormValues,
+  const submit = async (
+    values: Snapshot,
     inventoryItemId?: string,
-    onSuccess?: () => void,
-  ) => {
-    console.log(
-      'Submitting inventory item form with payload:',
-      payload,
-      inventoryItemId,
-    )
+  ): Promise<Result<void, SubmitError>> => {
     setIsSubmitting(true)
-    if (inventoryItemId) {
-      edit(inventoryItemId, payload, onSuccess)
-    } else {
-      add(payload, onSuccess)
+
+    const isEdit = inventoryItemId !== undefined
+
+    try {
+      if (isEdit) {
+        await editAsync({
+          itemId: inventoryItemId,
+          payload: toEditInventoryItemInput(values),
+        })
+      } else {
+        await addAsync(toAddInventoryItemInput(values))
+      }
+
+      return ok(undefined)
+    } catch (unknownError) {
+      const error =
+        unknownError instanceof Error
+          ? unknownError
+          : new Error('Unknown error')
+
+      return err({
+        type: isEdit ? 'edit' : 'add',
+        error,
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 

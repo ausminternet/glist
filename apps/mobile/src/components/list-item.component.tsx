@@ -7,7 +7,13 @@ import {
   type ReactNode,
   useState,
 } from 'react'
-import { type ColorValue, Text, View } from 'react-native'
+import {
+  type ColorValue,
+  type StyleProp,
+  Text,
+  View,
+  type ViewStyle,
+} from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import { colors } from './colors'
 import { ListItemDivider } from './list-item-divider.component'
@@ -25,6 +31,8 @@ type BaseListItemProps = {
   chevron?: boolean
   compact?: boolean
   children?: string
+  style?: StyleProp<ViewStyle>
+  disabled?: boolean
 }
 
 type WithCheckbox = BaseListItemProps & {
@@ -57,11 +65,14 @@ export const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
   checked,
   compact,
   children,
+  style,
+  disabled,
 }) => {
   const router = useRouter()
   const [pressed, setPressed] = useState(false)
 
   const handleOnPress = () => {
+    if (disabled) return
     if (onPress) {
       onPress()
     } else if (href) {
@@ -74,14 +85,17 @@ export const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
 
   return (
     <Pressable
-      style={{
-        backgroundColor:
-          pressed && shouldIndicatePress ? colors.gray.gray4 : 'transparent',
-        paddingInline: 16,
-        paddingBlockStart: 1,
-        marginBlockEnd: -1,
-        zIndex: pressed ? 1 : 0,
-      }}
+      style={[
+        {
+          backgroundColor:
+            pressed && shouldIndicatePress ? colors.gray.gray4 : 'transparent',
+          paddingInline: 16,
+          paddingBlockStart: 1,
+          marginBlockEnd: -1,
+          zIndex: pressed ? 1 : 0,
+        },
+        style,
+      ]}
       onPress={handleOnPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
@@ -92,6 +106,7 @@ export const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
           justifyContent: 'space-between',
           alignItems: 'center',
           flexDirection: 'row',
+          opacity: disabled ? 0.5 : 1,
         }}
       >
         <View
@@ -171,7 +186,6 @@ export const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
                 numberOfLines={2}
                 style={{
                   fontSize: 15,
-                  maxWidth: 200,
                   color: colors.label.secondary,
                 }}
               >

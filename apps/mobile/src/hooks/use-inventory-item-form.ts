@@ -1,11 +1,8 @@
-import {
-  type AddInventoryItemInput,
-  type EditInventoryItemInput,
-  inventoryItemBaseFields,
-} from '@glist/schemas'
-import type { InventoryItemView } from '@glist/views'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { inventoryItemBaseFields } from '@glist/schemas'
+
+import { useEffect, useMemo, useRef, useState } from 'react'
 import z from 'zod'
+import { useInventoryItem } from '@/api/inventory-items'
 import { useCategorySelectionStore } from '@/stores/category-selection'
 import { useShopsSelectionStore } from '@/stores/shops-selection'
 import { sameUuids } from '@/utils/same-uuids'
@@ -13,156 +10,142 @@ import { sameUuids } from '@/utils/same-uuids'
 export const inventoryItemFormSchema = z.object({
   name: inventoryItemBaseFields.name,
   description: inventoryItemBaseFields.description.optional(),
-  categoryId: inventoryItemBaseFields.categoryId.optional(),
   targetStock: inventoryItemBaseFields.targetStock.optional(),
   targetStockUnit: inventoryItemBaseFields.targetStockUnit.optional(),
   basePriceCents: inventoryItemBaseFields.basePriceCents.optional(),
   basePriceUnit: inventoryItemBaseFields.basePriceUnit.optional(),
-  shopIds: inventoryItemBaseFields.shopIds,
 })
 
 export type InventoryItemFormValues = z.infer<typeof inventoryItemFormSchema>
 
-export function toAddInventoryItemInput(
-  values: InventoryItemFormValues,
-): AddInventoryItemInput {
-  //TODO: Schema validieren
-  return {
-    name: values.name,
-    description: values.description ?? null,
-    categoryId: values.categoryId ?? null,
-    targetStock: values.targetStock ?? null,
-    targetStockUnit: values.targetStockUnit ?? null,
-    basePriceCents: values.basePriceCents ?? null,
-    basePriceUnit: values.basePriceUnit ?? null,
-    shopIds: values.shopIds,
-  }
+export type Snapshot = InventoryItemFormValues & {
+  categoryId: string | null
+  shopIds: string[]
 }
 
-export function toEditInventoryItemInput(
-  values: InventoryItemFormValues,
-): EditInventoryItemInput {
-  //TODO: Schema validieren
-  return {
-    name: values.name,
-    description: values.description?.trim() ?? null,
-    categoryId: values.categoryId ?? null,
-    targetStock: values.targetStock ?? null,
-    targetStockUnit: values.targetStockUnit ?? null,
-    basePriceCents: values.basePriceCents ?? null,
-    basePriceUnit: values.basePriceUnit ?? null,
-    shopIds: values.shopIds,
-  }
-}
-
-export function toInventoryItemsFormValues(
-  item: InventoryItemView,
-): InventoryItemFormValues {
-  return {
-    name: item.name,
-    description: item.description ?? undefined,
-    shopIds: item.shopIds,
-    categoryId: item.categoryId ?? undefined,
-    targetStock: item.targetStock ?? undefined,
-    targetStockUnit: item.targetStockUnit ?? undefined,
-    basePriceCents: item.basePriceCents ?? undefined,
-    basePriceUnit: item.basePriceUnit ?? undefined,
-  }
-}
-
-function shallowEqualForm(
-  a: InventoryItemFormValues,
-  b: InventoryItemFormValues,
-): boolean {
-  return (
-    a.name === b.name &&
-    a.description === b.description &&
-    sameUuids(a.shopIds, b.shopIds) &&
-    a.categoryId === b.categoryId &&
-    a.targetStock === b.targetStock &&
-    a.targetStockUnit === b.targetStockUnit &&
-    a.basePriceCents === b.basePriceCents &&
-    a.basePriceUnit === b.basePriceUnit
-  )
-}
-
-const initialValues: InventoryItemFormValues = {
+const emptyValues: InventoryItemFormValues = {
   name: '',
   description: undefined,
-  shopIds: [],
-  categoryId: undefined,
   targetStock: undefined,
   targetStockUnit: undefined,
   basePriceCents: undefined,
   basePriceUnit: undefined,
 }
 
-export type SetInventoryListItemFormValue = <
-  K extends keyof InventoryItemFormValues,
->(
-  key: K,
-  value: InventoryItemFormValues[K],
-) => void
+export const useInventoryItemForm = (existingInventoryItemId?: string) => {
+  const initializedRef = useRef(false)
+  const isEditMode = !!existingInventoryItemId
 
-export const useInventoryItemForm = () => {
-  const { selectedCategoryId, setSelectedCategoryId, clearSelectedCategory } =
+  const [formValues, setFormValues] =
+    useState<InventoryItemFormValues>(emptyValues)
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null)
+
+  const { inventoryItem, isSuccess: isInventoryItemLoaded } = useInventoryItem(
+    existingInventoryItemId,
+  )
+
+  const { selectedCategoryId, setSelectedCategoryId } =
     useCategorySelectionStore()
-  const { selectedShopIds, setSelectedShopIds, clearSelectedShops } =
-    useShopsSelectionStore()
-
-  const [existingInventoryItemItem, setExistingInventoryItem] =
-    useState<InventoryItemFormValues | null>(null)
-  const [values, setValues] = useState<InventoryItemFormValues>(initialValues)
-
-  const setValue: SetInventoryListItemFormValue = useCallback((key, value) => {
-    setValues((prev) => ({ ...prev, [key]: value }))
-  }, [])
+  const { selectedShopIds, setSelectedShopIds } = useShopsSelectionStore()
 
   useEffect(() => {
-    setValue('categoryId', selectedCategoryId ?? undefined)
-  }, [selectedCategoryId, setValue])
+    if (initializedRef.current) return
 
-  useEffect(() => {
-    setValue('shopIds', selectedShopIds)
-  }, [selectedShopIds, setValue])
+    if (isEditMode) {
+      if (!isInventoryItemLoaded || !inventoryItem) return
 
-  const setInventoryItem = (inventoryItem: InventoryItemView) => {
-    const formValues = toInventoryItemsFormValues(inventoryItem)
-    setValues(formValues)
-    setExistingInventoryItem(formValues)
-    setSelectedCategoryId(inventoryItem.categoryId)
-    setSelectedShopIds(inventoryItem.shopIds)
-  }
+      initializedRef.current = true
 
-  const reset = () => {
-    clearSelectedCategory()
-    clearSelectedShops()
-    setValues(initialValues)
-    setExistingInventoryItem(null)
-  }
+      const snap: Snapshot = {
+        name: inventoryItem.name,
+        description: inventoryItem.description ?? undefined,
+        targetStock: inventoryItem.targetStock ?? undefined,
+        targetStockUnit: inventoryItem.targetStockUnit ?? undefined,
+        basePriceCents: inventoryItem.basePriceCents ?? undefined,
+        basePriceUnit: inventoryItem.basePriceUnit ?? undefined,
+        categoryId: inventoryItem.categoryId,
+        shopIds: inventoryItem.shopIds,
+      }
+
+      setSnapshot(snap)
+      setFormValues({
+        name: snap.name,
+        description: snap.description,
+        targetStock: snap.targetStock,
+        targetStockUnit: snap.targetStockUnit,
+        basePriceCents: snap.basePriceCents,
+        basePriceUnit: snap.basePriceUnit,
+      })
+      setSelectedCategoryId(snap.categoryId)
+      setSelectedShopIds(snap.shopIds)
+
+      return
+    }
+
+    // CREATE EMPTY
+    initializedRef.current = true
+
+    const snap: Snapshot = {
+      ...emptyValues,
+      categoryId: null,
+      shopIds: [],
+    }
+
+    setSnapshot(snap)
+    setFormValues(emptyValues)
+    setSelectedCategoryId(null)
+    setSelectedShopIds([])
+  }, [
+    isEditMode,
+    isInventoryItemLoaded,
+    inventoryItem,
+    setSelectedCategoryId,
+    setSelectedShopIds,
+  ])
+
+  const current: Snapshot = useMemo(
+    () => ({
+      ...formValues,
+      categoryId: selectedCategoryId,
+      shopIds: selectedShopIds,
+    }),
+    [formValues, selectedCategoryId, selectedShopIds],
+  )
 
   const isDirty = useMemo(() => {
-    if (existingInventoryItemItem) {
-      return !shallowEqualForm(values, existingInventoryItemItem)
-    } else {
-      return !shallowEqualForm(values, initialValues)
-    }
-  }, [existingInventoryItemItem, values])
+    if (!snapshot) return false
 
-  const isValid = useMemo(() => {
-    if (!isDirty) return true
+    return (
+      current.name !== snapshot.name ||
+      current.description !== snapshot.description ||
+      current.targetStock !== snapshot.targetStock ||
+      current.targetStockUnit !== snapshot.targetStockUnit ||
+      current.basePriceCents !== snapshot.basePriceCents ||
+      current.basePriceUnit !== snapshot.basePriceUnit ||
+      current.categoryId !== snapshot.categoryId ||
+      !sameUuids(current.shopIds, snapshot.shopIds)
+    )
+  }, [current, snapshot])
 
-    const validation = inventoryItemFormSchema.safeParse(values)
-    return validation.success
-  }, [values, isDirty])
+  const isValid = inventoryItemFormSchema.safeParse(formValues).success
+
+  const canSubmit = isValid && (!isEditMode || isDirty)
+
+  const commit = () => {
+    setSnapshot(current)
+  }
 
   return {
-    setValue,
-    setValues,
-    values,
-    isValid,
+    values: current,
+    setValue: <K extends keyof InventoryItemFormValues>(
+      key: K,
+      value: InventoryItemFormValues[K],
+    ) => {
+      setFormValues((prev) => ({ ...prev, [key]: value }))
+    },
+    commit,
     isDirty,
-    setInventoryItem,
-    reset,
+    canSubmit,
+    inventoryItem,
   }
 }

@@ -1,6 +1,7 @@
 import type { InventoryItemView } from '@glist/views'
 import { SymbolView } from 'expo-symbols'
 import { Text, View } from 'react-native'
+import { useShoppingListItems } from '@/api/shopping-list-items'
 import { colors } from './colors'
 import { ListItem } from './list-item.component'
 
@@ -15,22 +16,27 @@ export function InventorySearchResults({
   onSelectItem,
   getSubtitle,
 }: InventorySearchResultsProps) {
+  const { findShoppingListItemByInventoryId } = useShoppingListItems()
   return (
     <>
       {items.map((item) => {
         const subtitle = getSubtitle(item)
         const showSubtitle = subtitle || item.description
+        const isOnShoppingList = !!findShoppingListItemByInventoryId(item.id)
         return (
           <ListItem
+            disabled={isOnShoppingList}
             compact
             key={item.id}
             onPress={() => onSelectItem(item)}
             right={
               <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
                 <SymbolView
-                  name="arrow.up.backward.circle"
+                  name={isOnShoppingList ? 'link' : 'arrow.up.backward.circle'}
                   size={20}
-                  tintColor={colors.system.mint}
+                  tintColor={
+                    isOnShoppingList ? colors.system.blue : colors.system.mint
+                  }
                 />
               </View>
             }
@@ -39,9 +45,11 @@ export function InventorySearchResults({
                 <View style={{ flexDirection: 'column', gap: 1 }}>
                   {subtitle && (
                     <Text
+                      numberOfLines={1}
+                      lineBreakMode="tail"
                       style={{
                         fontSize: 15,
-                        maxWidth: 200,
+                        maxWidth: 280,
                         color: colors.label.secondary,
                       }}
                     >
