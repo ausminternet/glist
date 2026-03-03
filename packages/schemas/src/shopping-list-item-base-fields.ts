@@ -9,4 +9,5 @@ export const shoppingListItemBaseFields = {
   quantityUnit: z.enum(UNIT_TYPES),
   shopIds: z.array(z.uuid()),
   inventoryItemId: z.uuid(),
+  photoKeys: z.array(z.string()),
 }

@@ -10,6 +10,7 @@ export const editInventoryItemSchema = z.object({
   basePriceCents: inventoryItemBaseFields.basePriceCents.nullable(),
   basePriceUnit: inventoryItemBaseFields.basePriceUnit.nullable(),
   shopIds: inventoryItemBaseFields.shopIds,
+  photoKeys: inventoryItemBaseFields.photoKeys,
 })
 
 export type EditInventoryItemInput = z.infer<typeof editInventoryItemSchema>

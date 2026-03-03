@@ -1,18 +1,17 @@
 meta {
   name: POST photo
   type: http
-  seq: 8
+  seq: 5
 }
 
 post {
-  url: {{base_url}}/households/:householdId/shopping-list-items/:itemId/photo
+  url: {{base_url}}/households/:householdId/photos
   body: none
   auth: inherit
 }
 
 params:path {
-  householdId:
-  itemId:
+  householdId: d80457d8-c534-4d7f-9c2c-51ece5f1e319
 }
 
 headers {
@@ -21,7 +20,7 @@ headers {
 }
 
 docs {
-  Upload a photo for a shopping list item.
+  Upload a generic photo.
 
   Supported content types:
   - image/jpeg
@@ -30,9 +29,7 @@ docs {
 
   The photo should be sent as raw binary data in the request body.
 
-  If the item already has a photo, the old photo will be deleted before uploading the new one.
-
-  Returns the public URL of the uploaded photo.
+  Returns the key and public URL of the uploaded photo.
 }
 
 settings {

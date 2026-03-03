@@ -4,7 +4,7 @@ meta {
   seq: 6
 }
 
-put {
+patch {
   url: {{base_url}}/households/:householdId/shopping-list-items/:itemId/edit
   body: json
   auth: inherit
@@ -26,7 +26,8 @@ body:json {
     "categoryId": null,
     "quantity": 2,
     "quantityUnit": "l",
-    "shopIds": []
+    "shopIds": [],
+    "photoKeys": []
   }
 }
 

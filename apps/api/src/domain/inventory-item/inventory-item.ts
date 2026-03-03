@@ -3,6 +3,7 @@ import { isBlank } from '@/utils/is-blank'
 import type { CategoryId } from '../category/category-id'
 import type { HouseholdId } from '../household/household-id'
 import type { InvalidNameError } from '../shared/errors'
+import { ItemPhoto } from '../shared/item-photo'
 import { Price, type PriceError } from '../shared/price'
 import { Quantity, type QuantityError } from '../shared/quantity'
 import type { ShopId } from '../shop/shop-id'
@@ -17,6 +18,7 @@ export type NewInventoryItemInput = {
   basePriceCents: number | null
   basePriceUnit: string | null
   shopIds: ShopId[]
+  photoKeys: string[]
 }
 
 export type EditInventoryItemInput = Omit<NewInventoryItemInput, 'household'>
@@ -30,7 +32,7 @@ export type InventoryItemProps = {
   targetStock: Quantity
   basePrice: Price
   shopIds: readonly ShopId[]
-  photoKey: string | null
+  photos: ItemPhoto[]
   createdAt: Date
   updatedAt: Date | null
 }
@@ -85,7 +87,7 @@ export class InventoryItem {
         targetStock: targetStockResult.value,
         basePrice: basePriceResult.value,
         shopIds: input.shopIds ?? [],
-        photoKey: null,
+        photos: input.photoKeys.map((key) => ItemPhoto.create(key)),
         createdAt: new Date(),
         updatedAt: null,
       }),
@@ -122,6 +124,7 @@ export class InventoryItem {
     this.props.basePrice = basePriceResult.value
     this.props.shopIds = input.shopIds ?? []
     this.props.updatedAt = new Date()
+    this.props.photos = input.photoKeys.map((key) => ItemPhoto.create(key))
 
     return ok(undefined)
   }
@@ -166,8 +169,8 @@ export class InventoryItem {
     return this.props.shopIds
   }
 
-  get photoKey(): string | null {
-    return this.props.photoKey
+  get photos(): readonly ItemPhoto[] {
+    return this.props.photos
   }
 
   get createdAt(): Date {
@@ -178,8 +181,15 @@ export class InventoryItem {
     return this.props.updatedAt
   }
 
-  setPhotoKey(photoKey: string | null): void {
-    this.props.photoKey = photoKey
+  addPhoto(photoKey: string): void {
+    if (!this.props.photos.some((p) => p.photoKey === photoKey)) {
+      this.props.photos.push(ItemPhoto.create(photoKey))
+      this.props.updatedAt = new Date()
+    }
+  }
+
+  removePhoto(photoId: string): void {
+    this.props.photos = this.props.photos.filter((p) => p.id !== photoId)
     this.props.updatedAt = new Date()
   }
 }

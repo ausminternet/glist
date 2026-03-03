@@ -23,6 +23,7 @@ describe('ShoppingListItem', () => {
         quantityUnit: 'l',
         shopIds,
         inventoryItemId: generateInventoryItemId(),
+        photoKeys: [],
       })
 
       expect(result.ok).toBe(true)
@@ -46,6 +47,7 @@ describe('ShoppingListItem', () => {
       const result = ShoppingListItem.create(generateShoppingListItemId(), {
         householdId,
         name: '',
+        photoKeys: [],
       })
       expect(result.ok).toBe(false)
       if (result.ok) return
@@ -61,6 +63,7 @@ describe('ShoppingListItem', () => {
       const result = ShoppingListItem.create(generateShoppingListItemId(), {
         householdId,
         name: '   ',
+        photoKeys: [],
       })
       expect(result.ok).toBe(false)
       if (result.ok) return
@@ -77,6 +80,7 @@ describe('ShoppingListItem', () => {
         householdId,
         name: 'Milk',
         quantity: -1,
+        photoKeys: [],
       })
 
       expect(result.ok).toBe(false)
@@ -94,6 +98,7 @@ describe('ShoppingListItem', () => {
         {
           householdId,
           name: 'Milk',
+          photoKeys: [],
         },
       )
       expect(createResult.ok).toBe(true)
@@ -118,6 +123,7 @@ describe('ShoppingListItem', () => {
         description: 'Organic whole milk',
         categoryId: generateCategoryId(),
         shopIds: [generateShopId(), generateShopId()],
+        photoKeys: [],
       }
 
       const shoppingListItem = ShoppingListItem.createFromInventoryItem(

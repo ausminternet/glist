@@ -27,6 +27,7 @@ export function toAddShoppingListItemInput(
     inventoryItemId: values.inventoryItemId ?? null,
     shopIds: values.shopIds,
     categoryId: values.categoryId ?? null,
+    photoKeys: values.photos.map((p) => p.key),
   }
 }
 
@@ -42,6 +43,7 @@ export function toEditShoppingListItemInput(
     inventoryItemId: values.inventoryItemId ?? null,
     shopIds: values.shopIds,
     categoryId: values.categoryId ?? null,
+    photoKeys: values.photos.map((p) => p.key),
   }
 }
 

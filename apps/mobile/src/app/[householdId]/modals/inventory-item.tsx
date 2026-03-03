@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import {
   Alert,
   Button,
+  Image,
   KeyboardAvoidingView,
   ScrollView,
   Text,
@@ -11,6 +12,7 @@ import {
 } from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useDeleteInventoryItem } from '@/api/inventory-items'
+
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
 import { DecimalInput } from '@/components/decimal-input'
@@ -23,6 +25,7 @@ import { UnitSelector } from '@/components/unit-selector'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { useInventoryItemForm } from '@/hooks/use-inventory-item-form'
 import { useSubmitInventoryItemForm } from '@/hooks/use-submit-inventory-item-form-submit'
+import { useUploadPhoto } from '@/hooks/use-upload-photo'
 import { centsToEuro, euroToCents } from '@/utils/currency'
 
 export default function InventoryItemModal() {
@@ -43,6 +46,9 @@ export default function InventoryItemModal() {
 
   const { submit, isSubmitting } = useSubmitInventoryItemForm()
 
+  const { error, handlePickPhoto, handleTakePhoto, isUploading, photo, clear } =
+    useUploadPhoto()
+
   const { setValue, values, canSubmit, commit, isDirty, inventoryItem } =
     useInventoryItemForm(itemId)
 
@@ -51,8 +57,10 @@ export default function InventoryItemModal() {
     Alert.alert('Fehler', 'Der Eintrag konnte nicht gelöscht werden.')
   }, [isDeleteError])
 
-  const preventSubmit = isSubmitting || !canSubmit || isDeletePending
-  const preventRemove = isDirty || isSubmitting || isDeletePending
+  const preventSubmit =
+    isSubmitting || !canSubmit || isDeletePending || isUploading
+  const preventRemove =
+    isDirty || isSubmitting || isDeletePending || isUploading
 
   const handleDelete = () => {
     Alert.alert(
@@ -96,6 +104,20 @@ export default function InventoryItemModal() {
 
     router.back()
   }, [shouldClose, preventRemove, router.back])
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert('Fehler', error)
+    }
+  }, [error])
+
+  useEffect(() => {
+    if (!photo) return
+
+    const newPhotos = [...values.photos, photo]
+    setValue('photos', newPhotos)
+    clear()
+  }, [photo, setValue, values.photos, clear])
 
   return (
     <>
@@ -315,6 +337,33 @@ export default function InventoryItemModal() {
               onPress={handleDelete}
             />
           )}
+
+          <List>
+            <ListItem onPress={handleTakePhoto} disabled={isUploading}>
+              Foto aufnehmen
+            </ListItem>
+            <ListItem onPress={handlePickPhoto} disabled={isUploading}>
+              Foto auswählen
+            </ListItem>
+          </List>
+
+          <ScrollView
+            horizontal
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+          >
+            {values.photos.map((photo) => (
+              <Image
+                key={photo.key}
+                source={{ uri: photo.url }}
+                style={{
+                  width: 100,
+                  height: 100,
+                  marginRight: 8,
+                  borderRadius: 8,
+                }}
+              />
+            ))}
+          </ScrollView>
         </ScrollView>
       </KeyboardAvoidingView>
     </>

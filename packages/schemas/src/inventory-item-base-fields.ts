@@ -10,4 +10,5 @@ export const inventoryItemBaseFields = {
   basePriceCents: z.int().positive(),
   basePriceUnit: z.enum(UNIT_TYPES),
   shopIds: z.array(z.uuid()),
+  photoKeys: z.array(z.string()),
 }

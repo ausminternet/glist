@@ -1,6 +1,6 @@
 import { useNavigation, usePreventRemove } from '@react-navigation/native'
 import { SymbolView } from 'expo-symbols'
-import { type FC, useEffect, useState } from 'react'
+import type { FC } from 'react'
 import { Alert, PlatformColor } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 

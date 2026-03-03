@@ -21,6 +21,7 @@ const validCommand: Omit<EditShoppingListItemCommand, 'itemId'> = {
   categoryId: null,
   shopIds: [],
   inventoryItemId: null,
+  photoKeys: [],
 }
 
 describe('ReplaceShoppingListItemCommandHandler', () => {
@@ -67,6 +68,7 @@ describe('ReplaceShoppingListItemCommandHandler', () => {
       categoryId: null,
       shopIds: [],
       inventoryItemId: null,
+      photoKeys: [],
     }
 
     const result = await handler.execute(command, { householdId })

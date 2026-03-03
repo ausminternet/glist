@@ -5,6 +5,7 @@ import { SymbolView } from 'expo-symbols'
 import {
   Alert,
   Button,
+  Image,
   Pressable,
   Text,
   useColorScheme,
@@ -237,6 +238,27 @@ export default function ShoppingListItemQuickViewSheet() {
             </Text>
           </View>
         )}
+      </View>
+
+      <View
+        style={{
+          flexDirection: 'row',
+          paddingTop: 12,
+          paddingInline: 24,
+          gap: 8,
+        }}
+      >
+        {shoppingListItem.photoUrls.map((photo) => (
+          <Image
+            key={photo}
+            source={{ uri: photo }}
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: 8,
+            }}
+          />
+        ))}
       </View>
 
       <View

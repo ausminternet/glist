@@ -1,5 +1,4 @@
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
-import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import type { RequestContext } from '../shared/request-context'
 
 type DeleteShoppingListItemCommand = {
@@ -7,10 +6,7 @@ type DeleteShoppingListItemCommand = {
 }
 
 export class DeleteShoppingListItemCommandHandler {
-  constructor(
-    private shoppingListItemRepository: ShoppingListItemRepository,
-    private photoStorage: PhotoStorage,
-  ) {}
+  constructor(private shoppingListItemRepository: ShoppingListItemRepository) {}
 
   async execute(
     command: DeleteShoppingListItemCommand,
@@ -20,10 +16,6 @@ export class DeleteShoppingListItemCommandHandler {
 
     if (!item || item.householdId !== context.householdId) {
       return // Idempotent: not found = ok
-    }
-
-    if (item.photoKey) {
-      await this.photoStorage.delete(item.photoKey)
     }
 
     await this.shoppingListItemRepository.delete(command.itemId)

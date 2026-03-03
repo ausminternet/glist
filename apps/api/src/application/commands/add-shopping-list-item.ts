@@ -19,6 +19,7 @@ export type AddShoppingListItemCommand = {
   quantityUnit: string | null
   shopIds: string[]
   inventoryItemId: string | null
+  photoKeys: string[]
 }
 
 export type AddShoppingListItemError = CreateShoppingListItemError
@@ -48,6 +49,7 @@ export class AddShoppingListItemCommandHandler {
       inventoryItemId: command.inventoryItemId
         ? parseInventoryItemId(command.inventoryItemId)
         : null,
+      photoKeys: command.photoKeys,
     })
 
     if (!itemResult.ok) {

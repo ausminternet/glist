@@ -12,7 +12,11 @@ import {
   InventoryItem,
   type InventoryItemProps,
 } from '@/domain/inventory-item/inventory-item'
-import { generateInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
+import {
+  generateInventoryItemId,
+  type InventoryItemId,
+} from '@/domain/inventory-item/inventory-item-id'
+import { ItemPhoto } from '@/domain/shared/item-photo'
 import { Price } from '@/domain/shared/price'
 import { Quantity } from '@/domain/shared/quantity'
 import { Shop, type ShopProps } from '@/domain/shop/shop'
@@ -88,7 +92,7 @@ type InventoryItemFactoryOptions = {
   description?: string | null
   categoryId?: CategoryId | null
   shopIds?: readonly ShopId[]
-  photoKey?: string | null
+  photoKeys?: readonly string[]
 }
 
 export function createTestInventoryItem(
@@ -107,12 +111,13 @@ export function createTestInventoryItem(
     householdId,
     name: options.name ?? 'Test Inventory Item',
     description: options.description ?? null,
-    categoryId: (options.categoryId ??
-      null) as InventoryItemProps['categoryId'],
+    categoryId: options.categoryId ?? null,
     targetStock: quantityResult.value,
     basePrice: priceResult.value,
     shopIds: options.shopIds ?? [],
-    photoKey: options.photoKey ?? null,
+    photos: options.photoKeys
+      ? options.photoKeys.map((k) => ItemPhoto.create(k))
+      : [],
     createdAt: new Date(),
     updatedAt: null,
   }
@@ -126,8 +131,8 @@ type ShoppingListItemFactoryOptions = {
   categoryId?: CategoryId | null
   shopIds?: readonly ShopId[]
   checked?: boolean
-  photoKey?: string | null
-  inventoryItemId?: string | null
+  photoKeys?: readonly string[]
+  inventoryItemId?: InventoryItemId | null
 }
 
 export function createTestShoppingListItem(
@@ -141,16 +146,16 @@ export function createTestShoppingListItem(
   const props: ShoppingListItemProps = {
     id: generateShoppingListItemId(),
     householdId,
-    inventoryItemId: (options.inventoryItemId ??
-      null) as ShoppingListItemProps['inventoryItemId'],
+    inventoryItemId: options.inventoryItemId ?? null,
     name: options.name ?? 'Test Shopping List Item',
     description: options.description ?? null,
-    categoryId: (options.categoryId ??
-      null) as ShoppingListItemProps['categoryId'],
+    categoryId: options.categoryId ?? null,
     quantity: quantityResult.value,
     checked: options.checked ?? false,
     shopIds: options.shopIds ?? [],
-    photoKey: options.photoKey ?? null,
+    photos: options.photoKeys
+      ? options.photoKeys.map((k) => ItemPhoto.create(k))
+      : [],
     createdAt: new Date(),
     updatedAt: null,
   }

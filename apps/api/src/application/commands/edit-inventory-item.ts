@@ -16,6 +16,7 @@ export type EditInventoryItemCommand = {
   basePriceCents: number | null
   basePriceUnit: string | null
   shopIds: string[]
+  photoKeys: string[]
 }
 
 export type EditShoppingListItemError =
@@ -46,6 +47,7 @@ export class EditInventoryItemCommandHandler {
       basePriceCents: command.basePriceCents,
       basePriceUnit: command.basePriceUnit,
       shopIds: command.shopIds ? parseShopIds(command.shopIds) : [],
+      photoKeys: command.photoKeys,
     })
 
     if (!result.ok) {

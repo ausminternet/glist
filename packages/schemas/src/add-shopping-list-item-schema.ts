@@ -8,7 +8,8 @@ export const addShoppingListItemSchema = z.object({
   quantity: shoppingListItemBaseFields.quantity.nullable(),
   quantityUnit: shoppingListItemBaseFields.quantityUnit.nullable(),
   shopIds: shoppingListItemBaseFields.shopIds,
-  inventoryItemId: z.uuid().nullable(),
+  inventoryItemId: z.uuid().nullable().optional(),
+  photoKeys: shoppingListItemBaseFields.photoKeys,
 })
 
 export type AddShoppingListItemInput = z.infer<typeof addShoppingListItemSchema>

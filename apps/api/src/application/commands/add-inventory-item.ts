@@ -19,6 +19,7 @@ export type AddInventoryItemCommand = {
   basePriceCents: number | null
   basePriceUnit: string | null
   shopIds: string[]
+  photoKeys: string[]
 }
 
 export class AddInventoryItemCommandHandler {
@@ -44,6 +45,7 @@ export class AddInventoryItemCommandHandler {
         basePriceCents: command.basePriceCents,
         basePriceUnit: command.basePriceUnit,
         shopIds: command.shopIds ? parseShopIds(command.shopIds) : [],
+        photoKeys: command.photoKeys,
       },
     )
 

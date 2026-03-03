@@ -22,7 +22,7 @@ export class ReorderShopsCommandHandler {
     const shops = await this.repository.findAllByHouseholdId(householdId)
 
     // Verify all provided IDs belong to this household
-    const existingIds = new Set(shops.map((s) => s.id as string))
+    const existingIds = new Set(shops.map((s) => s.id.toString()))
     for (const id of command.ids) {
       if (!existingIds.has(id)) {
         return err({ type: 'SHOP_NOT_FOUND', id })
@@ -47,7 +47,7 @@ export class ReorderShopsCommandHandler {
     }
 
     // Update sort order for each shop
-    const shopMap = new Map(shops.map((s) => [s.id as string, s]))
+    const shopMap = new Map(shops.map((s) => [s.id.toString(), s]))
     const updates = command.ids.map((id, index) => {
       const shop = shopMap.get(id)
       if (!shop) {

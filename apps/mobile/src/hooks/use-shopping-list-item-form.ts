@@ -14,11 +14,20 @@ export const shoppingListItemFormSchema = z.object({
   quantity: shoppingListItemBaseFields.quantity.optional(),
   quantityUnit: shoppingListItemBaseFields.quantityUnit.optional(),
   inventoryItemId: shoppingListItemBaseFields.inventoryItemId.optional(),
+  photoKeys: shoppingListItemBaseFields.photoKeys,
 })
 
-export type ShoppingListItemFormValues = z.infer<
-  typeof shoppingListItemFormSchema
->
+export type FormPhoto = {
+  key: string
+  url: string
+}
+
+export type ShoppingListItemFormValues = Omit<
+  z.infer<typeof shoppingListItemFormSchema>,
+  'photoKeys'
+> & {
+  photos: FormPhoto[]
+}
 
 export type Snapshot = ShoppingListItemFormValues & {
   categoryId: string | null
@@ -31,6 +40,7 @@ const emptyValues: ShoppingListItemFormValues = {
   quantity: undefined,
   quantityUnit: undefined,
   inventoryItemId: undefined,
+  photos: [],
 }
 
 export const useShoppingListForm = (
@@ -72,6 +82,10 @@ export const useShoppingListForm = (
         inventoryItemId: shoppingListItem.inventoryItemId ?? undefined,
         categoryId: shoppingListItem.categoryId,
         shopIds: shoppingListItem.shopIds,
+        photos: shoppingListItem.photoKeys.map((key, index) => ({
+          key,
+          url: shoppingListItem.photoUrls[index] ?? '',
+        })),
       }
 
       setSnapshot(snapshot)
@@ -81,6 +95,7 @@ export const useShoppingListForm = (
         quantity: snapshot.quantity,
         quantityUnit: snapshot.quantityUnit,
         inventoryItemId: snapshot.inventoryItemId,
+        photos: snapshot.photos,
       })
       setSelectedCategoryId(snapshot.categoryId)
       setSelectedShopIds(snapshot.shopIds)
@@ -103,6 +118,10 @@ export const useShoppingListForm = (
           inventoryItemId: inventoryItem.id,
           categoryId: inventoryItem.categoryId,
           shopIds: inventoryItem.shopIds,
+          photos: inventoryItem.photoKeys.map((key, index) => ({
+            key,
+            url: inventoryItem.photoUrls[index] ?? '',
+          })),
         }
 
         setSnapshot(snap)
@@ -112,6 +131,7 @@ export const useShoppingListForm = (
           quantity: snap.quantity,
           quantityUnit: snap.quantityUnit,
           inventoryItemId: snap.inventoryItemId,
+          photos: snap.photos,
         })
         setSelectedCategoryId(snap.categoryId)
         setSelectedShopIds(snap.shopIds)
@@ -161,11 +181,18 @@ export const useShoppingListForm = (
       current.quantityUnit !== snapshot.quantityUnit ||
       current.inventoryItemId !== snapshot.inventoryItemId ||
       current.categoryId !== snapshot.categoryId ||
-      !sameUuids(current.shopIds, snapshot.shopIds)
+      !sameUuids(current.shopIds, snapshot.shopIds) ||
+      !sameUuids(
+        current.photos.map((p) => p.key),
+        snapshot.photos.map((p) => p.key),
+      )
     )
   }, [current, snapshot])
 
-  const isValid = shoppingListItemFormSchema.safeParse(formValues).success
+  const isValid = shoppingListItemFormSchema.safeParse({
+    ...formValues,
+    photoKeys: formValues.photos.map((p) => p.key),
+  }).success
 
   const canSubmit = isValid && (!isEditMode || isDirty)
 
@@ -176,6 +203,10 @@ export const useShoppingListForm = (
       quantity: item.targetStock ?? undefined,
       quantityUnit: item.targetStockUnit ?? undefined,
       inventoryItemId: item.id,
+      photos: item.photoKeys.map((key, index) => ({
+        key,
+        url: item.photoUrls[index] ?? '',
+      })),
     })
 
     setSelectedCategoryId(item.categoryId)

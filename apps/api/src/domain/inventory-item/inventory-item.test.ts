@@ -25,6 +25,7 @@ describe('InventoryItem', () => {
           basePriceCents: 199,
           basePriceUnit: 'l',
           shopIds,
+          photoKeys: [],
         },
       )
 

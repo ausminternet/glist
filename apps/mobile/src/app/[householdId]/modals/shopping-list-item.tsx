@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import {
   Alert,
   Button,
+  Image,
   KeyboardAvoidingView,
   Pressable,
   ScrollView,
@@ -29,6 +30,7 @@ import { useHouseholdId } from '@/hooks/use-household-id'
 import { useInventoryItemSubtitle } from '@/hooks/use-inventory-item-subtitle'
 import { useShoppingListForm } from '@/hooks/use-shopping-list-item-form'
 import { useSubmitShoppingListItemForm } from '@/hooks/use-submit-shopping-list-item-form-submit'
+import { useUploadPhoto } from '@/hooks/use-upload-photo'
 
 export default function ShoppingListItemModal() {
   const [shouldClose, setShouldClose] = useState(false)
@@ -54,6 +56,9 @@ export default function ShoppingListItemModal() {
 
   const { submit, isSubmitting } = useSubmitShoppingListItemForm()
 
+  const { error, handlePickPhoto, handleTakePhoto, isUploading, photo, clear } =
+    useUploadPhoto()
+
   const {
     setValue,
     values,
@@ -71,6 +76,20 @@ export default function ShoppingListItemModal() {
 
     Alert.alert('Fehler', 'Der Eintrag konnte nicht gelöscht werden.')
   }, [isDeleteError])
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert('Fehler', error)
+    }
+  }, [error])
+
+  useEffect(() => {
+    if (!photo) return
+
+    const newPhotos = [...values.photos, photo]
+    setValue('photos', newPhotos)
+    clear()
+  }, [photo, setValue, values.photos, clear])
 
   const preventSubmit = isSubmitting || !canSubmit || isDeletePending
   const preventRemove = isDirty || isSubmitting || isDeletePending
@@ -337,6 +356,33 @@ export default function ShoppingListItemModal() {
               onPress={handleDelete}
             />
           )}
+
+          <List>
+            <ListItem onPress={handleTakePhoto} disabled={isUploading}>
+              Foto aufnehmen
+            </ListItem>
+            <ListItem onPress={handlePickPhoto} disabled={isUploading}>
+              Foto auswählen
+            </ListItem>
+          </List>
+
+          <ScrollView
+            horizontal
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+          >
+            {values.photos.map((photo) => (
+              <Image
+                key={photo.key}
+                source={{ uri: photo.url }}
+                style={{
+                  width: 100,
+                  height: 100,
+                  marginRight: 8,
+                  borderRadius: 8,
+                }}
+              />
+            ))}
+          </ScrollView>
         </ScrollView>
       </KeyboardAvoidingView>
     </>

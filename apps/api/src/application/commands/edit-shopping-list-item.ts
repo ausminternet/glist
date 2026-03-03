@@ -17,6 +17,7 @@ export type EditShoppingListItemCommand = {
   quantityUnit: string | null
   shopIds: string[]
   inventoryItemId: string | null
+  photoKeys: string[]
 }
 
 export type EditShoppingListItemError =
@@ -53,6 +54,7 @@ export class EditShoppingListItemCommandHandler {
       inventoryItemId: command.inventoryItemId
         ? parseInventoryItemId(command.inventoryItemId)
         : null,
+      photoKeys: command.photoKeys,
     })
 
     if (!result.ok) {

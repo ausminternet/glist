@@ -1,5 +1,4 @@
 import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
-import type { PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import type { RequestContext } from '../shared/request-context'
 
 type DeleteInventoryItemCommand = {
@@ -7,10 +6,7 @@ type DeleteInventoryItemCommand = {
 }
 
 export class DeleteInventoryItemCommandHandler {
-  constructor(
-    private inventoryItemRepository: InventoryItemRepository,
-    private photoStorage: PhotoStorage,
-  ) {}
+  constructor(private inventoryItemRepository: InventoryItemRepository) {}
 
   async execute(
     command: DeleteInventoryItemCommand,
@@ -22,10 +18,6 @@ export class DeleteInventoryItemCommandHandler {
 
     if (!item || item.householdId !== context.householdId) {
       return // Idempotent: not found = ok
-    }
-
-    if (item.photoKey) {
-      await this.photoStorage.delete(item.photoKey)
     }
 
     await this.inventoryItemRepository.delete(command.inventoryItemId)

@@ -10,10 +10,8 @@ import { AddShoppingListItemFromInventoryCommandHandler } from '@/application/co
 import { CheckShoppingListItemCommandHandler } from '@/application/commands/check-shopping-list-item'
 import { ClearCheckedItemsCommandHandler } from '@/application/commands/clear-checked-items'
 import { DeleteShoppingListItemCommandHandler } from '@/application/commands/delete-shopping-list-item'
-import { DeleteShoppingListItemPhotoCommandHandler } from '@/application/commands/delete-shopping-list-item-photo'
 import { EditShoppingListItemCommandHandler } from '@/application/commands/edit-shopping-list-item'
 import { UncheckShoppingListItemCommandHandler } from '@/application/commands/uncheck-shopping-list-item'
-import { UploadShoppingListItemPhotoCommandHandler } from '@/application/commands/upload-shopping-list-item-photo'
 import { broadcastShoppingListEvent } from '@/infrastructure/events/event-broadcaster'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
@@ -51,7 +49,10 @@ shoppingListItemsRouter.post(
       shoppingListItemRepository,
     )
 
-    const result = await command.execute({ ...input }, { householdId })
+    const result = await command.execute(
+      { ...input, inventoryItemId: input.inventoryItemId ?? null },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -182,13 +183,8 @@ shoppingListItemsRouter.post('/clear-checked', async (c) => {
   const householdId = c.get('householdId')
   const db = createDb(c.env.glist_db)
   const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
-  const photoStorage = new R2PhotoStorage(
-    c.env.glist_photos,
-    c.env.PHOTO_URL_BASE,
-  )
   const command = new ClearCheckedItemsCommandHandler(
     shoppingListItemRepository,
-    photoStorage,
   )
 
   await command.execute({ householdId })
@@ -211,7 +207,10 @@ shoppingListItemsRouter.patch(
       shoppingListItemRepository,
     )
 
-    const result = await command.execute({ ...input, itemId }, { householdId })
+    const result = await command.execute(
+      { ...input, itemId, inventoryItemId: input.inventoryItemId ?? null },
+      { householdId },
+    )
 
     if (!result.ok) {
       switch (result.error.type) {
@@ -247,14 +246,7 @@ shoppingListItemsRouter.delete('/:itemId', async (c) => {
   const itemId = c.req.param('itemId')
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleShoppingListItemRepository(db)
-  const photoStorage = new R2PhotoStorage(
-    c.env.glist_photos,
-    c.env.PHOTO_URL_BASE,
-  )
-  const command = new DeleteShoppingListItemCommandHandler(
-    repository,
-    photoStorage,
-  )
+  const command = new DeleteShoppingListItemCommandHandler(repository)
 
   await command.execute({ itemId }, { householdId })
 
@@ -263,107 +255,6 @@ shoppingListItemsRouter.delete('/:itemId', async (c) => {
     householdId,
     itemId,
   })
-
-  return c.json({ success: true })
-})
-
-// Upload a photo for a shopping list item
-shoppingListItemsRouter.post('/:itemId/photo', async (c) => {
-  const householdId = c.get('householdId')
-  const itemId = c.req.param('itemId')
-
-  const contentType = c.req.header('content-type')
-  if (!contentType) {
-    return c.json(
-      { success: false, error: { type: 'MISSING_CONTENT_TYPE' } },
-      400,
-    )
-  }
-
-  const photoData = await c.req.arrayBuffer()
-  if (!photoData || photoData.byteLength === 0) {
-    return c.json({ success: false, error: { type: 'EMPTY_PHOTO_DATA' } }, 400)
-  }
-
-  const db = createDb(c.env.glist_db)
-  const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
-  const photoStorage = new R2PhotoStorage(
-    c.env.glist_photos,
-    c.env.PHOTO_URL_BASE,
-  )
-  const command = new UploadShoppingListItemPhotoCommandHandler(
-    shoppingListItemRepository,
-    photoStorage,
-  )
-
-  const result = await command.execute(
-    {
-      itemId,
-      photoData,
-      contentType,
-    },
-    { householdId },
-  )
-
-  if (!result.ok) {
-    switch (result.error.type) {
-      case 'SHOPPING_LIST_ITEM_NOT_FOUND':
-        console.error('Failed to upload shopping list item photo', {
-          householdId,
-          itemId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
-      case 'INVALID_CONTENT_TYPE':
-        console.error('Failed to upload shopping list item photo', {
-          householdId,
-          itemId,
-          contentType,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 400)
-    }
-  }
-
-  return c.json({ success: true, data: { photoUrl: result.value } }, 201)
-})
-
-// Delete a photo from a shopping list item
-shoppingListItemsRouter.delete('/:itemId/photo', async (c) => {
-  const householdId = c.get('householdId')
-  const itemId = c.req.param('itemId')
-
-  const db = createDb(c.env.glist_db)
-  const shoppingListItemRepository = new DrizzleShoppingListItemRepository(db)
-  const photoStorage = new R2PhotoStorage(
-    c.env.glist_photos,
-    c.env.PHOTO_URL_BASE,
-  )
-  const command = new DeleteShoppingListItemPhotoCommandHandler(
-    shoppingListItemRepository,
-    photoStorage,
-  )
-
-  const result = await command.execute({ itemId }, { householdId })
-
-  if (!result.ok) {
-    switch (result.error.type) {
-      case 'SHOPPING_LIST_ITEM_NOT_FOUND':
-        console.error('Failed to delete shopping list item photo', {
-          householdId,
-          itemId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
-      case 'NO_PHOTO_EXISTS':
-        console.error('Failed to delete shopping list item photo', {
-          householdId,
-          itemId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 400)
-    }
-  }
 
   return c.json({ success: true })
 })

@@ -87,7 +87,6 @@ export const inventoryItems = sqliteTable(
     targetStockUnit: text('target_stock_unit').$type<UnitType>(),
     basePriceUnit: text('base_price_unit').$type<UnitType>(),
     basePriceCents: integer('base_price_cents'),
-    photoKey: text('photo_key'),
     createdAt: integer('created_at', { mode: 'timestamp' })
       .$defaultFn(() => new Date())
       .notNull(),
@@ -122,7 +121,6 @@ export const shoppingListItems = sqliteTable(
     quantity: real('quantity'),
     quantityUnit: text('quantity_unit').$type<UnitType>(),
     checked: integer('checked', { mode: 'boolean' }).notNull().default(false),
-    photoKey: text('photo_key'),
     createdAt: integer('created_at', { mode: 'timestamp' })
       .$defaultFn(() => new Date())
       .notNull(),
@@ -166,4 +164,42 @@ export const inventoryItemShops = sqliteTable(
       .references(() => shops.id, { onDelete: 'cascade' }),
   },
   (table) => [primaryKey({ columns: [table.inventoryItemId, table.shopId] })],
+)
+
+export const inventoryItemPhotos = sqliteTable(
+  'inventory_item_photos',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    inventoryItemId: text('inventory_item_id')
+      .notNull()
+      .references(() => inventoryItems.id, { onDelete: 'cascade' }),
+    photoKey: text('photo_key').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('idx_inventory_item_photos_item_id').on(table.inventoryItemId),
+  ],
+)
+
+export const shoppingListItemPhotos = sqliteTable(
+  'shopping_list_item_photos',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    shoppingListItemId: text('shopping_list_item_id')
+      .notNull()
+      .references(() => shoppingListItems.id, { onDelete: 'cascade' }),
+    photoKey: text('photo_key').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('idx_shopping_list_item_photos_item_id').on(table.shoppingListItemId),
+  ],
 )

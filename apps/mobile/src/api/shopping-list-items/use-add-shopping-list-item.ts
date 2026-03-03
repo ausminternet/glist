@@ -35,7 +35,8 @@ export function useSaveShoppingListItem() {
           checked: false,
           createdAt: Date.now().toString(),
           updatedAt: null,
-          photoUrl: null,
+          photoUrls: [],
+          photoKeys: item.photoKeys ?? [],
         }
 
         if (!old) return [newItem]

@@ -2,8 +2,8 @@ import { Hono } from 'hono'
 import serverKey from './middleware/server-key'
 import adminRouter from './routes/admin'
 import householdRouter from './routes/households'
-import photosRouter from './routes/households/photos.router'
 import householdsRouter from './routes/households.router'
+import publicPhotosRouter from './routes/public-photos.router'
 
 const app = new Hono<{ Bindings: CloudflareBindings }>()
 
@@ -13,7 +13,7 @@ app.onError((err, c) => {
 })
 
 // Public routes (no API key required)
-app.route('/photos', photosRouter)
+app.route('/photos', publicPhotosRouter)
 
 // Protected routes (API key required)
 const protectedRoutes = new Hono<{ Bindings: CloudflareBindings }>()

@@ -2,7 +2,11 @@ import type { ShoppingListItemView } from '@glist/views'
 import { eq, inArray } from 'drizzle-orm'
 import type { ShoppingListItemQueryRepository } from '@/domain/shopping-list-item/shopping-list-item-query-repository'
 import type { Database } from '../persistence'
-import { shoppingListItemShops, shoppingListItems } from '../persistence/schema'
+import {
+  shoppingListItemPhotos,
+  shoppingListItemShops,
+  shoppingListItems,
+} from '../persistence/schema'
 import { getPhotoUrl } from '../storage/photo-storage'
 
 type ShoppingListItemRow = typeof shoppingListItems.$inferSelect
@@ -10,6 +14,7 @@ type ShoppingListItemRow = typeof shoppingListItems.$inferSelect
 function shoppingListItemToView(
   itemRow: ShoppingListItemRow,
   shopIds: string[],
+  photoKeys: string[],
   photoUrlBase: string,
 ): ShoppingListItemView {
   return {
@@ -25,7 +30,8 @@ function shoppingListItemToView(
     updatedAt: itemRow.updatedAt?.toISOString() ?? null,
     inventoryItemId: itemRow.inventoryItemId,
     shopIds,
-    photoUrl: getPhotoUrl(itemRow.photoKey, photoUrlBase),
+    photoUrls: photoKeys.map((key) => getPhotoUrl(key, photoUrlBase)),
+    photoKeys,
   }
 }
 
@@ -48,14 +54,21 @@ export class DrizzleShoppingListItemQueryRepository
       return null
     }
 
-    const shopRows = await this.db
+    const shopAssociations = await this.db
       .select()
       .from(shoppingListItemShops)
       .where(eq(shoppingListItemShops.shoppingListItemId, id))
 
-    const shopIds = shopRows.map((r) => r.shopId)
+    const shopIds = shopAssociations.map((r) => r.shopId)
 
-    return shoppingListItemToView(row, shopIds, this.photoUrlBase)
+    const photoAssociations = await this.db
+      .select()
+      .from(shoppingListItemPhotos)
+      .where(eq(shoppingListItemPhotos.shoppingListItemId, id))
+
+    const photoKeys = photoAssociations.map((r) => r.photoKey)
+
+    return shoppingListItemToView(row, shopIds, photoKeys, this.photoUrlBase)
   }
 
   async getAll(householdId: string): Promise<ShoppingListItemView[]> {
@@ -70,22 +83,35 @@ export class DrizzleShoppingListItemQueryRepository
     }
 
     const itemIds = rows.map((row) => row.id)
-    const shopRows = await this.db
+    const shopAssociations = await this.db
       .select()
       .from(shoppingListItemShops)
       .where(inArray(shoppingListItemShops.shoppingListItemId, itemIds))
 
     const shopsByItemId = new Map<string, string[]>()
-    for (const row of shopRows) {
+    for (const row of shopAssociations) {
       const shops = shopsByItemId.get(row.shoppingListItemId) ?? []
       shops.push(row.shopId)
       shopsByItemId.set(row.shoppingListItemId, shops)
+    }
+
+    const photoAssociations = await this.db
+      .select()
+      .from(shoppingListItemPhotos)
+      .where(inArray(shoppingListItemPhotos.shoppingListItemId, itemIds))
+
+    const photoKeysByItemId = new Map<string, string[]>()
+    for (const row of photoAssociations) {
+      const keys = photoKeysByItemId.get(row.shoppingListItemId) ?? []
+      keys.push(row.photoKey)
+      photoKeysByItemId.set(row.shoppingListItemId, keys)
     }
 
     return rows.map((row) =>
       shoppingListItemToView(
         row,
         shopsByItemId.get(row.id) ?? [],
+        photoKeysByItemId.get(row.id) ?? [],
         this.photoUrlBase,
       ),
     )

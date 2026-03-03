@@ -27,6 +27,7 @@ export function toAddInventoryItemInput(
     basePriceCents: values.basePriceCents ?? null,
     basePriceUnit: values.basePriceUnit ?? null,
     shopIds: values.shopIds,
+    photoKeys: values.photos.map((p) => p.key),
   }
 }
 
@@ -42,6 +43,7 @@ export function toEditInventoryItemInput(
     basePriceCents: values.basePriceCents ?? null,
     basePriceUnit: values.basePriceUnit ?? null,
     shopIds: values.shopIds,
+    photoKeys: values.photos.map((p) => p.key),
   }
 }
 

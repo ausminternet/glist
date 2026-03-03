@@ -1,7 +1,8 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseHouseholdId } from '@/domain/household/household-id'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
+import { ItemPhoto } from '@/domain/shared/item-photo'
 import { Quantity } from '@/domain/shared/quantity'
 import { parseShopIds } from '@/domain/shop/shop-id'
 import {
@@ -12,15 +13,18 @@ import { parseShoppingListItemId } from '@/domain/shopping-list-item/shopping-li
 import type { ShoppingListItemRepository } from '@/domain/shopping-list-item/shopping-list-item-repository'
 import type { Database } from '@/infrastructure/persistence'
 import {
+  shoppingListItemPhotos,
   shoppingListItemShops,
   shoppingListItems,
 } from '@/infrastructure/persistence/schema'
 
 type ShoppingListItemRow = typeof shoppingListItems.$inferSelect
+type ItemPhotoRow = typeof shoppingListItemPhotos.$inferSelect
 
 function toDomain(
   row: ShoppingListItemRow,
   shopIds: string[],
+  photos: ItemPhotoRow[],
 ): ShoppingListItem {
   const quantityResult = Quantity.create(row.quantity, row.quantityUnit)
   if (!quantityResult.ok) {
@@ -38,7 +42,7 @@ function toDomain(
     quantity: quantityResult.value,
     checked: row.checked,
     shopIds: parseShopIds(shopIds),
-    photoKey: row.photoKey,
+    photos: photos.map((p) => new ItemPhoto(p.id, p.photoKey, p.createdAt)),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     inventoryItemId: row.inventoryItemId
@@ -61,7 +65,6 @@ function toSchema(
     quantity: item.quantity,
     quantityUnit: item.quantityUnit,
     checked: item.checked,
-    photoKey: item.photoKey,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
     inventoryItemId: item.inventoryItemId,
@@ -88,7 +91,6 @@ export class DrizzleShoppingListItemRepository
           quantity: schema.quantity,
           quantityUnit: schema.quantityUnit,
           checked: schema.checked,
-          photoKey: schema.photoKey,
           updatedAt: schema.updatedAt,
           inventoryItemId: schema.inventoryItemId,
         },
@@ -103,15 +105,28 @@ export class DrizzleShoppingListItemRepository
       shopId,
     }))
 
-    if (shopAssociations.length > 0) {
-      const insertShops = this.db
-        .insert(shoppingListItemShops)
-        .values(shopAssociations)
+    const deletePhotos = this.db
+      .delete(shoppingListItemPhotos)
+      .where(eq(shoppingListItemPhotos.shoppingListItemId, item.id))
 
-      await this.db.batch([upsertItem, deleteShops, insertShops])
-    } else {
-      await this.db.batch([upsertItem, deleteShops])
+    const photoAssociations = item.photos.map((p) => ({
+      id: p.id,
+      shoppingListItemId: item.id,
+      photoKey: p.photoKey,
+      createdAt: p.createdAt,
+    }))
+
+    const batch: [any, ...any[]] = [upsertItem, deleteShops, deletePhotos]
+    if (shopAssociations.length > 0) {
+      batch.push(this.db.insert(shoppingListItemShops).values(shopAssociations))
     }
+    if (photoAssociations.length > 0) {
+      batch.push(
+        this.db.insert(shoppingListItemPhotos).values(photoAssociations),
+      )
+    }
+
+    await this.db.batch(batch)
   }
 
   async findById(id: string): Promise<ShoppingListItem | null> {
@@ -125,14 +140,19 @@ export class DrizzleShoppingListItemRepository
       return null
     }
 
-    const shopRows = await this.db
+    const shopAssociations = await this.db
       .select()
       .from(shoppingListItemShops)
       .where(eq(shoppingListItemShops.shoppingListItemId, id))
 
-    const shopIds = shopRows.map((r) => r.shopId)
+    const shopIds = shopAssociations.map((r) => r.shopId)
 
-    return toDomain(row, shopIds)
+    const photoAssociations = await this.db
+      .select()
+      .from(shoppingListItemPhotos)
+      .where(eq(shoppingListItemPhotos.shoppingListItemId, id))
+
+    return toDomain(row, shopIds, photoAssociations)
   }
 
   async delete(id: string): Promise<void> {
@@ -153,7 +173,28 @@ export class DrizzleShoppingListItemRepository
         ),
       )
 
-    return rows.map((row) => toDomain(row, []))
+    if (rows.length === 0) {
+      return []
+    }
+
+    const itemIds = rows.map((r) => r.id)
+
+    const photoAssociations = await this.db
+      .select()
+      .from(shoppingListItemPhotos)
+      .where(inArray(shoppingListItemPhotos.shoppingListItemId, itemIds))
+
+    const photosByItemId = new Map<string, ItemPhotoRow[]>()
+    for (const row of photoAssociations) {
+      const photos = photosByItemId.get(row.shoppingListItemId) ?? []
+      photos.push(row)
+      photosByItemId.set(row.shoppingListItemId, photos)
+    }
+
+    return rows.map((row) => {
+      const photos = photosByItemId.get(row.id) ?? []
+      return toDomain(row, [], photos)
+    })
   }
 
   async deleteCheckedByHouseholdId(householdId: string): Promise<void> {

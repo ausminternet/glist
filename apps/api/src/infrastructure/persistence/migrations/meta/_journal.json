@@ -8,6 +8,13 @@
       "when": 1771227481400,
       "tag": "0000_first_amazoness",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1772564979523,
+      "tag": "0001_illegal_rocket_racer",
+      "breakpoints": true
     }
   ]
 }

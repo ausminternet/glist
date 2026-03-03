@@ -4,6 +4,7 @@ import { SymbolView } from 'expo-symbols'
 import {
   Alert,
   Button,
+  Image,
   Pressable,
   Text,
   useColorScheme,
@@ -105,6 +106,7 @@ export default function InventoryItemQuickViewSheet() {
         options={{
           contentStyle: {
             backgroundColor: 'transparent',
+            flex: 1,
           },
           unstable_headerRightItems: () => [
             {
@@ -121,200 +123,229 @@ export default function InventoryItemQuickViewSheet() {
           ],
         }}
       />
-
-      <View style={{ flex: 1, gap: 12, paddingTop: 24, paddingInline: 24 }}>
-        <View
-          style={{
-            gap: 0,
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}
-        >
-          <Text
+      <View>
+        <View style={{ flex: 1, gap: 12, paddingTop: 24, paddingInline: 24 }}>
+          <View
             style={{
-              fontSize: 28,
-              color: colors.label.primary,
+              gap: 0,
+              flexDirection: 'row',
+              alignItems: 'center',
             }}
           >
-            {inventoryItem.targetStock}{' '}
-            {getUnitLabel(
-              inventoryItem.targetStockUnit,
-              inventoryItem.targetStock,
-            )}{' '}
-            {inventoryItem.name}
-          </Text>
-        </View>
-
-        {inventoryItem.description && (
-          <Text
-            style={{
-              fontSize: 18,
-              color: colors.label.secondary,
-              fontStyle: 'italic',
-            }}
-          >
-            {inventoryItem.description}
-          </Text>
-        )}
-
-        {inventoryItem?.targetStock && (
-          <View style={{ gap: 6 }}>
-            <Text style={{ fontSize: 18, color: colors.label.secondary }}>
-              Sollmenge: {inventoryItem.targetStock}{' '}
+            <Text
+              style={{
+                fontSize: 28,
+                color: colors.label.primary,
+              }}
+            >
+              {inventoryItem.targetStock}{' '}
               {getUnitLabel(
                 inventoryItem.targetStockUnit,
                 inventoryItem.targetStock,
-              )}
+              )}{' '}
+              {inventoryItem.name}
             </Text>
           </View>
-        )}
 
-        {inventoryItem?.basePriceCents && (
-          <View style={{ gap: 6 }}>
-            <Text style={{ fontSize: 18, color: colors.label.secondary }}>
-              Grundpreis: {formatEuroCents(inventoryItem.basePriceCents)}
-              {' / '}
-              {getUnitLabel(
-                inventoryItem.basePriceUnit,
-                inventoryItem.basePriceCents,
-              )}
+          {inventoryItem.description && (
+            <Text
+              style={{
+                fontSize: 18,
+                color: colors.label.secondary,
+                fontStyle: 'italic',
+              }}
+            >
+              {inventoryItem.description}
             </Text>
-          </View>
-        )}
+          )}
 
-        {inventoryItem.categoryId && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <SymbolView
-              name="square.grid.2x2"
-              size={32}
-              tintColor={colors.label.primary}
+          {inventoryItem?.targetStock && (
+            <View style={{ gap: 6 }}>
+              <Text style={{ fontSize: 18, color: colors.label.secondary }}>
+                Sollmenge: {inventoryItem.targetStock}{' '}
+                {getUnitLabel(
+                  inventoryItem.targetStockUnit,
+                  inventoryItem.targetStock,
+                )}
+              </Text>
+            </View>
+          )}
+
+          {inventoryItem?.basePriceCents && (
+            <View style={{ gap: 6 }}>
+              <Text style={{ fontSize: 18, color: colors.label.secondary }}>
+                Grundpreis: {formatEuroCents(inventoryItem.basePriceCents)}
+                {' / '}
+                {getUnitLabel(
+                  inventoryItem.basePriceUnit,
+                  inventoryItem.basePriceCents,
+                )}
+              </Text>
+            </View>
+          )}
+
+          {inventoryItem.categoryId && (
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            >
+              <SymbolView
+                name="square.grid.2x2"
+                size={32}
+                tintColor={colors.label.primary}
+              />
+              <Text style={{ fontSize: 18, color: colors.label.primary }}>
+                {
+                  categories.find((c) => c.id === inventoryItem.categoryId)
+                    ?.name
+                }
+              </Text>
+            </View>
+          )}
+
+          {inventoryItem.shopIds?.length > 0 && (
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            >
+              <SymbolView
+                name="storefront"
+                size={32}
+                tintColor={colors.label.primary}
+              />
+              <Text style={{ fontSize: 18, color: colors.label.primary }}>
+                {inventoryItem.shopIds
+                  .map((id) => shops.find((s) => s.id === id)?.name)
+                  .filter(Boolean)
+                  .join(', ')}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            paddingTop: 12,
+            paddingInline: 24,
+            gap: 8,
+          }}
+        >
+          {inventoryItem.photoUrls.map((photo) => (
+            <Image
+              key={photo}
+              source={{ uri: photo }}
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 8,
+              }}
             />
-            <Text style={{ fontSize: 18, color: colors.label.primary }}>
-              {categories.find((c) => c.id === inventoryItem.categoryId)?.name}
-            </Text>
-          </View>
-        )}
+          ))}
+        </View>
 
-        {inventoryItem.shopIds?.length > 0 && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <View
+          style={{
+            flex: 1,
+            gap: 10,
+            paddingTop: 24,
+            paddingInline: 24,
+            flexDirection: 'row',
+            width: '100%',
+          }}
+        >
+          <Pressable
+            onPress={() => {
+              shoppingListItem
+                ? router.push(showLinkedShoppingListItemUrl)
+                : router.push(addShoppingListItemUrl)
+            }}
+            style={{
+              backgroundColor: colors.system.blue,
+              borderRadius: 20,
+              paddingInline: 6,
+              paddingBlock: 8,
+              gap: 3,
+              flex: 1,
+              flexBasis: 0,
+              alignItems: 'center',
+            }}
+          >
             <SymbolView
-              name="storefront"
-              size={32}
-              tintColor={colors.label.primary}
+              name={shoppingListItem ? 'cart.fill' : 'cart'}
+              size={22}
+              tintColor="white"
             />
-            <Text style={{ fontSize: 18, color: colors.label.primary }}>
-              {inventoryItem.shopIds
-                .map((id) => shops.find((s) => s.id === id)?.name)
-                .filter(Boolean)
-                .join(', ')}
+            <Text
+              style={{
+                color: 'white',
+                textAlign: 'center',
+                fontSize: 13,
+                fontWeight: 'bold',
+              }}
+            >
+              {shoppingListItem ? 'Anzeigen' : 'Einkaufen'}
             </Text>
-          </View>
-        )}
-      </View>
-
-      <View
-        style={{
-          flex: 1,
-          gap: 10,
-          paddingTop: 24,
-          paddingInline: 24,
-          flexDirection: 'row',
-          width: '100%',
-        }}
-      >
-        <Pressable
-          onPress={() => {
-            shoppingListItem
-              ? router.push(showLinkedShoppingListItemUrl)
-              : router.push(addShoppingListItemUrl)
-          }}
-          style={{
-            backgroundColor: colors.system.blue,
-            borderRadius: 20,
-            paddingInline: 6,
-            paddingBlock: 8,
-            gap: 3,
-            flex: 1,
-            flexBasis: 0,
-            alignItems: 'center',
-          }}
-        >
-          <SymbolView
-            name={shoppingListItem ? 'cart.fill' : 'cart'}
-            size={22}
-            tintColor="white"
-          />
-          <Text
+          </Pressable>
+          <Pressable
+            onPress={() => router.push(editInventoryitemUrl)}
             style={{
-              color: 'white',
-              textAlign: 'center',
-              fontSize: 13,
-              fontWeight: 'bold',
+              backgroundColor:
+                systemColorScheme === 'light'
+                  ? 'rgba(0, 200, 179, 0.1)'
+                  : 'rgba(0, 218, 195, 0.1)',
+              borderRadius: 20,
+              paddingInline: 6,
+              paddingBlock: 8,
+              gap: 3,
+              flex: 1,
+              flexBasis: 0,
+              alignItems: 'center',
             }}
           >
-            {shoppingListItem ? 'Anzeigen' : 'Einkaufen'}
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => router.push(editInventoryitemUrl)}
-          style={{
-            backgroundColor:
-              systemColorScheme === 'light'
-                ? 'rgba(0, 200, 179, 0.1)'
-                : 'rgba(0, 218, 195, 0.1)',
-            borderRadius: 20,
-            paddingInline: 6,
-            paddingBlock: 8,
-            gap: 3,
-            flex: 1,
-            flexBasis: 0,
-            alignItems: 'center',
-          }}
-        >
-          <SymbolView
-            name="square.and.pencil"
-            size={22}
-            tintColor={colors.system.mint}
-          />
-          <Text
+            <SymbolView
+              name="square.and.pencil"
+              size={22}
+              tintColor={colors.system.mint}
+            />
+            <Text
+              style={{
+                color: colors.system.mint,
+                textAlign: 'center',
+                fontSize: 13,
+                fontWeight: 'bold',
+              }}
+            >
+              Bearbeiten
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={handleDelete}
             style={{
-              color: colors.system.mint,
-              textAlign: 'center',
-              fontSize: 13,
-              fontWeight: 'bold',
+              backgroundColor:
+                systemColorScheme === 'light'
+                  ? 'rgba(255, 56, 60, 0.1)'
+                  : 'rgba(255, 66, 69, 0.1)',
+              borderRadius: 20,
+              paddingInline: 6,
+              paddingBlock: 8,
+              flex: 1,
+              flexBasis: 0,
+              gap: 3,
+              alignItems: 'center',
             }}
           >
-            Bearbeiten
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={handleDelete}
-          style={{
-            backgroundColor:
-              systemColorScheme === 'light'
-                ? 'rgba(255, 56, 60, 0.1)'
-                : 'rgba(255, 66, 69, 0.1)',
-            borderRadius: 20,
-            paddingInline: 6,
-            paddingBlock: 8,
-            flex: 1,
-            flexBasis: 0,
-            gap: 3,
-            alignItems: 'center',
-          }}
-        >
-          <SymbolView name="trash" size={22} tintColor={colors.system.red} />
-          <Text
-            style={{
-              color: colors.system.red,
-              textAlign: 'center',
-              fontSize: 13,
-              fontWeight: 'bold',
-            }}
-          >
-            Löschen
-          </Text>
-        </Pressable>
+            <SymbolView name="trash" size={22} tintColor={colors.system.red} />
+            <Text
+              style={{
+                color: colors.system.red,
+                textAlign: 'center',
+                fontSize: 13,
+                fontWeight: 'bold',
+              }}
+            >
+              Löschen
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </>
   )

@@ -4,9 +4,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { AddInventoryItemCommandHandler } from '@/application/commands/add-inventory-item'
 import { DeleteInventoryItemCommandHandler } from '@/application/commands/delete-inventory-item'
-import { DeleteInventoryItemPhotoCommandHandler } from '@/application/commands/delete-inventory-item-photo'
 import { EditInventoryItemCommandHandler } from '@/application/commands/edit-inventory-item'
-import { UploadInventoryItemPhotoCommandHandler } from '@/application/commands/upload-inventory-item-photo'
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemQueryRepository } from '@/infrastructure/repositories/drizzle-inventory-item-query-repository'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
@@ -37,6 +35,7 @@ const CreateInventoryItemCommandSchema = z.object({
   basePriceCents: z.number().int().positive().nullable(),
   basePriceUnit: z.enum(UNIT_TYPES).nullable(),
   shopIds: z.array(z.uuid()),
+  photoKeys: z.array(z.string()),
 })
 
 inventoryItemsRouter.post(
@@ -80,6 +79,7 @@ const editInventoryItemCommandSchema = z.object({
   basePriceCents: z.number().int().positive().nullable(),
   basePriceUnit: z.enum(UNIT_TYPES).nullable(),
   shopIds: z.array(z.uuid()),
+  photoKeys: z.array(z.string()),
 })
 
 inventoryItemsRouter.patch(
@@ -132,115 +132,10 @@ inventoryItemsRouter.delete('/:id', async (c) => {
 
   const db = createDb(c.env.glist_db)
   const repository = new DrizzleInventoryItemRepository(db)
-  const photoStorage = new R2PhotoStorage(
-    c.env.glist_photos,
-    c.env.PHOTO_URL_BASE,
-  )
-  const command = new DeleteInventoryItemCommandHandler(
-    repository,
-    photoStorage,
-  )
+
+  const command = new DeleteInventoryItemCommandHandler(repository)
 
   await command.execute({ inventoryItemId: id }, { householdId })
-
-  return c.json({ success: true })
-})
-
-inventoryItemsRouter.post('/:id/photo', async (c) => {
-  const householdId = c.get('householdId')
-  const id = c.req.param('id')
-
-  const contentType = c.req.header('content-type')
-  if (!contentType) {
-    return c.json(
-      { success: false, error: { type: 'MISSING_CONTENT_TYPE' } },
-      400,
-    )
-  }
-
-  const photoData = await c.req.arrayBuffer()
-  if (!photoData || photoData.byteLength === 0) {
-    return c.json({ success: false, error: { type: 'EMPTY_PHOTO_DATA' } }, 400)
-  }
-
-  const db = createDb(c.env.glist_db)
-  const repository = new DrizzleInventoryItemRepository(db)
-  const photoStorage = new R2PhotoStorage(
-    c.env.glist_photos,
-    c.env.PHOTO_URL_BASE,
-  )
-  const command = new UploadInventoryItemPhotoCommandHandler(
-    repository,
-    photoStorage,
-  )
-
-  const result = await command.execute(
-    {
-      inventoryItemId: id,
-      photoData,
-      contentType,
-    },
-    { householdId },
-  )
-
-  if (!result.ok) {
-    switch (result.error.type) {
-      case 'INVENTORY_ITEM_NOT_FOUND':
-        console.error('Failed to upload inventory item photo', {
-          id,
-          householdId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
-      case 'INVALID_CONTENT_TYPE':
-        console.error('Failed to upload inventory item photo', {
-          id,
-          contentType,
-          householdId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 400)
-    }
-  }
-
-  return c.json({ success: true, data: { photoUrl: result.value } }, 201)
-})
-
-inventoryItemsRouter.delete('/:id/photo', async (c) => {
-  const householdId = c.get('householdId')
-  const id = c.req.param('id')
-
-  const db = createDb(c.env.glist_db)
-  const repository = new DrizzleInventoryItemRepository(db)
-  const photoStorage = new R2PhotoStorage(
-    c.env.glist_photos,
-    c.env.PHOTO_URL_BASE,
-  )
-  const command = new DeleteInventoryItemPhotoCommandHandler(
-    repository,
-    photoStorage,
-  )
-
-  const result = await command.execute({ inventoryItemId: id }, { householdId })
-
-  if (!result.ok) {
-    switch (result.error.type) {
-      case 'INVENTORY_ITEM_NOT_FOUND':
-        console.error('Failed to delete inventory item photo', {
-          id,
-          householdId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 404)
-      case 'NO_PHOTO_EXISTS':
-        console.error('Failed to delete inventory item photo', {
-          id,
-          householdId,
-          error: result.error,
-        })
-        return c.json({ success: false, error: result.error }, 400)
-    }
-  }
 
   return c.json({ success: true })
 })

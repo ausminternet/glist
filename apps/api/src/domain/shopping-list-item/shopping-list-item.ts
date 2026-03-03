@@ -4,6 +4,7 @@ import type { CategoryId } from '../category/category-id'
 import type { HouseholdId } from '../household/household-id'
 import type { InventoryItemId } from '../inventory-item/inventory-item-id'
 import type { InvalidNameError } from '../shared/errors'
+import { ItemPhoto } from '../shared/item-photo'
 import { Quantity, type QuantityError } from '../shared/quantity'
 import type { ShopId } from '../shop/shop-id'
 import type { ShoppingListItemId } from './shopping-list-item-id'
@@ -17,6 +18,7 @@ export type NewShoppingListItemInput = {
   quantityUnit: string | null
   shopIds: ShopId[]
   inventoryItemId: InventoryItemId | null
+  photoKeys: string[]
 }
 
 type EditShoppingListItemInput = Omit<NewShoppingListItemInput, 'householdId'>
@@ -31,7 +33,7 @@ export type ShoppingListItemProps = {
   quantity: Quantity
   checked: boolean
   shopIds: readonly ShopId[]
-  photoKey: string | null
+  photos: ItemPhoto[]
   createdAt: Date
   updatedAt: Date | null
 }
@@ -70,7 +72,7 @@ export class ShoppingListItem {
         quantity: quantityResult.value,
         checked: false,
         shopIds: input.shopIds ?? [],
-        photoKey: null,
+        photos: input.photoKeys.map((key) => ItemPhoto.create(key)),
         createdAt: new Date(),
         updatedAt: null,
         inventoryItemId: input.inventoryItemId,
@@ -87,6 +89,7 @@ export class ShoppingListItem {
       description: string | null
       categoryId: CategoryId | null
       shopIds: readonly ShopId[]
+      photoKeys: readonly string[]
     },
   ): ShoppingListItem {
     return new ShoppingListItem({
@@ -99,7 +102,7 @@ export class ShoppingListItem {
       quantity: Quantity.empty(),
       checked: false,
       shopIds: inventoryItem.shopIds,
-      photoKey: null,
+      photos: inventoryItem.photoKeys.map((key) => ItemPhoto.create(key)),
       createdAt: new Date(),
       updatedAt: null,
     })
@@ -124,6 +127,7 @@ export class ShoppingListItem {
     this.props.shopIds = [...input.shopIds]
     this.props.updatedAt = new Date()
     this.props.inventoryItemId = input.inventoryItemId
+    this.props.photos = input.photoKeys.map((key) => ItemPhoto.create(key))
 
     return ok(undefined)
   }
@@ -164,8 +168,8 @@ export class ShoppingListItem {
     return this.props.shopIds
   }
 
-  get photoKey(): string | null {
-    return this.props.photoKey
+  get photos(): readonly ItemPhoto[] {
+    return this.props.photos
   }
 
   get createdAt(): Date {
@@ -195,8 +199,15 @@ export class ShoppingListItem {
     this.props.updatedAt = new Date()
   }
 
-  setPhotoKey(photoKey: string | null): void {
-    this.props.photoKey = photoKey
+  addPhoto(photoKey: string): void {
+    if (!this.props.photos.some((p) => p.photoKey === photoKey)) {
+      this.props.photos.push(ItemPhoto.create(photoKey))
+      this.props.updatedAt = new Date()
+    }
+  }
+
+  removePhoto(photoId: string): void {
+    this.props.photos = this.props.photos.filter((p) => p.id !== photoId)
     this.props.updatedAt = new Date()
   }
 }

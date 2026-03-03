@@ -14,9 +14,20 @@ export const inventoryItemFormSchema = z.object({
   targetStockUnit: inventoryItemBaseFields.targetStockUnit.optional(),
   basePriceCents: inventoryItemBaseFields.basePriceCents.optional(),
   basePriceUnit: inventoryItemBaseFields.basePriceUnit.optional(),
+  photoKeys: inventoryItemBaseFields.photoKeys,
 })
 
-export type InventoryItemFormValues = z.infer<typeof inventoryItemFormSchema>
+export type FormPhoto = {
+  key: string
+  url: string
+}
+
+export type InventoryItemFormValues = Omit<
+  z.infer<typeof inventoryItemFormSchema>,
+  'photoKeys'
+> & {
+  photos: FormPhoto[]
+}
 
 export type Snapshot = InventoryItemFormValues & {
   categoryId: string | null
@@ -30,6 +41,7 @@ const emptyValues: InventoryItemFormValues = {
   targetStockUnit: undefined,
   basePriceCents: undefined,
   basePriceUnit: undefined,
+  photos: [],
 }
 
 export const useInventoryItemForm = (existingInventoryItemId?: string) => {
@@ -65,6 +77,10 @@ export const useInventoryItemForm = (existingInventoryItemId?: string) => {
         basePriceUnit: inventoryItem.basePriceUnit ?? undefined,
         categoryId: inventoryItem.categoryId,
         shopIds: inventoryItem.shopIds,
+        photos: inventoryItem.photoKeys.map((key, index) => ({
+          key,
+          url: inventoryItem.photoUrls[index] ?? '',
+        })),
       }
 
       setSnapshot(snap)
@@ -75,6 +91,7 @@ export const useInventoryItemForm = (existingInventoryItemId?: string) => {
         targetStockUnit: snap.targetStockUnit,
         basePriceCents: snap.basePriceCents,
         basePriceUnit: snap.basePriceUnit,
+        photos: snap.photos,
       })
       setSelectedCategoryId(snap.categoryId)
       setSelectedShopIds(snap.shopIds)
@@ -123,11 +140,18 @@ export const useInventoryItemForm = (existingInventoryItemId?: string) => {
       current.basePriceCents !== snapshot.basePriceCents ||
       current.basePriceUnit !== snapshot.basePriceUnit ||
       current.categoryId !== snapshot.categoryId ||
-      !sameUuids(current.shopIds, snapshot.shopIds)
+      !sameUuids(current.shopIds, snapshot.shopIds) ||
+      !sameUuids(
+        current.photos.map((p) => p.key),
+        snapshot.photos.map((p) => p.key),
+      )
     )
   }, [current, snapshot])
 
-  const isValid = inventoryItemFormSchema.safeParse(formValues).success
+  const isValid = inventoryItemFormSchema.safeParse({
+    ...formValues,
+    photoKeys: formValues.photos.map((p) => p.key),
+  }).success
 
   const canSubmit = isValid && (!isEditMode || isDirty)
 

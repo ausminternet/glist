@@ -4,8 +4,8 @@ meta {
   seq: 4
 }
 
-put {
-  url: {{base_url}}/households/:householdId/inventory-items/:id
+patch {
+  url: {{base_url}}/households/:householdId/inventory-items/:id/edit
   body: json
   auth: inherit
 }
@@ -26,9 +26,10 @@ body:json {
     "targetStock": 2,
     "targetStockUnit": "l"
     "basePriceCents": 150,
-    "basePriceUnit": "l"
-    "shopIds": []
-    "categoryId: NULL
+    "basePriceUnit": "l",
+    "shopIds": [],
+    "categoryId": null,
+    "photoKeys": []
   }
 }
 

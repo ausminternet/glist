@@ -48,20 +48,10 @@ export class R2PhotoStorage implements PhotoStorage {
   }
 }
 
-export function generatePhotoKey(
-  type: 'inventory-item' | 'shopping-list-item',
-  itemId: string,
-): string {
-  const timestamp = Date.now()
-  return `${type}/${itemId}/${timestamp}.jpg`
+export function generatePhotoKey(): string {
+  return `photos/${crypto.randomUUID()}.jpg`
 }
 
-export function getPhotoUrl(
-  photoKey: string | null,
-  publicUrlBase: string,
-): string | null {
-  if (!photoKey) {
-    return null
-  }
+export function getPhotoUrl(photoKey: string, publicUrlBase: string): string {
   return `${publicUrlBase}/${photoKey}`
 }

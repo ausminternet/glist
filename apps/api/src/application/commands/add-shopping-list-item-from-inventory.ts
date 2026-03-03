@@ -50,6 +50,7 @@ export class AddShoppingListItemFromInventoryCommandHandler {
         description: inventoryItem.description,
         categoryId: inventoryItem.categoryId,
         shopIds: inventoryItem.shopIds,
+        photoKeys: inventoryItem.photos.map((p) => p.photoKey),
       },
     )
 

@@ -13,5 +13,6 @@ export type InventoryItemView = {
   shopIds: string[]
   createdAt: string
   updatedAt: string | null
-  photoUrl: string | null
+  photoUrls: string[]
+  photoKeys: string[]
 }

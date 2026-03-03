@@ -9,7 +9,10 @@ export const editShoppingListItemSchema = z.object({
   quantity: shoppingListItemBaseFields.quantity.nullable(),
   quantityUnit: shoppingListItemBaseFields.quantityUnit.nullable(),
   shopIds: shoppingListItemBaseFields.shopIds,
-  inventoryItemId: shoppingListItemBaseFields.inventoryItemId.nullable(),
+  inventoryItemId: shoppingListItemBaseFields.inventoryItemId
+    .nullable()
+    .optional(),
+  photoKeys: shoppingListItemBaseFields.photoKeys,
 })
 
 export type EditShoppingListItemInput = z.infer<

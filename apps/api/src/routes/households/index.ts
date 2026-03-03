@@ -4,6 +4,7 @@ import categoriesRouter from './categories.router'
 import { type HouseholdContext, withHousehold } from './context'
 import { eventsRouter } from './events.router'
 import inventoryItemsRouter from './inventory-items.router'
+import photosRouter from './photos.router'
 import shoppingListItemsRouter from './shopping-list-items.router'
 import shopsRouter from './shops.router'
 
@@ -13,6 +14,7 @@ householdRouter.use('*', withHousehold)
 householdRouter.route('/bootstrap', bootstrapRouter)
 householdRouter.route('/categories', categoriesRouter)
 householdRouter.route('/inventory-items', inventoryItemsRouter)
+householdRouter.route('/photos', photosRouter)
 householdRouter.route('/shopping-list-items', shoppingListItemsRouter)
 householdRouter.route('/shops', shopsRouter)
 householdRouter.route('/', eventsRouter)

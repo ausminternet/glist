@@ -7,18 +7,25 @@ import {
 } from '@/domain/inventory-item/inventory-item'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
 import type { InventoryItemRepository } from '@/domain/inventory-item/inventory-item-repository'
+import { ItemPhoto } from '@/domain/shared/item-photo'
 import { Price } from '@/domain/shared/price'
 import { Quantity } from '@/domain/shared/quantity'
 import { parseShopIds } from '@/domain/shop/shop-id'
 import type { Database } from '@/infrastructure/persistence'
 import {
+  inventoryItemPhotos,
   inventoryItemShops,
   inventoryItems,
 } from '@/infrastructure/persistence/schema'
 
 type InventoryItemRow = typeof inventoryItems.$inferSelect
+type ItemPhotoRow = typeof inventoryItemPhotos.$inferSelect
 
-function toDomain(row: InventoryItemRow, shopIds: string[]): InventoryItem {
+function toDomain(
+  row: InventoryItemRow,
+  shopIds: string[],
+  photos: ItemPhotoRow[],
+): InventoryItem {
   const targetStockResult = Quantity.create(
     row.targetStock,
     row.targetStockUnit,
@@ -45,7 +52,7 @@ function toDomain(row: InventoryItemRow, shopIds: string[]): InventoryItem {
     targetStock: targetStockResult.value,
     basePrice: basePriceResult.value,
     shopIds: parseShopIds(shopIds),
-    photoKey: row.photoKey,
+    photos: photos.map((p) => new ItemPhoto(p.id, p.photoKey, p.createdAt)),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
@@ -64,7 +71,6 @@ function toSchema(item: InventoryItem): typeof inventoryItems.$inferInsert {
     targetStockUnit: item.targetStockUnit,
     basePriceCents: item.basePriceCents,
     basePriceUnit: item.basePriceUnit,
-    photoKey: item.photoKey,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   }
@@ -89,7 +95,6 @@ export class DrizzleInventoryItemRepository implements InventoryItemRepository {
           targetStockUnit: itemSchema.targetStockUnit,
           basePriceCents: itemSchema.basePriceCents,
           basePriceUnit: itemSchema.basePriceUnit,
-          photoKey: itemSchema.photoKey,
           updatedAt: itemSchema.updatedAt,
         },
       })
@@ -103,15 +108,26 @@ export class DrizzleInventoryItemRepository implements InventoryItemRepository {
       shopId,
     }))
 
-    if (shopAssociations.length > 0) {
-      const insertShops = this.db
-        .insert(inventoryItemShops)
-        .values(shopAssociations)
+    const deletePhotos = this.db
+      .delete(inventoryItemPhotos)
+      .where(eq(inventoryItemPhotos.inventoryItemId, item.id))
 
-      await this.db.batch([upsertItem, deleteShops, insertShops])
-    } else {
-      await this.db.batch([upsertItem, deleteShops])
+    const photoAssociations = item.photos.map((p) => ({
+      id: p.id,
+      inventoryItemId: item.id,
+      photoKey: p.photoKey,
+      createdAt: p.createdAt,
+    }))
+
+    const batch: [any, ...any[]] = [upsertItem, deleteShops, deletePhotos]
+    if (shopAssociations.length > 0) {
+      batch.push(this.db.insert(inventoryItemShops).values(shopAssociations))
     }
+    if (photoAssociations.length > 0) {
+      batch.push(this.db.insert(inventoryItemPhotos).values(photoAssociations))
+    }
+
+    await this.db.batch(batch)
   }
 
   async delete(id: string): Promise<void> {
@@ -136,7 +152,12 @@ export class DrizzleInventoryItemRepository implements InventoryItemRepository {
 
     const shopIds = shopAssociations.map((r) => r.shopId)
 
-    return toDomain(row, shopIds)
+    const photos = await this.db
+      .select()
+      .from(inventoryItemPhotos)
+      .where(eq(inventoryItemPhotos.inventoryItemId, id))
+
+    return toDomain(row, shopIds, photos)
   }
 
   async findAllByHouseholdId(householdId: string): Promise<InventoryItem[]> {
@@ -163,9 +184,22 @@ export class DrizzleInventoryItemRepository implements InventoryItemRepository {
       shopsByItemId.set(row.inventoryItemId, shops)
     }
 
+    const photoAssociations = await this.db
+      .select()
+      .from(inventoryItemPhotos)
+      .where(inArray(inventoryItemPhotos.inventoryItemId, itemIds))
+
+    const photosByItemId = new Map<string, ItemPhotoRow[]>()
+    for (const row of photoAssociations) {
+      const photos = photosByItemId.get(row.inventoryItemId) ?? []
+      photos.push(row)
+      photosByItemId.set(row.inventoryItemId, photos)
+    }
+
     return itemRows.map((row) => {
       const shopIds = shopsByItemId.get(row.id) ?? []
-      return toDomain(row, shopIds)
+      const photos = photosByItemId.get(row.id) ?? []
+      return toDomain(row, shopIds, photos)
     })
   }
 }

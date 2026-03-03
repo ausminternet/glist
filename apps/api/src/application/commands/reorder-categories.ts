@@ -22,7 +22,7 @@ export class ReorderCategoriesCommandHandler {
     const categories = await this.repository.findAllByHouseholdId(householdId)
 
     // Verify all provided IDs belong to this household
-    const existingIds = new Set(categories.map((c) => c.id as string))
+    const existingIds = new Set(categories.map((c) => c.id.toString()))
     for (const id of command.ids) {
       if (!existingIds.has(id)) {
         return err({ type: 'CATEGORY_NOT_FOUND', id })
@@ -47,7 +47,7 @@ export class ReorderCategoriesCommandHandler {
     }
 
     // Update sort order for each category
-    const categoryMap = new Map(categories.map((c) => [c.id as string, c]))
+    const categoryMap = new Map(categories.map((c) => [c.id.toString(), c]))
     const updates = command.ids.map((id, index) => {
       const category = categoryMap.get(id)
       if (!category) {
