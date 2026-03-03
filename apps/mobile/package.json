@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "clean": "expo prebuild --clean",
+    "clean": "rm -rf ios android .expo",
     "start": "dotenv -e .env.local -- expo start",
     "dev": "dotenv -e .env.local -- expo run:ios --device",
     "deploy": "dotenv -e .env.production -- expo run:ios --configuration Release --device",
