@@ -66,8 +66,6 @@ export default function InventoryItemModal() {
           onPress: () => {
             if (!inventoryItem) return
             deleteInventoryItem(inventoryItem.id)
-            // Hier auch den Modal Status anpassen, falls Erfolgreich gelöscht wird
-            // Das übernimmt normalerweise das invalidateQueries, aber für die Navbar ist es sauberer:
             setShouldClose(true)
           },
         },

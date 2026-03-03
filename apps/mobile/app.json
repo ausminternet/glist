@@ -1,6 +1,5 @@
 {
   "expo": {
-    "name": "glist",
     "slug": "glist",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,8 +9,8 @@
     "newArchEnabled": true,
     "platforms": ["ios"],
     "ios": {
+      "icon": "./assets/images/icon.icon",
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.glist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

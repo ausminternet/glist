@@ -3,12 +3,14 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
+    "clean": "expo prebuild --clean",
     "start": "dotenv -e .env.local -- expo start",
     "dev": "dotenv -e .env.local -- expo run:ios --device",
     "deploy": "dotenv -e .env.production -- expo run:ios --configuration Release --device",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "android": "expo run:android"
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

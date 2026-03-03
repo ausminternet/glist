@@ -1,5 +1,4 @@
 import { getUnitLabel } from '@glist/shared'
-import * as Haptics from 'expo-haptics'
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
 import {
@@ -11,78 +10,71 @@ import {
   View,
 } from 'react-native'
 import { useCategories } from '@/api/categories'
-import { useFindInventoryItems } from '@/api/inventory-items'
-import {
-  useCheckShoppingListItem,
-  useDeleteShoppingListItem,
-  useUncheckShoppingListItem,
-} from '@/api/shopping-list-items'
-import { useShoppingListItem } from '@/api/shopping-list-items/use-shopping-list-item'
+import { useDeleteInventoryItem, useInventoryItem } from '@/api/inventory-items'
+import { useShoppingListItems } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { formatEuroCents } from '@/utils/currency'
 
-export default function ShoppingListItemQuickViewSheet() {
+export default function InventoryItemQuickViewSheet() {
   const systemColorScheme = useColorScheme()
   const router = useRouter()
   const householdId = useHouseholdId()
 
-  const { itemId } = useLocalSearchParams<{
-    itemId: string
+  const { inventoryItemId } = useLocalSearchParams<{
+    inventoryItemId: string
   }>()
 
   const { shops } = useShops()
   const { categories } = useCategories()
-  const { deleteShoppingListItem } = useDeleteShoppingListItem()
-  const { shoppingListItem, isSuccess } = useShoppingListItem(itemId)
-  const { findInventoryItemById } = useFindInventoryItems()
-  const { checkShoppingListItem } = useCheckShoppingListItem()
-  const { uncheckShoppingListItem } = useUncheckShoppingListItem()
+  const { deleteInventoryItem } = useDeleteInventoryItem()
+  const { inventoryItem, isSuccess } = useInventoryItem(inventoryItemId)
+  const { findShoppingListItemByInventoryId } = useShoppingListItems()
 
-  const inventoryItem = shoppingListItem?.inventoryItemId
-    ? findInventoryItemById(shoppingListItem.inventoryItemId)
+  const shoppingListItem = inventoryItem
+    ? findShoppingListItemByInventoryId(inventoryItem.id)
     : undefined
 
-  const itemEditUrl =
+  const editInventoryitemUrl =
+    `/${householdId}/modals/inventory-item?itemId=${inventoryItem?.id}` as const
+
+  const addShoppingListItemUrl =
+    `/${householdId}/modals/shopping-list-item?inventoryItemId=${inventoryItem?.id}` as const
+
+  const showLinkedShoppingListItemUrl =
     `/${householdId}/modals/shopping-list-item?itemId=${shoppingListItem?.id}` as const
 
-  const deleteItem = (id: string) => {
-    deleteShoppingListItem(id, {
+  const handleDeleteInventoryItem = (id: string) => {
+    deleteInventoryItem(id, {
       onSuccess: () => router.back(),
       onError: () => {
         Alert.alert(
           'Fehler',
-          'Der Eintrag konnte nicht gelöscht werden. Bitte versuche es später erneut.',
+          'Der Vorrat konnte nicht gelöscht werden. Bitte versuche es später erneut.',
         )
       },
     })
   }
 
   const handleDelete = () => {
-    if (!shoppingListItem) return
-
-    if (shoppingListItem.checked) {
-      deleteItem(shoppingListItem.id)
-
-      return
-    }
+    if (!inventoryItem) return
 
     Alert.alert(
       'Eintrag löschen',
-      'Möchtest du diesen Eintrag wirklich löschen?',
+      'Möchtest du diesen Vorrat wirklich löschen?',
       [
         { text: 'Abbrechen', style: 'cancel' },
         {
           text: 'Löschen',
           style: 'destructive',
-          onPress: () => deleteItem(shoppingListItem.id),
+          onPress: () => handleDeleteInventoryItem(inventoryItem.id),
         },
       ],
     )
   }
 
-  if (isSuccess && !shoppingListItem) {
+  if (isSuccess && !inventoryItem) {
     return (
       <View
         style={{
@@ -103,7 +95,7 @@ export default function ShoppingListItemQuickViewSheet() {
     )
   }
 
-  if (!isSuccess || !shoppingListItem) {
+  if (!isSuccess || !inventoryItem) {
     return null
   }
 
@@ -123,7 +115,7 @@ export default function ShoppingListItemQuickViewSheet() {
                 name: 'pencil',
               },
               onPress: () => {
-                router.dismissTo(itemEditUrl)
+                router.dismissTo(editInventoryitemUrl)
               },
             },
           ],
@@ -138,50 +130,22 @@ export default function ShoppingListItemQuickViewSheet() {
             alignItems: 'center',
           }}
         >
-          <Pressable
-            onPress={() => {
-              shoppingListItem.checked
-                ? uncheckShoppingListItem(shoppingListItem.id)
-                : checkShoppingListItem(shoppingListItem.id)
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-            }}
-            style={{
-              width: 52,
-              height: 40,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingInlineEnd: 8,
-              marginInlineStart: -8,
-            }}
-          >
-            <SymbolView
-              name={
-                shoppingListItem.checked ? 'checkmark.circle.fill' : 'circle'
-              }
-              size={32}
-              tintColor={
-                shoppingListItem.checked
-                  ? colors.system.blue
-                  : colors.label.tertiary
-              }
-            />
-          </Pressable>
           <Text
             style={{
               fontSize: 28,
               color: colors.label.primary,
             }}
           >
-            {shoppingListItem.quantity}{' '}
+            {inventoryItem.targetStock}{' '}
             {getUnitLabel(
-              shoppingListItem.quantityUnit,
-              shoppingListItem.quantity,
+              inventoryItem.targetStockUnit,
+              inventoryItem.targetStock,
             )}{' '}
-            {shoppingListItem.name}
+            {inventoryItem.name}
           </Text>
         </View>
 
-        {shoppingListItem.description && (
+        {inventoryItem.description && (
           <Text
             style={{
               fontSize: 18,
@@ -189,8 +153,20 @@ export default function ShoppingListItemQuickViewSheet() {
               fontStyle: 'italic',
             }}
           >
-            {shoppingListItem.description}
+            {inventoryItem.description}
           </Text>
+        )}
+
+        {inventoryItem?.targetStock && (
+          <View style={{ gap: 6 }}>
+            <Text style={{ fontSize: 18, color: colors.label.secondary }}>
+              Sollmenge: {inventoryItem.targetStock}{' '}
+              {getUnitLabel(
+                inventoryItem.targetStockUnit,
+                inventoryItem.targetStock,
+              )}
+            </Text>
+          </View>
         )}
 
         {inventoryItem?.basePriceCents && (
@@ -206,7 +182,7 @@ export default function ShoppingListItemQuickViewSheet() {
           </View>
         )}
 
-        {shoppingListItem.categoryId && (
+        {inventoryItem.categoryId && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <SymbolView
               name="square.grid.2x2"
@@ -214,15 +190,12 @@ export default function ShoppingListItemQuickViewSheet() {
               tintColor={colors.label.primary}
             />
             <Text style={{ fontSize: 18, color: colors.label.primary }}>
-              {
-                categories.find((c) => c.id === shoppingListItem.categoryId)
-                  ?.name
-              }
+              {categories.find((c) => c.id === inventoryItem.categoryId)?.name}
             </Text>
           </View>
         )}
 
-        {shoppingListItem.shopIds?.length > 0 && (
+        {inventoryItem.shopIds?.length > 0 && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <SymbolView
               name="storefront"
@@ -230,7 +203,7 @@ export default function ShoppingListItemQuickViewSheet() {
               tintColor={colors.label.primary}
             />
             <Text style={{ fontSize: 18, color: colors.label.primary }}>
-              {shoppingListItem.shopIds
+              {inventoryItem.shopIds
                 .map((id) => shops.find((s) => s.id === id)?.name)
                 .filter(Boolean)
                 .join(', ')}
@@ -251,9 +224,9 @@ export default function ShoppingListItemQuickViewSheet() {
       >
         <Pressable
           onPress={() => {
-            shoppingListItem.checked
-              ? uncheckShoppingListItem(shoppingListItem.id)
-              : checkShoppingListItem(shoppingListItem.id)
+            shoppingListItem
+              ? router.push(showLinkedShoppingListItemUrl)
+              : router.push(addShoppingListItemUrl)
           }}
           style={{
             backgroundColor: colors.system.blue,
@@ -267,7 +240,7 @@ export default function ShoppingListItemQuickViewSheet() {
           }}
         >
           <SymbolView
-            name={shoppingListItem.checked ? 'checkmark.circle.fill' : 'circle'}
+            name={shoppingListItem ? 'cart.fill' : 'cart'}
             size={22}
             tintColor="white"
           />
@@ -279,16 +252,16 @@ export default function ShoppingListItemQuickViewSheet() {
               fontWeight: 'bold',
             }}
           >
-            {shoppingListItem.checked ? 'Auspacken' : 'Kaufen'}
+            {shoppingListItem ? 'Anzeigen' : 'Einkaufen'}
           </Text>
         </Pressable>
         <Pressable
-          onPress={() => router.push(itemEditUrl)}
+          onPress={() => router.push(editInventoryitemUrl)}
           style={{
             backgroundColor:
               systemColorScheme === 'light'
-                ? 'rgba(0, 122, 255, 0.1)'
-                : 'rgba(0, 145, 255, 0.1)',
+                ? 'rgba(0, 200, 179, 0.1)'
+                : 'rgba(0, 218, 195, 0.1)',
             borderRadius: 20,
             paddingInline: 6,
             paddingBlock: 8,
@@ -301,11 +274,11 @@ export default function ShoppingListItemQuickViewSheet() {
           <SymbolView
             name="square.and.pencil"
             size={22}
-            tintColor={colors.system.blue}
+            tintColor={colors.system.mint}
           />
           <Text
             style={{
-              color: colors.system.blue,
+              color: colors.system.mint,
               textAlign: 'center',
               fontSize: 13,
               fontWeight: 'bold',

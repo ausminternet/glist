@@ -105,6 +105,7 @@ export default function ShoppingListItemModal() {
           onPress: () => {
             if (!shoppingListItem) return
             deleteShoppingListItem(shoppingListItem.id)
+            setShouldClose(true)
           },
         },
       ],

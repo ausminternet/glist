@@ -1,5 +1,4 @@
 import type { InventoryItemView } from '@glist/views'
-import { useRouter } from 'expo-router'
 import { useShoppingListItems } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
 import { useHouseholdId } from '@/hooks/use-household-id'
@@ -12,9 +11,7 @@ export interface InventoryItemProps {
 
 export function InventoryItem({ inventoryItem }: InventoryItemProps) {
   const householdId = useHouseholdId()
-  const router = useRouter()
   const { shops } = useShops()
-  // const { deleteInventoryItem } = useDeleteInventoryItem()
   const { shoppingListItems } = useShoppingListItems()
 
   const shoppingListItem = shoppingListItems.find(
@@ -28,46 +25,8 @@ export function InventoryItem({ inventoryItem }: InventoryItemProps) {
     .map((s) => s.name)
     .join(', ')
 
-  const itemEditUrl =
-    `/${householdId}/modals/inventory-item?itemId=${inventoryItem.id}` as const
-
-  const shoppingListItemUrl =
-    `/${householdId}/modals/shopping-list-item?itemId=${shoppingListItem?.id}` as const
-
-  const addToShoppingListUrl =
-    `/${householdId}/modals/shopping-list-item?inventoryItemId=${inventoryItem.id}` as const
-
-  // const handleOnDelete = () => {
-  //   Alert.alert(
-  //     'Vorrat Löschen',
-  //     `Möchtest du ${inventoryItem.name} wirklich aus dem Vorrat löschen?`,
-  //     [
-  //       { text: 'Abbrechen', style: 'cancel' },
-  //       {
-  //         text: 'Löschen',
-  //         style: 'destructive',
-  //         onPress: () => deleteInventoryItem(inventoryItem.id),
-  //       },
-  //     ],
-  //   )
-  // }
-
-  const handleOnLongPress = () => {
-    router.push(itemEditUrl)
-    //   ActionSheetIOS.showActionSheetWithOptions(
-    //     {
-    //       title: inventoryItem.name,
-    //       options: ['Abbrechen', 'Einkaufen', 'Bearbeiten', 'Löschen'],
-    //       cancelButtonIndex: 0,
-    //       destructiveButtonIndex: 3,
-    //     },
-    //     (buttonIndex) => {
-    //       if (buttonIndex === 1) router.push(addToShoppingListUrl)
-    //       if (buttonIndex === 2) router.push(itemEditUrl)
-    //       if (buttonIndex === 3) handleOnDelete()
-    //     },
-    //   )
-  }
+  const inventoryItemQuickViewUrl =
+    `/${householdId}/sheets/inventory-item-quick-view?inventoryItemId=${inventoryItem.id}` as const
 
   return (
     <ListItem
@@ -76,10 +35,9 @@ export function InventoryItem({ inventoryItem }: InventoryItemProps) {
         isOnShoppingList ? colors.system.blue : colors.label.tertiary
       }
       iconSize={24}
-      onLongPress={handleOnLongPress}
       right={shopNames}
       subtitle={inventoryItem.description}
-      href={isOnShoppingList ? shoppingListItemUrl : addToShoppingListUrl}
+      href={inventoryItemQuickViewUrl}
       chevron={false}
     >
       {inventoryItem.name}

@@ -44,6 +44,15 @@ export default function RootLayout() {
                 headerShown: false,
               }}
             />
+            <Stack.Screen
+              name="[householdId]/sheets/inventory-item-quick-view"
+              options={{
+                presentation: 'formSheet',
+                sheetAllowedDetents: 'fitToContents',
+                headerTransparent: true,
+                headerShown: false,
+              }}
+            />
           </Stack>
         </AppQueryClientProvider>
       </ThemeProvider>
