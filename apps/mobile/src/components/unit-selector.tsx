@@ -12,14 +12,14 @@ export interface UnitSelectorProps {
   onChange: (value: UnitType | undefined) => void
 }
 
-const getUnitLabelCount = (label: labelType): number | undefined => {
+const getUnitLabelCount = (label: labelType): number | null => {
   switch (label) {
     case 'singular':
       return 1
     case 'plural':
       return 2
     default:
-      return undefined
+      return null
   }
 }
 

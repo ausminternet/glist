@@ -1,6 +1,6 @@
 import { SymbolView } from 'expo-symbols'
 import type { FC } from 'react'
-import { Alert, Text, View } from 'react-native'
+import { Alert, Text } from 'react-native'
 import Pressable from 'react-native-gesture-handler/src/mocks/Pressable'
 import { type PickedPhoto, usePickPhoto } from '@/hooks/use-pick-photo'
 import { colors } from './colors'

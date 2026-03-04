@@ -2,12 +2,11 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { Image, View } from 'react-native'
 
 export default function ImageModal() {
-  const { imageUrl, inventoryItemId, shoppingListItemId } =
-    useLocalSearchParams<{
-      imageUrl: string
-      inventoryItemId?: string
-      shoppingListItemId?: string
-    }>()
+  const { imageUrl } = useLocalSearchParams<{
+    imageUrl: string
+    inventoryItemId?: string
+    shoppingListItemId?: string
+  }>()
 
   const router = useRouter()
 
