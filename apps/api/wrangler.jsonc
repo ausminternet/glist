@@ -3,6 +3,11 @@
   "name": "api",
   "main": "src/index.ts",
   "compatibility_date": "2026-02-11",
+  "triggers": {
+    "crons": [
+      "0 3 * * *"
+    ]
+  },
   "durable_objects": {
     "bindings": [
       {

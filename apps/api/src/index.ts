@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { findAndCleanupOrphanedPhotos } from './cron/cleanup-orphaned-photos'
 import serverKey from './middleware/server-key'
 import adminRouter from './routes/admin'
 import householdRouter from './routes/households'
@@ -24,6 +25,15 @@ protectedRoutes.route('/admin', adminRouter)
 
 app.route('/', protectedRoutes)
 
-export default app
+export default {
+  fetch: app.fetch,
+  async scheduled(
+    _event: ScheduledEvent,
+    env: CloudflareBindings,
+    ctx: ExecutionContext,
+  ) {
+    ctx.waitUntil(findAndCleanupOrphanedPhotos(env))
+  },
+}
 
 export { ShoppingListEventsDO } from './infrastructure/events/shopping-list-events-do.js'

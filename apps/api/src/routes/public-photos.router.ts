@@ -10,6 +10,14 @@ publicPhotosRouter.get('/:key{.+}', async (c) => {
     return c.text('Missing file key', 400)
   }
 
+  const cache = caches.default
+  const cacheKey = new Request(c.req.url)
+  const cachedResponse = await cache.match(cacheKey)
+
+  if (cachedResponse) {
+    return cachedResponse
+  }
+
   const photoStorage = new R2PhotoStorage(
     c.env.glist_photos,
     c.env.PHOTO_URL_BASE,
@@ -27,13 +35,17 @@ publicPhotosRouter.get('/:key{.+}', async (c) => {
     }
   }
 
-  return new Response(result.value.body, {
+  const response = new Response(result.value.body, {
     headers: {
       'Content-Type':
         result.value.httpMetadata?.contentType ?? 'application/octet-stream',
       'Cache-Control': 'public, max-age=31536000, immutable',
     },
   })
+
+  c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()))
+
+  return response
 })
 
 export default publicPhotosRouter
