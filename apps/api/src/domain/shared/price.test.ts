@@ -34,7 +34,7 @@ describe('Price', () => {
     })
 
     test('returns INVALID_PRICE error for zero or negative price', () => {
-      const result1 = Price.create(0, 'piece')
+      const result1 = Price.create(0, null)
       expect(result1.ok).toBe(false)
       if (result1.ok) return
       expect(result1.error).toEqual({ type: 'INVALID_PRICE' })
@@ -64,7 +64,7 @@ describe('Price', () => {
 
     test('accepts all valid unit types', () => {
       const units = [
-        'piece',
+        null,
         'kg',
         'g',
         'l',

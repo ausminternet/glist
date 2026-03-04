@@ -63,7 +63,7 @@ describe('Quantity', () => {
 
     test('accepts all valid unit types', () => {
       const units = [
-        'piece',
+        null,
         'kg',
         'g',
         'l',

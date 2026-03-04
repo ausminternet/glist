@@ -39,7 +39,11 @@ export function ShoppingListItem({ item }: ShoppingListItemProps) {
   let title = item.name
 
   if (item.quantity) {
-    title = `${item.quantity.toLocaleString('de-DE')} ${getUnitAbbreviation(item.quantityUnit)} ${item.name}`
+    title = `${item.quantity.toLocaleString('de-DE')} ${item.name}`
+
+    if (item.quantityUnit) {
+      title = `${item.quantity.toLocaleString('de-DE')} ${getUnitAbbreviation(item.quantityUnit)} ${item.name}`
+    }
   }
 
   return (

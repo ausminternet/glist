@@ -1,5 +1,4 @@
 export const UNIT_TYPES = [
-  'piece',
   'kg',
   'g',
   'l',
@@ -26,7 +25,6 @@ export const UNIT_LABELS: Record<
   UnitType,
   { singular: string; plural: string; combined: string }
 > = {
-  piece: { singular: 'Stück', plural: 'Stück', combined: 'Stück' },
   kg: { singular: 'kg', plural: 'kg', combined: 'kg' },
   g: { singular: 'g', plural: 'g', combined: 'g' },
   l: { singular: 'Liter', plural: 'Liter', combined: 'Liter' },
@@ -41,7 +39,6 @@ export const UNIT_LABELS: Record<
 }
 
 export const UNIT_ABBREVIATIONS: Record<UnitType, string> = {
-  piece: 'Stk.',
   kg: 'kg',
   g: 'g',
   l: 'l',

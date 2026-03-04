@@ -138,11 +138,6 @@ export default function InventoryItemQuickViewSheet() {
                 color: colors.label.primary,
               }}
             >
-              {inventoryItem.targetStock}{' '}
-              {getUnitLabel(
-                inventoryItem.targetStockUnit,
-                inventoryItem.targetStock,
-              )}{' '}
               {inventoryItem.name}
             </Text>
           </View>
