@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import {
   Alert,
   Button,
-  Image,
   KeyboardAvoidingView,
   Pressable,
   ScrollView,
@@ -27,6 +26,7 @@ import { DefaultInputStyles, ListItemInput } from '@/components/list-item-input'
 import { ListItemInputContainer } from '@/components/list-item-input-container'
 import { NavbarCancelButton } from '@/components/navbar-cancel-button'
 import { PhotoPicker } from '@/components/photo-picker'
+import { PhotoView } from '@/components/photo-view'
 import { UnitSelector } from '@/components/unit-selector'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { useInventoryItemSubtitle } from '@/hooks/use-inventory-item-subtitle'
@@ -62,6 +62,7 @@ export default function ShoppingListItemModal() {
     error: uploadPhotoError,
     photo,
     isPending: isUploadingPhoto,
+    reset: resetPhoto,
   } = useUploadPhoto()
 
   const {
@@ -74,6 +75,7 @@ export default function ShoppingListItemModal() {
     unlinkInventoryItem,
     inventoryItem,
     shoppingListItem,
+    reset,
   } = useShoppingListForm(itemId, inventoryItemId)
 
   useEffect(() => {
@@ -103,7 +105,8 @@ export default function ShoppingListItemModal() {
       },
     ]
     setValue('photos', newPhotos)
-  }, [photo, setValue, values.photos])
+    resetPhoto()
+  }, [photo, setValue, values.photos, resetPhoto])
 
   const preventSubmit =
     isSubmitting || !canSubmit || isDeletePending || isUploadingPhoto
@@ -165,6 +168,14 @@ export default function ShoppingListItemModal() {
     setShouldClose(true)
   }
 
+  const handleOnPhotoDelete = (photoKey: string) => {
+    console.log('delete photo with key', photoKey)
+    const newPhotos = values.photos.filter((p) => p.key !== photoKey)
+    setValue('photos', newPhotos)
+  }
+
+  console.log('render shopping list item modal with values', values.photos)
+
   useEffect(() => {
     if (!shouldClose) return
     if (preventRemove) return
@@ -200,6 +211,29 @@ export default function ShoppingListItemModal() {
             />
           ),
           unstable_headerRightItems: () => [
+            {
+              type: 'button',
+              label: 'Reset',
+              icon: {
+                type: 'sfSymbol',
+                name: 'arrow.counterclockwise',
+              },
+              onPress: () => {
+                Alert.alert(
+                  'Änderungen verwerfen',
+                  'Möchtest du alle Änderungen zurücksetzen?',
+                  [
+                    { text: 'Abbrechen', style: 'cancel' },
+                    {
+                      text: 'Zurücksetzen',
+                      style: 'destructive',
+                      onPress: reset,
+                    },
+                  ],
+                )
+              },
+              disabled: preventSubmit,
+            },
             {
               type: 'button',
               label: shoppingListItem ? 'Speichern' : 'Erstellen',
@@ -362,31 +396,29 @@ export default function ShoppingListItemModal() {
             </ListItem>
           </List>
 
-          <ScrollView
-            horizontal
-            contentContainerStyle={{ paddingHorizontal: 16 }}
+          <View
+            style={{
+              paddingHorizontal: 16,
+              gap: 8,
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+            }}
           >
             {values.photos.map((photo) => (
-              <Image
+              <PhotoView
                 key={photo.key}
-                source={{ uri: photo.url }}
-                style={{
-                  width: 100,
-                  height: 100,
-                  marginRight: 8,
-                  borderRadius: 8,
-                }}
+                url={photo.url}
+                width={100}
+                height={100}
+                onDelete={() => handleOnPhotoDelete(photo.key)}
               />
             ))}
             <PhotoPicker
-              label={
-                values.photos.length > 0
-                  ? 'Weiteres Foto hinzufügen'
-                  : 'Fotos hinzufügen'
-              }
+              label="Foto hinzufügen"
               onPhotoPick={uploadPhoto}
+              fullWidth={values.photos.length === 0}
             />
-          </ScrollView>
+          </View>
           {shoppingListItem && (
             <Button
               title="Eintrag löschen"

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import {
   Alert,
   Button,
-  Image,
   KeyboardAvoidingView,
   ScrollView,
   Text,
@@ -22,6 +21,7 @@ import { DefaultInputStyles, ListItemInput } from '@/components/list-item-input'
 import { ListItemInputContainer } from '@/components/list-item-input-container'
 import { NavbarCancelButton } from '@/components/navbar-cancel-button'
 import { PhotoPicker } from '@/components/photo-picker'
+import { PhotoView } from '@/components/photo-view'
 import { UnitSelector } from '@/components/unit-selector'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { useInventoryItemForm } from '@/hooks/use-inventory-item-form'
@@ -51,9 +51,10 @@ export default function InventoryItemModal() {
     error: uploadPhotoError,
     photo,
     isPending: isUploadingPhoto,
+    reset: resetPhoto,
   } = useUploadPhoto()
 
-  const { setValue, values, canSubmit, commit, isDirty, inventoryItem } =
+  const { setValue, values, canSubmit, commit, isDirty, inventoryItem, reset } =
     useInventoryItemForm(itemId)
 
   useEffect(() => {
@@ -102,6 +103,11 @@ export default function InventoryItemModal() {
     setShouldClose(true)
   }
 
+  const handleOnPhotoDelte = (photoKey: string) => {
+    const newPhotos = values.photos.filter((p) => p.key !== photoKey)
+    setValue('photos', newPhotos)
+  }
+
   useEffect(() => {
     if (!shouldClose) return
     if (preventRemove) return
@@ -130,7 +136,8 @@ export default function InventoryItemModal() {
       },
     ]
     setValue('photos', newPhotos)
-  }, [photo, setValue, values.photos])
+    resetPhoto()
+  }, [photo, setValue, values.photos, resetPhoto])
 
   return (
     <>
@@ -146,6 +153,29 @@ export default function InventoryItemModal() {
             />
           ),
           unstable_headerRightItems: () => [
+            {
+              type: 'button',
+              label: 'Reset',
+              icon: {
+                type: 'sfSymbol',
+                name: 'arrow.counterclockwise',
+              },
+              onPress: () => {
+                Alert.alert(
+                  'Änderungen verwerfen',
+                  'Möchtest du alle Änderungen zurücksetzen?',
+                  [
+                    { text: 'Abbrechen', style: 'cancel' },
+                    {
+                      text: 'Zurücksetzen',
+                      style: 'destructive',
+                      onPress: reset,
+                    },
+                  ],
+                )
+              },
+              disabled: preventSubmit,
+            },
             {
               type: 'button',
               label: inventoryItem ? 'Speichern' : 'Erstellen',
@@ -342,27 +372,24 @@ export default function InventoryItemModal() {
 
           <ScrollView
             horizontal
-            contentContainerStyle={{ paddingHorizontal: 16 }}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              gap: 8,
+            }}
           >
             {values.photos.map((photo) => (
-              <Image
+              <PhotoView
                 key={photo.key}
-                source={{ uri: photo.url }}
-                style={{
-                  width: 100,
-                  height: 100,
-                  marginRight: 8,
-                  borderRadius: 8,
-                }}
+                url={photo.url}
+                width={100}
+                height={100}
+                onDelete={() => handleOnPhotoDelte(photo.key)}
               />
             ))}
             <PhotoPicker
-              label={
-                values.photos.length > 0
-                  ? 'Weiteres Foto hinzufügen'
-                  : 'Fotos hinzufügen'
-              }
+              label="Fotos hinzufügen"
               onPhotoPick={uploadPhoto}
+              fullWidth={values.photos.length === 0}
             />
           </ScrollView>
 

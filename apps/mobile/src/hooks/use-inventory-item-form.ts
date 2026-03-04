@@ -159,6 +159,22 @@ export const useInventoryItemForm = (existingInventoryItemId?: string) => {
     setSnapshot(current)
   }
 
+  const reset = () => {
+    if (!snapshot) return
+
+    setFormValues({
+      name: snapshot.name,
+      description: snapshot.description,
+      targetStock: snapshot.targetStock,
+      targetStockUnit: snapshot.targetStockUnit,
+      basePriceCents: snapshot.basePriceCents,
+      basePriceUnit: snapshot.basePriceUnit,
+      photos: snapshot.photos,
+    })
+    setSelectedCategoryId(snapshot.categoryId)
+    setSelectedShopIds(snapshot.shopIds)
+  }
+
   return {
     values: current,
     setValue: <K extends keyof InventoryItemFormValues>(
@@ -171,5 +187,6 @@ export const useInventoryItemForm = (existingInventoryItemId?: string) => {
     isDirty,
     canSubmit,
     inventoryItem,
+    reset,
   }
 }

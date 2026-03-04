@@ -9,12 +9,12 @@ import {
 } from 'react'
 import {
   type ColorValue,
+  Pressable,
   type StyleProp,
   Text,
   View,
   type ViewStyle,
 } from 'react-native'
-import { Pressable } from 'react-native-gesture-handler'
 import { colors } from './colors'
 import { ListItemDivider } from './list-item-divider.component'
 

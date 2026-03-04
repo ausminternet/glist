@@ -4,7 +4,6 @@ import { SymbolView } from 'expo-symbols'
 import {
   Alert,
   Button,
-  Image,
   Pressable,
   Text,
   useColorScheme,
@@ -15,6 +14,7 @@ import { useDeleteInventoryItem, useInventoryItem } from '@/api/inventory-items'
 import { useShoppingListItems } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
+import { PhotoView } from '@/components/photo-view'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { formatEuroCents } from '@/utils/currency'
 
@@ -225,15 +225,7 @@ export default function InventoryItemQuickViewSheet() {
           }}
         >
           {inventoryItem.photoUrls.map((photo) => (
-            <Image
-              key={photo}
-              source={{ uri: photo }}
-              style={{
-                width: 50,
-                height: 50,
-                borderRadius: 8,
-              }}
-            />
+            <PhotoView key={photo} url={photo} />
           ))}
         </View>
 

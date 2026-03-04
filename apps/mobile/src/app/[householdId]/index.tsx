@@ -1,8 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { SplashScreen, Stack, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, View } from 'react-native'
-import { RefreshControl, ScrollView } from 'react-native-gesture-handler'
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  View,
+} from 'react-native'
 import { useHousehold } from '@/api/households/use-household'
 import { useInventoryItems } from '@/api/inventory-items'
 import { useShoppingListItems } from '@/api/shopping-list-items'

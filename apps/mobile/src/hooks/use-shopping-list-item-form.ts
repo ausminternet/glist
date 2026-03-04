@@ -224,6 +224,21 @@ export const useShoppingListForm = (
     setSnapshot(current)
   }
 
+  const reset = () => {
+    if (!snapshot) return
+
+    setFormValues({
+      name: snapshot.name,
+      description: snapshot.description,
+      quantity: snapshot.quantity,
+      quantityUnit: snapshot.quantityUnit,
+      inventoryItemId: snapshot.inventoryItemId,
+      photos: snapshot.photos,
+    })
+    setSelectedCategoryId(snapshot.categoryId)
+    setSelectedShopIds(snapshot.shopIds)
+  }
+
   const inventoryItem = formValues.inventoryItemId
     ? findInventoryItemById(formValues.inventoryItemId)
     : undefined
@@ -243,5 +258,6 @@ export const useShoppingListForm = (
     linkInventoryItem,
     unlinkInventoryItem,
     shoppingListItem,
+    reset,
   }
 }

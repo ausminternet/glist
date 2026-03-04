@@ -1,6 +1,6 @@
 import { SymbolView } from 'expo-symbols'
 import type { FC } from 'react'
-import { Pressable } from 'react-native-gesture-handler'
+import { Pressable } from 'react-native'
 import * as DropdownMenu from 'zeego/dropdown-menu'
 import { useHouseholds } from '@/api/households/use-households'
 import { useHouseholdContext } from '@/provider/household-provider'

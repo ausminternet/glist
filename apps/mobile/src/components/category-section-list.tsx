@@ -6,12 +6,18 @@ import {
   View,
 } from 'react-native'
 
+// import { createNativeWrapper } from 'react-native'
+
 type CategorySectionListProps<T> = SectionListProps<
   T,
   { title: string; data: T[]; categoryId: string }
 > & {
   ListEmptyItem: React.ComponentType
 }
+
+// const GestureHandlerSectionList = createNativeWrapper(SectionList, {
+//   disallowInterruption: false,
+// }) as unknown as typeof SectionList
 
 export function CategorySectionList<
   T extends { categoryId: string | null; id: string },

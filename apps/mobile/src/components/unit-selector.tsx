@@ -1,7 +1,6 @@
 import { getUnitLabel, UNIT_TYPES, type UnitType } from '@glist/shared'
 import { SymbolView } from 'expo-symbols'
-import { PlatformColor, Text } from 'react-native'
-import { Pressable } from 'react-native-gesture-handler'
+import { PlatformColor, Pressable, Text } from 'react-native'
 import * as DropdownMenu from 'zeego/dropdown-menu'
 
 type labelType = 'singular' | 'plural' | 'combined'

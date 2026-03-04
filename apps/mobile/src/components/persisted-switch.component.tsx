@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useEffect, useState } from 'react'
-import { Switch } from 'react-native-gesture-handler'
+import { Switch } from 'react-native'
 
 interface PersistedSwitchProps {
   storageKey: string

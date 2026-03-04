@@ -1,8 +1,7 @@
 import { useNavigation, usePreventRemove } from '@react-navigation/native'
 import { SymbolView } from 'expo-symbols'
 import type { FC } from 'react'
-import { Alert, PlatformColor } from 'react-native'
-import { Pressable } from 'react-native-gesture-handler'
+import { Alert, PlatformColor, Pressable } from 'react-native'
 
 export interface NavbarCancelProps {
   preventRemove: boolean
