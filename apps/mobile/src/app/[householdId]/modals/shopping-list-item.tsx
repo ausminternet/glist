@@ -221,7 +221,7 @@ export default function ShoppingListItemModal() {
           contentContainerStyle={{
             gap: 24,
             flexDirection: 'column',
-            paddingBlockEnd: 64,
+            paddingBlockEnd: 70,
           }}
         >
           <List>
@@ -362,14 +362,6 @@ export default function ShoppingListItemModal() {
             </ListItem>
           </List>
 
-          {shoppingListItem && (
-            <Button
-              title="Eintrag löschen"
-              color="red"
-              onPress={handleDelete}
-            />
-          )}
-
           <ScrollView
             horizontal
             contentContainerStyle={{ paddingHorizontal: 16 }}
@@ -395,6 +387,13 @@ export default function ShoppingListItemModal() {
               onPhotoPick={uploadPhoto}
             />
           </ScrollView>
+          {shoppingListItem && (
+            <Button
+              title="Eintrag löschen"
+              color="red"
+              onPress={handleDelete}
+            />
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </>

@@ -168,7 +168,7 @@ export default function InventoryItemModal() {
           contentContainerStyle={{
             gap: 24,
             flexDirection: 'column',
-            paddingBlockEnd: 64,
+            paddingBlockEnd: 70,
           }}
         >
           <List>
@@ -340,14 +340,6 @@ export default function InventoryItemModal() {
             </ListItem>
           </List>
 
-          {inventoryItem && (
-            <Button
-              title="Eintrag löschen"
-              color="red"
-              onPress={handleDelete}
-            />
-          )}
-
           <ScrollView
             horizontal
             contentContainerStyle={{ paddingHorizontal: 16 }}
@@ -373,6 +365,14 @@ export default function InventoryItemModal() {
               onPhotoPick={uploadPhoto}
             />
           </ScrollView>
+
+          {inventoryItem && (
+            <Button
+              title="Eintrag löschen"
+              color="red"
+              onPress={handleDelete}
+            />
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </>
