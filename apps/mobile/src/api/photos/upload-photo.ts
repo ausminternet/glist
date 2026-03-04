@@ -8,15 +8,15 @@ export type UploadPhotoResponse = {
 }
 
 export type UploadPhotoParams = {
-  photoUri: string
-  contentType: string
+  uri: string
+  mimeType: string
 }
 
 export const uploadPhoto = async (
   householdId: string,
   params: UploadPhotoParams,
 ): Promise<UploadPhotoResponse> => {
-  const response = await fetch(params.photoUri)
+  const response = await fetch(params.uri)
   const blob = await response.blob()
 
   const res = await apiClient<UploadPhotoResponse>(
@@ -25,7 +25,7 @@ export const uploadPhoto = async (
       method: 'POST',
       body: blob,
       headers: {
-        'Content-Type': params.contentType,
+        'Content-Type': params.mimeType,
       },
     },
   )
@@ -40,9 +40,9 @@ export const uploadPhoto = async (
 export function useUploadPhoto() {
   const householdId = useHouseholdId()
 
-  const { mutateAsync, ...rest } = useMutation({
+  const { mutate, data, ...rest } = useMutation({
     mutationFn: (params: UploadPhotoParams) => uploadPhoto(householdId, params),
   })
 
-  return { uploadPhoto: mutateAsync, ...rest }
+  return { uploadPhoto: mutate, photo: data, ...rest }
 }

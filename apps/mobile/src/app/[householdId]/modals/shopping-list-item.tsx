@@ -14,6 +14,7 @@ import {
 } from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useFindInventoryItems } from '@/api/inventory-items'
+import { useUploadPhoto } from '@/api/photos'
 import { useDeleteShoppingListItem } from '@/api/shopping-list-items'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
@@ -25,12 +26,12 @@ import { ListItem } from '@/components/list-item.component'
 import { DefaultInputStyles, ListItemInput } from '@/components/list-item-input'
 import { ListItemInputContainer } from '@/components/list-item-input-container'
 import { NavbarCancelButton } from '@/components/navbar-cancel-button'
+import { PhotoPicker } from '@/components/photo-picker'
 import { UnitSelector } from '@/components/unit-selector'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { useInventoryItemSubtitle } from '@/hooks/use-inventory-item-subtitle'
 import { useShoppingListForm } from '@/hooks/use-shopping-list-item-form'
 import { useSubmitShoppingListItemForm } from '@/hooks/use-submit-shopping-list-item-form-submit'
-import { useUploadPhoto } from '@/hooks/use-upload-photo'
 
 export default function ShoppingListItemModal() {
   const [shouldClose, setShouldClose] = useState(false)
@@ -56,8 +57,12 @@ export default function ShoppingListItemModal() {
 
   const { submit, isSubmitting } = useSubmitShoppingListItemForm()
 
-  const { error, handlePickPhoto, handleTakePhoto, isUploading, photo, clear } =
-    useUploadPhoto()
+  const {
+    uploadPhoto,
+    error: uploadPhotoError,
+    photo,
+    isPending: isUploadingPhoto,
+  } = useUploadPhoto()
 
   const {
     setValue,
@@ -78,21 +83,32 @@ export default function ShoppingListItemModal() {
   }, [isDeleteError])
 
   useEffect(() => {
-    if (error) {
-      Alert.alert('Fehler', error)
+    if (uploadPhotoError) {
+      Alert.alert(
+        'Fehler',
+        uploadPhotoError.message ?? 'Das Foto konnte nicht hochgeladen werden.',
+      )
     }
-  }, [error])
+  }, [uploadPhotoError])
 
   useEffect(() => {
     if (!photo) return
+    if (values.photos.some((p) => p.key === photo.photoKey)) return
 
-    const newPhotos = [...values.photos, photo]
+    const newPhotos = [
+      ...values.photos,
+      {
+        key: photo.photoKey,
+        url: photo.url,
+      },
+    ]
     setValue('photos', newPhotos)
-    clear()
-  }, [photo, setValue, values.photos, clear])
+  }, [photo, setValue, values.photos])
 
-  const preventSubmit = isSubmitting || !canSubmit || isDeletePending
-  const preventRemove = isDirty || isSubmitting || isDeletePending
+  const preventSubmit =
+    isSubmitting || !canSubmit || isDeletePending || isUploadingPhoto
+  const preventRemove =
+    isDirty || isSubmitting || isDeletePending || isUploadingPhoto
 
   const searchResults = search ? searchInventoryItems(search) : []
   const showSearchResults = !!search && searchResults?.length > 0
@@ -198,17 +214,14 @@ export default function ShoppingListItemModal() {
           ],
         }}
       />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior="padding"
-        keyboardVerticalOffset={64}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={{ flex: 1 }}
           contentContainerStyle={{
             gap: 24,
             flexDirection: 'column',
+            paddingBlockEnd: 64,
           }}
         >
           <List>
@@ -357,15 +370,6 @@ export default function ShoppingListItemModal() {
             />
           )}
 
-          <List>
-            <ListItem onPress={handleTakePhoto} disabled={isUploading}>
-              Foto aufnehmen
-            </ListItem>
-            <ListItem onPress={handlePickPhoto} disabled={isUploading}>
-              Foto auswählen
-            </ListItem>
-          </List>
-
           <ScrollView
             horizontal
             contentContainerStyle={{ paddingHorizontal: 16 }}
@@ -382,6 +386,14 @@ export default function ShoppingListItemModal() {
                 }}
               />
             ))}
+            <PhotoPicker
+              label={
+                values.photos.length > 0
+                  ? 'Weiteres Foto hinzufügen'
+                  : 'Fotos hinzufügen'
+              }
+              onPhotoPick={uploadPhoto}
+            />
           </ScrollView>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -12,7 +12,7 @@ import {
 } from 'react-native'
 import { useCategories } from '@/api/categories'
 import { useDeleteInventoryItem } from '@/api/inventory-items'
-
+import { useUploadPhoto } from '@/api/photos'
 import { useShops } from '@/api/shops'
 import { colors } from '@/components/colors'
 import { DecimalInput } from '@/components/decimal-input'
@@ -21,11 +21,11 @@ import { ListItem } from '@/components/list-item.component'
 import { DefaultInputStyles, ListItemInput } from '@/components/list-item-input'
 import { ListItemInputContainer } from '@/components/list-item-input-container'
 import { NavbarCancelButton } from '@/components/navbar-cancel-button'
+import { PhotoPicker } from '@/components/photo-picker'
 import { UnitSelector } from '@/components/unit-selector'
 import { useHouseholdId } from '@/hooks/use-household-id'
 import { useInventoryItemForm } from '@/hooks/use-inventory-item-form'
 import { useSubmitInventoryItemForm } from '@/hooks/use-submit-inventory-item-form-submit'
-import { useUploadPhoto } from '@/hooks/use-upload-photo'
 import { centsToEuro, euroToCents } from '@/utils/currency'
 
 export default function InventoryItemModal() {
@@ -46,8 +46,12 @@ export default function InventoryItemModal() {
 
   const { submit, isSubmitting } = useSubmitInventoryItemForm()
 
-  const { error, handlePickPhoto, handleTakePhoto, isUploading, photo, clear } =
-    useUploadPhoto()
+  const {
+    uploadPhoto,
+    error: uploadPhotoError,
+    photo,
+    isPending: isUploadingPhoto,
+  } = useUploadPhoto()
 
   const { setValue, values, canSubmit, commit, isDirty, inventoryItem } =
     useInventoryItemForm(itemId)
@@ -58,9 +62,9 @@ export default function InventoryItemModal() {
   }, [isDeleteError])
 
   const preventSubmit =
-    isSubmitting || !canSubmit || isDeletePending || isUploading
+    isSubmitting || !canSubmit || isDeletePending || isUploadingPhoto
   const preventRemove =
-    isDirty || isSubmitting || isDeletePending || isUploading
+    isDirty || isSubmitting || isDeletePending || isUploadingPhoto
 
   const handleDelete = () => {
     Alert.alert(
@@ -106,18 +110,27 @@ export default function InventoryItemModal() {
   }, [shouldClose, preventRemove, router.back])
 
   useEffect(() => {
-    if (error) {
-      Alert.alert('Fehler', error)
+    if (uploadPhotoError) {
+      Alert.alert(
+        'Fehler',
+        uploadPhotoError.message ?? 'Das Foto konnte nicht hochgeladen werden.',
+      )
     }
-  }, [error])
+  }, [uploadPhotoError])
 
   useEffect(() => {
     if (!photo) return
+    if (values.photos.some((p) => p.key === photo.photoKey)) return
 
-    const newPhotos = [...values.photos, photo]
+    const newPhotos = [
+      ...values.photos,
+      {
+        key: photo.photoKey,
+        url: photo.url,
+      },
+    ]
     setValue('photos', newPhotos)
-    clear()
-  }, [photo, setValue, values.photos, clear])
+  }, [photo, setValue, values.photos])
 
   return (
     <>
@@ -148,17 +161,14 @@ export default function InventoryItemModal() {
           ],
         }}
       />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior="padding"
-        keyboardVerticalOffset={64}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={{ flex: 1 }}
           contentContainerStyle={{
             gap: 24,
             flexDirection: 'column',
+            paddingBlockEnd: 64,
           }}
         >
           <List>
@@ -338,15 +348,6 @@ export default function InventoryItemModal() {
             />
           )}
 
-          <List>
-            <ListItem onPress={handleTakePhoto} disabled={isUploading}>
-              Foto aufnehmen
-            </ListItem>
-            <ListItem onPress={handlePickPhoto} disabled={isUploading}>
-              Foto auswählen
-            </ListItem>
-          </List>
-
           <ScrollView
             horizontal
             contentContainerStyle={{ paddingHorizontal: 16 }}
@@ -363,6 +364,14 @@ export default function InventoryItemModal() {
                 }}
               />
             ))}
+            <PhotoPicker
+              label={
+                values.photos.length > 0
+                  ? 'Weiteres Foto hinzufügen'
+                  : 'Fotos hinzufügen'
+              }
+              onPhotoPick={uploadPhoto}
+            />
           </ScrollView>
         </ScrollView>
       </KeyboardAvoidingView>
