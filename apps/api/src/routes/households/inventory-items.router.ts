@@ -8,7 +8,6 @@ import { EditInventoryItemCommandHandler } from '@/application/commands/edit-inv
 import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemQueryRepository } from '@/infrastructure/repositories/drizzle-inventory-item-query-repository'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
-import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import type { HouseholdContext } from './context'
 
 const inventoryItemsRouter = new Hono<HouseholdContext>()

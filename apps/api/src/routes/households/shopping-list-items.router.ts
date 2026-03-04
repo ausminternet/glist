@@ -17,7 +17,6 @@ import { createDb } from '@/infrastructure/persistence'
 import { DrizzleInventoryItemRepository } from '@/infrastructure/repositories/drizzle-inventory-item-repository'
 import { DrizzleShoppingListItemQueryRepository } from '@/infrastructure/repositories/drizzle-shopping-list-item-query-repository'
 import { DrizzleShoppingListItemRepository } from '@/infrastructure/repositories/drizzle-shopping-list-item-repository'
-import { R2PhotoStorage } from '@/infrastructure/storage/photo-storage'
 import type { HouseholdContext } from './context'
 
 const shoppingListItemsRouter = new Hono<HouseholdContext>()

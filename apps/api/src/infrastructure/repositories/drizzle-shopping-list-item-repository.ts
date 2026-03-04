@@ -1,4 +1,5 @@
 import { and, eq, inArray } from 'drizzle-orm'
+import { SQLiteInsert, SQLiteInsertBase } from 'drizzle-orm/sqlite-core'
 import { parseCategoryId } from '@/domain/category/category-id'
 import { parseHouseholdId } from '@/domain/household/household-id'
 import { parseInventoryItemId } from '@/domain/inventory-item/inventory-item-id'
