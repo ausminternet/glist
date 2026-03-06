@@ -6,7 +6,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "glist",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "platforms": ["ios"],
     "ios": {
       "icon": "./assets/images/icon.icon",
