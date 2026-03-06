@@ -4,8 +4,7 @@
   "scripts": {
     "test": "bun test",
     "dev": "wrangler dev --ip 0.0.0.0 --port 8787",
-    "dev:scheduled": "wrangler dev --test-scheduled",
-    "trigger-scheduled": "curl 'http://localhost:8787/__scheduled'",
+    "trigger-scheduled": "curl http://127.0.0.1:8787/cdn-cgi/handler/scheduled",
     "deploy": "wrangler deploy --minify",
     "typecheck": "tsc --noEmit",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
